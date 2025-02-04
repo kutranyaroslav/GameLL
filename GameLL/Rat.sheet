@@ -1,0 +1,7 @@
+Texture Rat
+Size 132 125
+Scale 1.0 1.0
+|Type|Name|StartFrame|EndFrame|Row|FrameTime|FrameActionStart|End|
+AnimationType Directional
+Animation Idle 0 7 0 0.2 -1 -1
+Animation Cast 0 5 0 0.2 2 5
