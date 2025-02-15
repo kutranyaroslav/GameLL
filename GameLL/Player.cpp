@@ -42,5 +42,19 @@ void Player::OnEntityCollision(EntityBase* i_collider, bool i_attack) {
 }
 
 void Player::React(EventDetails* i_details) {
-	Move(Direction::Right);
+	//ticket number 7
+	//easy as fuck regarding the ticker by adding callback in costructor give through parameters event
+	//details where u will change the key_code change the value of it then switch of ifs for moving and done
+	if (i_details->m_name == "Player_Moveright") {
+		Move(Direction::Right);
+	}
+	else if (i_details->m_name == "Player_Moveleft") {
+		Move(Direction::Left);
+	}
+	else if (i_details->m_name == "Player_Jump") {
+		Jump();
+	}
+	else if (i_details->m_name == "Player_Attack") {
+		Attack();
+	}
 }
