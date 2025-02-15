@@ -51,4 +51,10 @@ void Player::React(EventDetails* i_details) {
 	else if (i_details->m_name == "Player_Moveleft") {
 		Move(Direction::Left);
 	}
+	else if (i_details->m_name == "Player_Jump") {
+		Jump();
+	}
+	else if (i_details->m_name == "Player_Attack") {
+		Attack();
+	}
 }
