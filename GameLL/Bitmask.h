@@ -6,7 +6,7 @@ class Bitmask
 public:
 	Bitmask():bits(0){}
 	Bitmask(const Bitset& i_bits):bits(i_bits){}
-	Bitset getMask() { return bits; }
+	Bitset getMask() const { return bits; }
 	void setMask(const Bitset& i_bits) {bits = i_bits;}
 	bool Matches(const Bitmask& i_value, const Bitset& i_relevant = 0) const {
 		return(i_relevant ?
