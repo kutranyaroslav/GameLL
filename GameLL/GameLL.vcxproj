@@ -137,7 +137,10 @@
   <ItemGroup>
     <ClCompile Include="Anim_Base.cpp" />
     <ClCompile Include="Anim_Directional.cpp" />
+    <ClCompile Include="Bitmask.cpp" />
     <ClCompile Include="Character.cpp" />
+    <ClCompile Include="C_Base.cpp" />
+    <ClCompile Include="C_Position.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EventManager.cpp" />
@@ -160,8 +163,12 @@
   <ItemGroup>
     <ClInclude Include="Anim_Base.h" />
     <ClInclude Include="Anim_Directional.h" />
+    <ClInclude Include="Bitmask.h" />
     <ClInclude Include="Character.h" />
+    <ClInclude Include="C_Base.h" />
+    <ClInclude Include="C_Position.h" />
     <ClInclude Include="Directions.h" />
+    <ClInclude Include="ECS_Types.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EventManager.h" />
