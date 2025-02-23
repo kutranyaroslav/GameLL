@@ -28,3 +28,4 @@ bool S_Base::FitsRequirements(const Bitmask& i_bits) {
 void S_Base::Purge() {
 	m_entities.clear();
 }
+System S_Base::GetId() { return m_id; }

@@ -18,7 +18,7 @@ public:
 	bool FitsRequirements(const Bitmask& i_bits);
 	void Purge();
 	virtual void Update(float i_dT) = 0;
-	virtual void HandleEvent(const EntityId& i_entity, const EventId& i_event);
+	virtual void HandleEvent(const EntityId& i_entity, const EventId& i_event) = 0;
 protected:
 	System m_id;
 	Requirements m_requiredComponents;
