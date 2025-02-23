@@ -143,6 +143,7 @@
     <ClCompile Include="C_Position.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EntityEventEnum.h" />
     <ClCompile Include="EntityManagerNew.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="EventQueue.cpp" />
