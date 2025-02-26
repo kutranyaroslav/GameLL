@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include "EntityEventEnum.h"
 
 using EntityId = unsigned int; 
 using ComponentContainer = std::vector<C_Base*>;

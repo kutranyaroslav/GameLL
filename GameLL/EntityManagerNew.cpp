@@ -1,5 +1,5 @@
 #include "EntityManagerNew.h"
-
+#include "SystemManager.h"
 
 EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr):
 	m_systems(i_systemMgr), m_textureManager(i_textureMgr), m_idCounter(0)
@@ -21,8 +21,8 @@ int EntityManagerNew::AddEntity(const Bitmask& i_mask) {
 	for (unsigned int i = 0; i < N_COMPONENT_TYPES; ++i) {
 		if (i_mask.getBit(i)) { AddComponent(entity, (Component)i); }
 	}
-	/*m_systems->EntityModified(entity, i_mask);
-	m_systems->addEvent(entity, (EventId)EntityEvent::Spawned);*/
+	m_systems->EntityModified(entity, i_mask);
+	m_systems->AddEvent(entity, (EventId)EntityEvent::Spawned);
 	return entity;
 }
 int EntityManagerNew::AddEntity(const std::string& i_file) {
@@ -76,7 +76,7 @@ bool EntityManagerNew::RemoveEntity(const EntityId& i_id) {
 		
 	}
 	m_entities.erase(itr);
-	//m_systems->RemoveEntity(i_id);
+	m_systems->RemoveEntity(i_id);
 	return true;
 }
 bool EntityManagerNew::AddComponent(const EntityId& i_id, const Component& i_component) {
@@ -90,7 +90,7 @@ bool EntityManagerNew::AddComponent(const EntityId& i_id, const Component& i_com
 	C_Base* component = itr2->second();
 	itr->second.second.emplace_back(component);
 	itr->second.first.turnOnBit((unsigned int) i_component);
-	//m_systems->EntityModified(i_id, itr->second.first);
+	m_systems->EntityModified(i_id, itr->second.first);
 	return true;
 
 }
@@ -109,7 +109,7 @@ bool EntityManagerNew::RemoveComponent(const EntityId& i_id, const Component& i_
 	delete (* component);
 	container.erase(component);
 	itr->second.first.clearBit((unsigned int )i_component);
-	//m_systems->EntityModified(i_id, itr->second.first);
+	m_systems->EntityModified(i_id, itr->second.first);
 	return true;
 
 }
@@ -120,7 +120,7 @@ bool EntityManagerNew::HasComponent(const EntityId& i_id, const Component& i_com
 }
 
 void EntityManagerNew::Purge() {
-	//m_systems->PurgeEntities();
+	m_systems->PurgeEntities();
 	for (auto& entity : m_entities) {
 		for (auto& component : entity.second.second) { delete component; }
 		entity.second.second.clear();

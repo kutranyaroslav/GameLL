@@ -1,5 +1,5 @@
 #include "S_Base.h"
-//#include "System_Manager.h"
+#include "SystemManager.h"
 
 S_Base::S_Base(const System& i_id, SystemManager* i_systemMgr):
 	m_id(i_id), m_systemMgr(i_systemMgr){}
