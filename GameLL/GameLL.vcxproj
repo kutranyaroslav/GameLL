@@ -159,6 +159,7 @@
     <ClCompile Include="State_intro.cpp" />
     <ClCompile Include="State_MainMenu.cpp" />
     <ClCompile Include="State_Paused.cpp" />
+    <ClCompile Include="SystemManager.cpp" />
     <ClCompile Include="S_Base.cpp" />
     <ClCompile Include="Textbox.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EntityManagerNew.h" />
+    <ClInclude Include="EntityMessages.h" />
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="EventQueue.h" />
     <ClInclude Include="Game.h" />
@@ -190,6 +192,7 @@
     <ClInclude Include="State_intro.h" />
     <ClInclude Include="State_MainMenu.h" />
     <ClInclude Include="State_Paused.h" />
+    <ClInclude Include="SystemManager.h" />
     <ClInclude Include="S_Base.h" />
     <ClInclude Include="Textbox.h" />
     <ClInclude Include="TextureManager.h" />
