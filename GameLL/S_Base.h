@@ -2,11 +2,11 @@
 #include <vector>
 #include "EntityManagerNew.h"
 #include "EventQueue.h"
-
+#include "Observer.h"
 using EntityList = std::vector<EntityId>; 
 using Requirements = std::vector<Bitmask>;
 class SystemManager;
-class S_Base
+class S_Base: Observer
 {
 public: 
 	S_Base(const System& i_id, SystemManager* i_systemMgr);

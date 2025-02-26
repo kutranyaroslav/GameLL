@@ -150,6 +150,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="Observer.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="State_intro.cpp" />
     <ClCompile Include="State_MainMenu.cpp" />
     <ClCompile Include="State_Paused.cpp" />
+    <ClCompile Include="S_Base.cpp" />
     <ClCompile Include="Textbox.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Utilitites.cpp" />
@@ -179,6 +181,7 @@
     <ClInclude Include="EventQueue.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="Observer.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SpriteSheet.h" />
@@ -187,6 +190,7 @@
     <ClInclude Include="State_intro.h" />
     <ClInclude Include="State_MainMenu.h" />
     <ClInclude Include="State_Paused.h" />
+    <ClInclude Include="S_Base.h" />
     <ClInclude Include="Textbox.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Utilitites.h" />
