@@ -1,10 +1,9 @@
 #include "SpriteSheet.h"
 #include "Anim_Directional.h"
-SpriteSheet::SpriteSheet(TextureManager* i_textureManager, StateManager* i_stateMgr):
+SpriteSheet::SpriteSheet(TextureManager* i_textureManager):
 	m_textureManager(i_textureManager),m_animationCurrent(nullptr),
-	m_spriteScale(1.0f, 1.0f), m_direction(Direction::Right), m_stateMgr(i_stateMgr)
-{
-	m_textbox = m_stateMgr->GetSharedContext()->m_textbox;
+	m_spriteScale(1.0f, 1.0f), m_direction(Direction::Right)
+{	
 }
 SpriteSheet::~SpriteSheet() { ReleaseSheet(); }
 
@@ -32,10 +31,10 @@ bool SpriteSheet::LoadSheet(const std::string& i_file) {
 				}
 				m_texture = texture;
 				if (!m_textureManager->GetResource(texture)) {
-					m_stateMgr->GetSharedContext()->m_textbox->Add("Get Resource returned nullptr");
+					
 				}
 				else {
-					m_stateMgr->GetSharedContext()->m_textbox->Add("GetResource returned link for texture");
+					
 				}
 				m_sprite.setTexture(*m_textureManager->GetResource(m_texture));
 			}

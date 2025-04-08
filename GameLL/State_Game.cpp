@@ -1,7 +1,7 @@
 #include "State_Game.h"
 
 State_Game::State_Game(StateManager* i_stateManager) :
-	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager, i_stateManager)
+	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager)
 {}
 
 void State_Game::onCreate() {
@@ -18,9 +18,16 @@ void State_Game::onCreate() {
 	evMgr->AddCallback(StateType::Game, "Key_P", &State_Game::Pause, this);
 	evMgr->AddCallback(StateType::Game, "Key_R", &State_Game::Cast, this);
 
+	evMgr->AddCallback(StateType::Game, "Player_Moveleft", &State_Game::Move, this);
+	evMgr->AddCallback(StateType::Game, "Player_Moveright", &State_Game::Move, this);
+	evMgr->AddCallback(StateType::Game, "Player_Moveup", &State_Game::Move, this);
+	evMgr->AddCallback(StateType::Game, "Player_Movedown", &State_Game::Move, this);
+
 	//test integration of maps
 	m_testMap = new Map(m_stateManager->GetSharedContext(), this);
 	m_testMap->LoadMap("/Assets/maps/MAP1.map");
+
+	m_player = m_testMap->GetPLayerId();
 }
 
 void State_Game::onDestroy() {
@@ -34,42 +41,18 @@ void State_Game::onDestroy() {
 
 void State_Game::Update(const sf::Time& i_time) {
 	SharedContext* context = m_stateManager->GetSharedContext();
- 	EntityBase* player = context->m_entityManager->Find("Player");;
-	Textbox* textbox = context->m_textbox;
-	if (!player) {
-		m_stateManager->GetSharedContext()->m_textbox->Add("player was not found");
-		context->m_entityManager->Add(EntityType::Player, "Player");
-		/*player->SetPosition(0,256);*/
-	}
-	else {
-		m_view.setCenter(player->GetPosition());
-		context->m_wind->GetRenderWindow()->setView(m_view);
-	}
-	sf::FloatRect viewSpace = context->m_wind->GetViewSpace();
-	if(viewSpace.left<= 0 ){
-		m_view.setCenter(viewSpace.width / 2, m_view.getCenter().y);
-		context->m_wind->GetRenderWindow()->setView(m_view);
-	}
-	else if (viewSpace.left + viewSpace.width > (m_testMap->GetMapSize().x + 1) * Sheet::Tile_Size) {
-		m_view.setCenter(((m_testMap->GetMapSize().x + 1) * Sheet::Tile_Size) - (viewSpace.width / 2), m_view.getCenter().y);
-		context->m_wind->GetRenderWindow()->setView(m_view);
-	}
-	textbox->Add("player_pos.x - " + std::to_string(player->GetPosition().x) + " player_pos.y"
-		+ std::to_string(player->GetPosition().y));
-	/*textbox->Add("m_view left is " + std::to_string(m_view.getCenter().x -
-		(m_view.getSize().x / 2)) + " m_view top is " +
-		std::to_string(m_view.getCenter().y - (m_view.getSize().y / 2)) + " m_view width " +
-		std::to_string(m_view.getSize().x) + " m_view height "  + std::to_string(m_view.getSize().y));*/
+	UpdateCamera();
 	m_testMap->Update(i_time.asSeconds());
-	m_stateManager->GetSharedContext()->m_entityManager->Update(i_time.asSeconds());
+	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
 	
 }
 
 void State_Game::Draw() {
-	m_stateManager->GetSharedContext()->m_textbox
-		->Render(*m_stateManager->GetSharedContext()->m_wind->GetRenderWindow());
-	m_testMap->Draw();
-	m_stateManager->GetSharedContext()->m_entityManager->Draw();
+	for (unsigned int i = 0; i < Sheet::Num_Layers; ++i) {
+		m_testMap->Draw(i);
+		m_stateManager->GetSharedContext()->m_systemManager->Draw(m_stateManager->GetSharedContext()->m_wind,i);
+	}
+	
 }
 
 void State_Game::Activate(){}
@@ -88,4 +71,48 @@ void State_Game::Cast(EventDetails* i_details) {
 		Textbox* textbox = m_stateManager->GetSharedContext()->m_textbox;
 		textbox->Add("Set Animation returned true");
 	}
+}
+
+void State_Game::UpdateCamera() {
+	if (m_player == -1) { return; }
+	SharedContext* context = m_stateManager->GetSharedContext();
+	C_Position* pos = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>(m_player, Component::Position);
+	m_view.setCenter(pos->GetPosition());
+	context->m_wind->GetRenderWindow()->setView(m_view);
+	sf::FloatRect viewSpace = context->m_wind->GetViewSpace();
+	if (viewSpace.left <= 0) {
+		m_view.setCenter(viewSpace.width / 2, m_view.getCenter().y);
+		context->m_wind->GetRenderWindow()->setView(m_view);
+	}
+	else if (viewSpace.left + viewSpace.width > (m_testMap->GetMapSize().x) * Sheet::Tile_Size) {
+		m_view.setCenter(((m_testMap->GetMapSize().x) * Sheet::Tile_Size) - (viewSpace.width / 2), m_view.getCenter().y);
+		context->m_wind->GetRenderWindow()->setView(m_view);
+	}
+
+	if (viewSpace.top <= 0) {
+		m_view.setCenter(m_view.getCenter().x, viewSpace.height / 2);
+		context->m_wind->GetRenderWindow()->setView(m_view);
+	}
+	else if (viewSpace.top + viewSpace.height > (m_testMap->GetMapSize().y) * Sheet::Tile_Size) {
+		m_view.setCenter(m_view.getCenter().x, ((m_testMap->GetMapSize().y) * Sheet::Tile_Size) - (viewSpace.height / 2));
+		context->m_wind->GetRenderWindow()->setView(m_view);
+	}
+}
+
+void State_Game::Move(EventDetails* i_details) {
+	Message msg((MessageType)EntityMessage::Move);
+	if (i_details->m_name == "Player_Moveleft") {
+		msg.m_int = (int)Direction::Left;
+	}
+	else if (i_details->m_name == "Player_Moveright") {
+		msg.m_int = (int)Direction::Right;
+	}
+	else if (i_details->m_name == "Player_Moveup") {
+		msg.m_int = (int)Direction::Up;
+	}
+	else if (i_details->m_name == "Player_Movedown") {
+		msg.m_int = (int)Direction::Down;
+	}
+	msg.m_receiver = m_player;
+	m_stateManager->GetSharedContext()->m_systemManager->GetMessageHandler()->Dispatch(msg);
 }

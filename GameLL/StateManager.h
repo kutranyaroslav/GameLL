@@ -1,7 +1,8 @@
 #pragma once
 #include "Window.h"
 #include "TextureManager.h"
-
+#include "SystemManager.h"
+#include "EntityManagerNew.h"
 class EntityManager;
 class StateManager;
 
@@ -50,14 +51,15 @@ class StateManager;
 
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
-		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr) {}
+		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), m_systemManager(nullptr) {}
 	Window* m_wind;
 	EventManager* m_eventManager;
 	Textbox* m_textbox;
 	TextureManager* m_textureManager;
 	StateManager* m_stateManager;
-	EntityManager* m_entityManager;
+	EntityManagerNew* m_entityManager;
 	Map* m_gameMap;
+	SystemManager* m_systemManager;
 	
 };
 

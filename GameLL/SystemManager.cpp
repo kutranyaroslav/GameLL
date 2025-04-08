@@ -1,12 +1,14 @@
 #include "SystemManager.h"
 #include "EntityManagerNew.h"
+#include "S_Base.h"
+#include "S_Renderer.h"
 SystemManager::SystemManager() :m_entityManager(nullptr){
 	/*m_systems[System::State] = new S_State(this);
 	m_systems[System::Control] = new S_Controll(this);
 	m_systems[System::Collision] = new S_Collision(this);
-	m_systems[System::Movement] = new S_Movement(this);
+	m_systems[System::Movement] = new S_Movement(this);*/
 	m_systems[System::Renderer] = new S_Renderer(this);
-	m_systems[System::SheetAnimation] = new S_SheetAnimation(this);*/
+	//m_systems[System::SheetAnimation] = new S_SheetAnimation(this);
 
 }
 SystemManager::~SystemManager() { PurgeSystems(); }
@@ -46,8 +48,8 @@ void SystemManager::HandleEvents() {
 void SystemManager::Draw(Window* i_wind, unsigned int i_elevation) {
 	auto itr = m_systems.find(System::Renderer);
 	if (itr == m_systems.end()) { return; }
-	/*S_Renderer* system = (S_Renderer*)itr->second;
-	system->Render(i_wind,i_elevation);*/
+	S_Renderer* system = (S_Renderer*)itr->second;
+	system->Render(i_wind,i_elevation);
 
 }
 void SystemManager::EntityModified(const EntityId& i_entity, const Bitmask& i_bits) {

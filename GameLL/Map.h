@@ -2,11 +2,12 @@
 #include "StateManager.h"
 #include "unordered_map"
 #include "Utilitites.h"
+#include "EntityManagerNew.h"
 #include <fstream>
 
 
 class EntityManager;
-enum Sheet { Tile_Size = 32, Sheet_Width = 512, Sheet_Height = 256 };
+enum Sheet { Tile_Size = 32, Sheet_Width = 512, Sheet_Height = 256, Num_Layers = 3 };
 using TileId = unsigned int;
 
 struct TileInfo {
@@ -83,7 +84,7 @@ private:
 	std::string m_backgroundTexture;
 	BaseState* m_currentState;
 	SharedContext* m_context;
-	EntityManager* m_entityManager;
+	EntityManagerNew* m_entityManager;
 
 };
 

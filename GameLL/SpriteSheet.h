@@ -8,7 +8,7 @@ using Animations = std::unordered_map<std::string, Anim_Base*>;
 class SpriteSheet
 {
 public:
-	SpriteSheet(TextureManager* i_textManager,StateManager* i_stateMgr);
+	SpriteSheet(TextureManager* i_textManager);
 	~SpriteSheet();
 	bool LoadSheet(const std::string& i_file);
 	bool SetAnimation(const std::string& i_name, const bool& i_play = false, const bool& i_loop = false);
@@ -32,7 +32,6 @@ private:
 	Animations m_animations;
 	Anim_Base* m_animationCurrent;
 	TextureManager* m_textureManager;
-	StateManager* m_stateMgr;
 	//test 
 	Textbox* m_textbox;
 };

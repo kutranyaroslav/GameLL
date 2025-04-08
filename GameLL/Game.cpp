@@ -2,17 +2,19 @@
 Game::Game():
 	m_window(),
 	m_stateManager(&m_context),
-	m_entityManager(&m_context, 16)
+	m_entityManager(&m_systemManager, &m_textureManager)
 {
+	m_systemManager.SetEntityManager(&m_entityManager);
 	m_context.m_wind = &m_window;
 	m_context.m_eventManager = m_window.GetEventManager();
 	m_context.m_textbox = m_window.GetTextbox();
 	m_context.m_textureManager = &m_textureManager;
 	m_context.m_stateManager = &m_stateManager;
 	m_context.m_entityManager = &m_entityManager;
+	m_context.m_systemManager = &m_systemManager;
 	m_stateManager.SwitchTo(StateType::Intro);
 	m_context.m_textbox->Add("You entered the game");
-}
+} 
 Game::~Game(){}
 
 void Game::Update() {

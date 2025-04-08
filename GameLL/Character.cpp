@@ -2,7 +2,7 @@
 
 Character::Character(EntityManager* i_entityManager) :
 	EntityBase(i_entityManager),
-	m_spriteSheet(m_entityManager->GetContext()->m_textureManager, m_entityManager->GetContext()->m_stateManager),
+	m_spriteSheet(m_entityManager->GetContext()->m_textureManager),
 m_jumpVelocity(250), m_hitpoints(5)
 {
 	m_name = "Character";
