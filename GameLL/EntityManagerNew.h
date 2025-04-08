@@ -29,6 +29,21 @@ public:
 	bool HasComponent(const EntityId& i_id, const Component& i_component);
 
 	void Purge();
+	template<class T>
+	T* GetComponent(const EntityId& i_entityId, const Component& i_component) {
+		auto itr = m_entities.find(i_entityId);
+		if (itr == m_entities.end()) { return nullptr; }
+		if (!itr->second.first.getBit((unsigned int)i_component))
+		{
+			return nullptr;
+		}
+		auto& container = itr->second.second;
+		auto component = std::find_if(container.begin(), container.end(), [&i_component](C_Base* c) {
+			return c->getComponentType() == i_component;
+			});
+
+		return (component != container.end() ? dynamic_cast <T*> (*component) : nullptr);
+	}
 
 private:
 	template <class T>
@@ -36,21 +51,7 @@ private:
 		m_cFactory[i_id] = []()->C_Base* {return new T();};
 	}
 
-	template<class T>
-	T* GetComponent(const EntityId& i_entityId, const Component& i_component) {
-		auto itr = m_entities.find(i_entityId);
-		if (itr == m_entities.end()) { return nullptr; }
-		if(!itr->second.first.getBit((unsigned int)i_component))
-		{
-			return nullptr;
-		}
-		auto& container = itr->second.second;
-		auto component = std::find_if(container.begin(), container.end(), [&i_component](C_Base* c) {
-			return c->getComponentType() == i_component;
-		});
-
-		return (component != container.end() ? dynamic_cast <T*> (*component) : nullptr);
-	}
+	
 	unsigned int m_idCounter;
 	EntityContainer m_entities;
 	ComponentFactory m_cFactory;

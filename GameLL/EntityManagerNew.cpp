@@ -1,12 +1,13 @@
 #include "EntityManagerNew.h"
 #include "SystemManager.h"
-
+#include "C_SpriteSheet.h"
+#include "C_Position.h"
 EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr):
 	m_systems(i_systemMgr), m_textureManager(i_textureMgr), m_idCounter(0)
 {
 	AddComponentType<C_Position>(Component::Position);
-	/*AddComponentType<C_SpriteSheet>(Component::SpriteSheet);
-	AddComponentType<C_State>(Component::State);
+	AddComponentType<C_SpriteSheet>(Component::SpriteSheet);
+	/*AddComponentType<C_State>(Component::State);
 	AddComponentType<C_Movable>(Component::Movable);
 	AddComponentType<C_Controller>(Component::Controller);
 	AddComponentType <C_Collidable> (Component::Collidable);*/
@@ -28,7 +29,7 @@ int EntityManagerNew::AddEntity(const Bitmask& i_mask) {
 int EntityManagerNew::AddEntity(const std::string& i_file) {
 	int EntityId = -1;
 	std::ifstream file;
-	file.open(Utils::GetWorkingDirectory() + "media/Entities/" + i_file + ".entity");
+	file.open(Utils::GetWorkingDirectory() + "Media/Entities/" + i_file + ".entity");
 	if (!file.is_open()) {
 		return -1;
 	}
@@ -58,8 +59,8 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 			if (!component) { continue; }
 			keystream >> *component;
 			if (component->getComponentType() == Component::SpriteSheet) {
-				/*C_SpriteSheet* sheet = (C_SpriteSheet*)component;
-				sheet->Create(m_textureManager);*/
+				C_SpriteSheet* sheet = (C_SpriteSheet*)component;
+				sheet->Create(m_textureManager);
 			}
 		}
 	}

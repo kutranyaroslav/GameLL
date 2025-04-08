@@ -1,10 +1,11 @@
 #pragma once
 #include "Observer.h"
 #include "EventQueue.h"
-#include "S_Base.h"
+#include "ECS_Types.h"
+#include "EntityManagerNew.h"
 #include "Window.h"
 class EntityManagerNew;
-
+class S_Base;
 using SystemContainer = std::unordered_map<System, S_Base*>;
 using EntityEventContainer = std::unordered_map<EntityId, EventQueue>;
 class SystemManager

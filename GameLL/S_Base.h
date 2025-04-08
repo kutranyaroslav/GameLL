@@ -1,11 +1,12 @@
 #pragma once
 #include <vector>
 #include "EntityManagerNew.h"
+#include "SystemManager.h"
 #include "EventQueue.h"
 #include "Observer.h"
 using EntityList = std::vector<EntityId>; 
 using Requirements = std::vector<Bitmask>;
-class SystemManager;
+
 class S_Base: Observer
 {
 public: 
@@ -18,7 +19,7 @@ public:
 	bool FitsRequirements(const Bitmask& i_bits);
 	void Purge();
 	virtual void Update(float i_dT) = 0;
-	virtual void HandleEvent(const EntityId& i_entity, const EventId& i_event) = 0;
+	virtual void HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) = 0;
 protected:
 	System m_id;
 	Requirements m_requiredComponents;

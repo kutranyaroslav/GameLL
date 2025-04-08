@@ -140,7 +140,9 @@
     <ClCompile Include="Bitmask.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="C_Base.cpp" />
+    <ClCompile Include="C_Drawable.cpp" />
     <ClCompile Include="C_Position.cpp" />
+    <ClCompile Include="C_SpriteSheet.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntityEventEnum.h" />
@@ -161,6 +163,7 @@
     <ClCompile Include="State_Paused.cpp" />
     <ClCompile Include="SystemManager.cpp" />
     <ClCompile Include="S_Base.cpp" />
+    <ClCompile Include="S_Renderer.cpp" />
     <ClCompile Include="Textbox.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Utilitites.cpp" />
@@ -172,7 +175,9 @@
     <ClInclude Include="Bitmask.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="C_Base.h" />
+    <ClInclude Include="C_Drawable.h" />
     <ClInclude Include="C_Position.h" />
+    <ClInclude Include="C_SpriteSheet.h" />
     <ClInclude Include="Directions.h" />
     <ClInclude Include="ECS_Types.h" />
     <ClInclude Include="Enemy.h" />
@@ -194,6 +199,7 @@
     <ClInclude Include="State_Paused.h" />
     <ClInclude Include="SystemManager.h" />
     <ClInclude Include="S_Base.h" />
+    <ClInclude Include="S_Renderer.h" />
     <ClInclude Include="Textbox.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Utilitites.h" />
