@@ -17,13 +17,19 @@ Map::~Map() {
 	PurgeTileSet();
 	m_context->m_gameMap = nullptr;
 }
-Tile* Map::GetTile(unsigned int i_x, unsigned int i_y) {
-	auto itr = m_tilemap.find(ConvertCordinates(i_x, i_y));
+Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
+	if(i_x < 0 || i_y < 0 || i_x>= m_maxMapSize.x 
+		|| i_y >= m_maxMapSize.y || i_layer < 0 || i_layer >= Sheet::Num_Layers
+	)
+	{
+		return nullptr;
+	}
+	auto itr = m_tilemap.find(ConvertCordinates(i_x, i_y, i_layer));
 	return itr != m_tilemap.end() ? itr->second : nullptr;
 }
 
-unsigned int Map::ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y){
-	return (i_x * m_maxMapSize.x) + i_y;
+unsigned int Map::ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const{
+	return ((i_layer * m_maxMapSize.y + i_y) * m_maxMapSize.x + i_x);
 }
 
 
@@ -44,9 +50,11 @@ void Map::Update(float i_dT) {
 	m_background.setPosition(viewSpace.left, viewSpace.top);
 }
 
-void Map::Draw() {
+void Map::Draw(unsigned int i_layer) {
+	if (i_layer >= Sheet::Num_Layers) {
+		return;
+	}
 	sf::RenderWindow* i_wind = m_context->m_wind->GetRenderWindow();
-	i_wind->draw(m_background);
 	sf::FloatRect viewSpace = m_context->m_wind->GetViewSpace();
 	sf::Vector2i tileBegin(floor(viewSpace.left / Sheet::Tile_Size), floor(viewSpace.top / Sheet::Tile_Size));
 	sf::Vector2i tileEnd(ceil((viewSpace.left + viewSpace.width) / Sheet::Tile_Size),
@@ -55,7 +63,7 @@ void Map::Draw() {
 	for (int x = tileBegin.x; x <= tileEnd.x; ++x) {
 		for (int y = tileBegin.y; y <= tileEnd.y; ++y) {
 			if (x < 0 || y < 0) { continue; }
-			Tile* tile = GetTile(x, y);
+			Tile* tile = GetTile(x, y,i_layer);
 			if (!tile) { continue; }
 			sf::Sprite& sprite = tile->m_properties->m_sprite;
 			sprite.setPosition(x * Sheet::Tile_Size, y * Sheet::Tile_Size);
@@ -126,11 +134,13 @@ void Map::LoadMap(const std::string& i_path) {
 				auto itr = m_tileset.find(tileId);
 				if (itr == m_tileset.end()) { continue; }
 				sf::Vector2i tileCords;
+				unsigned int tileLayer;
+				unsigned int tileSolidity;
 				keystream >> tileCords.x >> tileCords.y;
-				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y) { continue; }
+				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y || tileLayer >= Sheet::Num_Layers) { continue; }
 				Tile* tile = new Tile();
 				tile->m_properties = itr->second;
-				if (!m_tilemap.emplace(ConvertCordinates(tileCords.x, tileCords.y), tile).second) {
+				if (!m_tilemap.emplace(ConvertCordinates(tileCords.x, tileCords.y,tileLayer), tile).second) {
 					delete tile;
 					tile = nullptr;
 					continue;
@@ -168,7 +178,7 @@ void Map::LoadMap(const std::string& i_path) {
 			else if (type == "NEXTMAP") {
 				keystream >> m_nextMap;
 			}
-			else if (type == "PLAYER") {
+			/*else if (type == "PLAYER") {
 				if (m_playerId == -1) { continue; }
 				m_playerId = m_entityManager->Add(EntityType::Player);
 				if (m_playerId < 0) { continue; }
@@ -186,6 +196,18 @@ void Map::LoadMap(const std::string& i_path) {
 				keystream >> enemyX >> enemyY;
 				m_entityManager->Find(enemyId)->SetPosition(enemyX, enemyY);
 
+			}*/
+			else if (type == "ENTITY") {
+				std::string name; 
+				keystream >> name;
+				if (name == "PLAYER" && m_playerId != -1) {
+					continue;
+				}
+				int entityId = m_context->m_entityManager->AddEntity(name);
+				if (entityId < 0) { continue; }
+				if (name == "PLAYER") { m_playerId = entityId; }
+				C_Base* position = m_context->m_entityManager->GetComponent<C_Position>(entityId, Component::Position);
+				if (position) { keystream >> *position; }
 			}
 		}
 		file.close();
