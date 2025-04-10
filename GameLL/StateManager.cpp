@@ -3,7 +3,7 @@
 #include "State_MainMenu.h"
 #include "State_Game.h"
 #include "State_Paused.h"
-#include "Entity.h"
+
 #include "Map.h"
 StateManager::StateManager(SharedContext* i_shared):
 	m_shared(i_shared)

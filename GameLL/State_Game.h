@@ -4,7 +4,7 @@
 #include "Anim_Directional.h"
 #include "Map.h"
 #include "C_Position.h"
-#include "Player.h"
+
 
 class State_Game:public BaseState
 {

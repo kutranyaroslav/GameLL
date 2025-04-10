@@ -2,7 +2,6 @@
 #include "Window.h"
 #include "StateManager.h"
 #include "SpriteSheet.h"
-#include "Entity.h"
 class Game
 {
 public :

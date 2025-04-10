@@ -6,7 +6,7 @@
 #include <fstream>
 
 
-class EntityManager;
+
 enum Sheet { Tile_Size = 32, Sheet_Width = 512, Sheet_Height = 256, Num_Layers = 3 };
 using TileId = unsigned int;
 

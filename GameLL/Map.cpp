@@ -1,5 +1,5 @@
 #include "Map.h"
-#include "Entity.h"
+
 
 
 Map::Map(SharedContext* i_context, BaseState* i_state):

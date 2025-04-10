@@ -248,13 +248,13 @@ void EntityManager::Remove(unsigned int i_id) {
 	m_entitiesToRemove.emplace_back(i_id);
 }
 
-void EntityManager::Update(float i_dT) {
-	for (auto& itr : m_entities) {
-		itr.second->Update(i_dT);
-	}
-	EntityCollisionCheck();
-	ProcessRemovals();
-}
+//void EntityManager::Update(float i_dT) {
+//	for (auto& itr : m_entities) {
+//		itr.second->Update(i_dT);
+//	}
+//	EntityCollisionCheck();
+//	ProcessRemovals();
+//}
 
 void EntityManager::Draw() {
 	sf::RenderWindow* wnd = m_context->m_wind->GetRenderWindow();
