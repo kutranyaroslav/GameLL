@@ -43,6 +43,7 @@ struct TileInfo {
 struct Tile {
 	TileInfo* m_properties;
 	bool m_warp;
+	bool m_solid;
 };
 
 
@@ -53,18 +54,18 @@ class Map
 public:
 	Map(SharedContext* i_context, BaseState* i_currentState);
 	~Map();
-	Tile* GetTile(unsigned int i_x, unsigned int i_y);
+	Tile* GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer);
 	TileInfo* GetDefaultTile();
 	float GetGravity()const;
-	unsigned int GetTileSize()const; 
+	unsigned int GetTileSize()const;
 	const sf::Vector2u& GetMapSize() const;
 	const sf::Vector2f& GetPlayerStart()const;
 	void LoadMap(const std::string& i_path);
 	void LoadNext();
 	void Update(float i_dT);
-	void Draw();
+	void Draw(unsigned int i_layer);
 private:
-	unsigned int ConvertCordinates(const unsigned int& i_x,const unsigned int& i_y);
+	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
 	void LoadTiles(const std::string& i_path, const std::string& i_texture);
 	void PurgeMap();
 	void PurgeTileSet();
@@ -87,4 +88,3 @@ private:
 	EntityManagerNew* m_entityManager;
 
 };
-
