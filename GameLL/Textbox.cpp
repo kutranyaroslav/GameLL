@@ -11,7 +11,7 @@ Textbox::~Textbox() {
 void Textbox::Setup(int i_visible, int i_charSize, int i_width, sf::Vector2f i_screenPos) {
 	m_numVisible = i_visible;
 	sf::Vector2f i_offset(2.0f, 2.0f);
-	m_font.loadFromFile("D:/Programming/SFML_5/SFML_5/ARIAL.TTF");
+	m_font.loadFromFile(Utils::GetWorkingDirectory() + "Assets/Fonts/ARRIAL.ttf");
 	m_content.setFont(m_font);
 	m_content.setString("");
 	m_content.setCharacterSize(i_charSize);

@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include "SFML/Graphics.hpp"
+#include "Utilitites.h"
 
 using messageContainer = std::vector<std::string>;
 

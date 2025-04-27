@@ -7,6 +7,7 @@ Map::Map(SharedContext* i_context, BaseState* i_state):
 	m_tileCount(0), m_tileSetCount(0), m_mapGravity(512.f), m_loadNextMap(false),
 	m_defaultTile(i_context)
 {
+	m_playerId = -1;
 	m_entityManager = m_context->m_entityManager;
 	m_context->m_gameMap = this;
 	LoadTiles("Tiles.cfg", "Tilesheet");
@@ -17,12 +18,15 @@ Map::~Map() {
 	PurgeTileSet();
 	m_context->m_gameMap = nullptr;
 }
-Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
+ Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
 	if(i_x < 0 || i_y < 0 || i_x>= m_maxMapSize.x 
 		|| i_y >= m_maxMapSize.y || i_layer < 0 || i_layer >= Sheet::Num_Layers
 	)
 	{
 		return nullptr;
+	}
+	if (i_layer > 0) {
+		std::cout << "bla bla" << std::endl;
 	}
 	auto itr = m_tilemap.find(ConvertCordinates(i_x, i_y, i_layer));
 	return itr != m_tilemap.end() ? itr->second : nullptr;
@@ -65,6 +69,9 @@ void Map::Draw(unsigned int i_layer) {
 			if (x < 0 || y < 0) { continue; }
 			Tile* tile = GetTile(x, y,i_layer);
 			if (!tile) { continue; }
+			if (tile->m_properties->m_id > 40) {
+				std::cout << "here";
+			}
 			sf::Sprite& sprite = tile->m_properties->m_sprite;
 			sprite.setPosition(x * Sheet::Tile_Size, y * Sheet::Tile_Size);
 			i_wind->draw(sprite);
@@ -101,13 +108,16 @@ void Map::LoadTiles(const std::string& i_path, const std::string& i_texture) {
 			if (line[0] == '|') { continue; }
 			std::stringstream keystream(line);
 			int tileId;
+			int tileRow;
 			keystream >> tileId;
+			keystream >> tileRow;
+			TileKey key{ tileId, tileRow };
 			if (tileId < 0) { continue; }
 			///Add texture of tile set by name Tilesheet in textures.cfg 
-			TileInfo* tile = new TileInfo(m_context, i_texture, tileId);
+			TileInfo* tile = new TileInfo(m_context, i_texture, tileId, tileRow);
 			keystream >> tile->m_name >> tile->m_friction.x >> tile->m_friction.y >>
 				tile->m_deadly;
-			if (!m_tileset.emplace(tileId, tile).second) {
+			if (!m_tileset.emplace(key, tile).second) {
 				std::cout << "Dublicate file \n " << std::endl;
 				delete tile;
 			}
@@ -129,14 +139,17 @@ void Map::LoadMap(const std::string& i_path) {
 			keystream >> type;
 			if (type == "TILE") {
 				int tileId = 0;
+				int row = 0;
 				keystream >> tileId;
+				keystream >> row;
 				if (tileId < 0) { continue; }
-				auto itr = m_tileset.find(tileId);
+				TileKey key{tileId, row};
+				auto itr = m_tileset.find(key);
 				if (itr == m_tileset.end()) { continue; }
 				sf::Vector2i tileCords;
 				unsigned int tileLayer;
 				unsigned int tileSolidity;
-				keystream >> tileCords.x >> tileCords.y;
+				keystream >> tileCords.x >> tileCords.y >> tileLayer >> tileSolidity;
 				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y || tileLayer >= Sheet::Num_Layers) { continue; }
 				Tile* tile = new Tile();
 				tile->m_properties = itr->second;
@@ -200,7 +213,7 @@ void Map::LoadMap(const std::string& i_path) {
 			else if (type == "ENTITY") {
 				std::string name; 
 				keystream >> name;
-				if (name == "PLAYER" && m_playerId != -1) {
+				if (name == "PLAYER" && m_playerId == -1) {
 					continue;
 				}
 				int entityId = m_context->m_entityManager->AddEntity(name);
@@ -223,3 +236,4 @@ TileInfo* Map::GetDefaultTile() { return &m_defaultTile; }
 unsigned int Map::GetTileSize()const { return Sheet::Tile_Size; }
 const sf::Vector2u& Map::GetMapSize() const { return m_maxMapSize; }
 const sf::Vector2f& Map::GetPlayerStart() const { return m_playerStart; }
+int Map::GetPlayerId() { return m_playerId; }

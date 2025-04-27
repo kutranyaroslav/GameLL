@@ -5,7 +5,7 @@ State_MainMenu::State_MainMenu(StateManager* i_stateManager) :
 
 void State_MainMenu::onCreate() {
 
-	m_font.loadFromFile("D:/Programming/SFML_5/SFML_5/ARIAL.TTF");
+	m_font.loadFromFile(Utils::GetWorkingDirectory()+"Assets/Fonts/ARIAL.TTF");
 	m_text.setFont(m_font);
 	m_text.setString(sf::String("MAIN MENU"));
 	m_text.setCharacterSize(18);

@@ -13,7 +13,7 @@ void State_intro::onCreate(){
 	m_introSprite.setOrigin(m_introTexture.getSize().x/2 , m_introTexture.getSize().y/2);
 	m_introSprite.setPosition(windowSize.x / 2.0f, 0);
 	
-	m_font.loadFromFile("D:/Programming/SFML_5/SFML_5/ARIAL.TTF");
+	m_font.loadFromFile( Utils::GetWorkingDirectory() + "Assets/Fonts/Arima-VariableFont_wght.ttf");
 	
 	m_text.setFont(m_font);
 	m_text.setString({ "Press space to continue" });
@@ -53,7 +53,7 @@ void State_intro::Continue(EventDetails* i_details) {
 		m_stateManager->SwitchTo(StateType::MainMenu);
 	}
 }
-void State_intro::Activate() {
+ void State_intro::Activate() {
 
 }
 void State_intro::Deactivate() {

@@ -45,10 +45,24 @@ struct Tile {
 	bool m_warp;
 	bool m_solid;
 };
-
+struct TileKey {
+	int id; 
+	int row; 
+	bool operator==(const TileKey& other)const {
+		return id == other.id && row == other.row;
+	}
+};
+namespace std {
+	template <>
+	struct hash<TileKey> {
+		std::size_t operator()(const TileKey& k) const {
+			return std::hash<int>()(k.id) ^ (std::hash<int>()(k.row) << 1);
+		}
+	};
+}
 
 using TileMap = std::unordered_map<TileId, Tile*>;
-using TileSet = std::unordered_map<TileId, TileInfo*>;
+using TileSet = std::unordered_map<TileKey, TileInfo*>;
 class Map
 {
 public:
@@ -64,6 +78,7 @@ public:
 	void LoadNext();
 	void Update(float i_dT);
 	void Draw(unsigned int i_layer);
+	int GetPlayerId();
 private:
 	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
 	void LoadTiles(const std::string& i_path, const std::string& i_texture);
@@ -78,7 +93,7 @@ private:
 	sf::Vector2f m_playerStart;
 	unsigned int m_tileCount;
 	unsigned int m_tileSetCount;
-	unsigned int m_playerId;
+	int m_playerId; 
 	float m_mapGravity;
 	std::string m_nextMap;
 	bool m_loadNextMap;

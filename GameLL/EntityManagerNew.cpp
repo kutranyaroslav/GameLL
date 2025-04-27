@@ -29,7 +29,7 @@ int EntityManagerNew::AddEntity(const Bitmask& i_mask) {
 int EntityManagerNew::AddEntity(const std::string& i_file) {
 	int EntityId = -1;
 	std::ifstream file;
-	file.open(Utils::GetWorkingDirectory() + "Media/Entities/" + i_file + ".entity");
+	file.open(Utils::GetWorkingDirectory() + "Assets/Entities/" + i_file + ".entity");
 	if (!file.is_open()) {
 		return -1;
 	}
@@ -58,7 +58,7 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 			C_Base* component = GetComponent<C_Base>(EntityId,(Component) c_id);
 			if (!component) { continue; }
 			keystream >> *component;
-			if (component->getComponentType() == Component::SpriteSheet) {
+			if (component->getComponentType() == Component::SpriteSheet) { 
 				C_SpriteSheet* sheet = (C_SpriteSheet*)component;
 				sheet->Create(m_textureManager);
 			}

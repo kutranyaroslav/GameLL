@@ -18,7 +18,7 @@ Game::Game():
 Game::~Game(){}
 
 void Game::Update() {
-	m_window.Update();
+ 	m_window.Update();
 	m_stateManager.Update(m_elapsed);
 }
 Window* Game::getWindow() {

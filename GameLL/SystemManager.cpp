@@ -38,7 +38,7 @@ void SystemManager::HandleEvents() {
 		while (event.second.ProcessEvents(id)) {
 			for (auto& system : m_systems) {
 				if (system.second->HasEntity(event.first)) {
-					system.second->HandleEvent(event.first, (EventId)id);
+					system.second->HandleEvent(event.first, static_cast<EntityEvent> (id));
 				}
 			}
 		}

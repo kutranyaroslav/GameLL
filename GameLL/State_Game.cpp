@@ -27,7 +27,7 @@ void State_Game::onCreate() {
 	m_testMap = new Map(m_stateManager->GetSharedContext(), this);
 	m_testMap->LoadMap("/Assets/maps/MAP1.map");
 
-	m_player = m_testMap->GetPLayerId();
+	m_player = m_testMap->GetPlayerId();
 }
 
 void State_Game::onDestroy() {
