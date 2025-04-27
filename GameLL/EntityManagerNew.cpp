@@ -2,14 +2,15 @@
 #include "SystemManager.h"
 #include "C_SpriteSheet.h"
 #include "C_Position.h"
+#include "C_Movable.h"
 EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr):
 	m_systems(i_systemMgr), m_textureManager(i_textureMgr), m_idCounter(0)
 {
 	AddComponentType<C_Position>(Component::Position);
 	AddComponentType<C_SpriteSheet>(Component::SpriteSheet);
-	/*AddComponentType<C_State>(Component::State);
+	/*AddComponentType<C_State>(Component::State);*/
 	AddComponentType<C_Movable>(Component::Movable);
-	AddComponentType<C_Controller>(Component::Controller);
+	/*AddComponentType<C_Controller>(Component::Controller);
 	AddComponentType <C_Collidable> (Component::Collidable);*/
 }
 

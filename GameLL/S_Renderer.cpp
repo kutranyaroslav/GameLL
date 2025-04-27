@@ -6,7 +6,7 @@ S_Renderer::S_Renderer(SystemManager* i_systemMgr) :
 	req.turnOnBit((unsigned int)Component::SpriteSheet);
 	m_requiredComponents.push_back(req);
 	req.Clear();
-	//m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Direction_Changed,this);
+	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Direction_Changed,this);
 }
 S_Renderer::~S_Renderer(){}
 

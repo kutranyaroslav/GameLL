@@ -7,7 +7,7 @@
 using EntityList = std::vector<EntityId>; 
 using Requirements = std::vector<Bitmask>;
 
-class S_Base: Observer
+class S_Base: public Observer
 {
 public: 
 	S_Base(const System& i_id, SystemManager* i_systemMgr);
