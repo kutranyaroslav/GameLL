@@ -17,7 +17,7 @@ void S_Movement::Update(float i_dT) {
 		C_Position* position = entities->GetComponent<C_Position>(entity, Component::Position);
 		C_Movable* movable = entities->GetComponent<C_Movable>(entity, Component::Movable);
 		MovementStep(i_dT,movable, position);
-		position->MoveBy(movable->GetVelocity()* i_dT);
+		position->MoveBy(sf::Vector2f((movable->GetVelocity().x* i_dT),(movable->GetVelocity().y * i_dT)));
 	}
 }
 
