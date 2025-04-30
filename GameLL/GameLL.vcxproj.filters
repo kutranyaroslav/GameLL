@@ -120,6 +120,12 @@
     <ClCompile Include="S_Movement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C_State.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="S_State.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -228,6 +234,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="S_Movement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C_State.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="S_State.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
