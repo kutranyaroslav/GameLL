@@ -140,6 +140,7 @@
     <ClCompile Include="Bitmask.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="C_Base.cpp" />
+    <ClCompile Include="C_Controller.cpp" />
     <ClCompile Include="C_Drawable.cpp" />
     <ClCompile Include="C_Movable.cpp" />
     <ClCompile Include="C_Position.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="State_Paused.cpp" />
     <ClCompile Include="SystemManager.cpp" />
     <ClCompile Include="S_Base.cpp" />
+    <ClCompile Include="S_Control.cpp" />
     <ClCompile Include="S_Movement.cpp" />
     <ClCompile Include="S_Renderer.cpp" />
     <ClCompile Include="S_State.cpp" />
@@ -179,6 +181,7 @@
     <ClInclude Include="Bitmask.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="C_Base.h" />
+    <ClInclude Include="C_Controller.h" />
     <ClInclude Include="C_Drawable.h" />
     <ClInclude Include="C_Movable.h" />
     <ClInclude Include="C_Position.h" />
@@ -205,6 +208,7 @@
     <ClInclude Include="State_Paused.h" />
     <ClInclude Include="SystemManager.h" />
     <ClInclude Include="S_Base.h" />
+    <ClInclude Include="S_Control.h" />
     <ClInclude Include="S_Movement.h" />
     <ClInclude Include="S_Renderer.h" />
     <ClInclude Include="S_State.h" />
