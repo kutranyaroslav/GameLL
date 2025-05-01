@@ -28,3 +28,9 @@ void S_Control::MoveEntity(const EntityId& i_entity, const Direction& i_dir) {
 	C_Movable* mov = m_systemMgr->GetEntityManager()->GetComponent<C_Movable>(i_entity, Component::Movable);
 	mov->Move(i_dir);
 }
+void S_Control::Update(float i_dT) {
+	return;
+}
+void S_Control::Notify(const Message& i_message) {
+	return;
+}
