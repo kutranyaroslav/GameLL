@@ -1,5 +1,6 @@
 #include "State_Game.h"
 #include "S_Movement.h"
+#include "S_Collision.h"
 State_Game::State_Game(StateManager* i_stateManager) :
 	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager)
 {}
@@ -27,7 +28,9 @@ void State_Game::onCreate() {
 	m_testMap = new Map(m_stateManager->GetSharedContext(), this);
 	m_testMap->LoadMap("/Assets/maps/MAP1.map");
 	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetMap(m_testMap);
+	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetMap(m_testMap);
 	m_player = m_testMap->GetPlayerId();
+
 }
 
 void State_Game::onDestroy() {

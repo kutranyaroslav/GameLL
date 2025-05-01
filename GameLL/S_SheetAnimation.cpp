@@ -66,5 +66,5 @@ void S_SheetAnimation::ChangeAnimation(const EntityId& i_entity,const std::strin
 }
 
 void S_SheetAnimation::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) {
-	return;
+	return; 
 }
