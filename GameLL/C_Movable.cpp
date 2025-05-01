@@ -44,7 +44,7 @@ void C_Movable::Accelerate(float i_x, float i_y) {
 	m_acceleration += sf::Vector2f(i_x, i_y);
 }
 
-void C_Movable::Move(Direction& i_dir) {
+void C_Movable::Move(const Direction& i_dir) {
 	if (i_dir == Direction::Up) {
 		m_acceleration.y -= m_speed.y;
 	}

@@ -11,7 +11,7 @@ public:
 	void ApplyFriction(const sf::Vector2f& i_vec);
 	void Accelerate(float i_x, float i_y);
 	void Accelerate(const sf::Vector2f& i_vec);
-	void Move(Direction& dir);
+	void Move(const Direction& dir);
 	sf::Vector2f GetVelocity();
 	sf::Vector2f GetSpeed();
 	sf::Vector2f GetAcceleration();
