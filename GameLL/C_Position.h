@@ -17,7 +17,7 @@ public:
 		m_positionOld = m_position; 
 		m_position = sf::Vector2f(i_x, i_y);
 	}
-	void SetPosition(sf::Vector2f& i_pos) {
+	void SetPosition(sf::Vector2f i_pos) {
 		m_positionOld = m_position;
 		m_position = i_pos;
 	}

@@ -5,6 +5,7 @@
 #include "C_State.h"
 #include "C_Controller.h"
 #include "C_Movable.h"
+#include "C_Collidable.h"
 EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr):
 	m_systems(i_systemMgr), m_textureManager(i_textureMgr), m_idCounter(0)
 {
@@ -13,7 +14,7 @@ EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i
 	AddComponentType<C_State>(Component::State);
 	AddComponentType<C_Movable>(Component::Movable);
 	AddComponentType<C_Controller>(Component::Controller);
-	/*AddComponentType <C_Collidable>(Component::Collidable);*/
+	AddComponentType <C_Collidable>(Component::Collidable);
 }
 
 EntityManagerNew::~EntityManagerNew() { Purge(); }
