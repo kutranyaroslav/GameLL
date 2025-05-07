@@ -41,9 +41,10 @@ void S_Movement::MovementStep(float i_dT, C_Movable* i_movable, C_Position* i_po
 
 const sf::Vector2f& S_Movement::GetTileFriction(unsigned int i_elevation, unsigned int i_x, unsigned int i_y) {
 	Tile* t = nullptr;
-	while (!t && i_elevation >= 0) {
+	int elevation = static_cast<int>(i_elevation);
+	while (!t && elevation >= 0) {
 		t = m_gameMap->GetTile(i_x, i_y, i_elevation);
-		--i_elevation;
+		--elevation;
 	}
 	return (t ? t->m_properties->m_friction : m_gameMap->GetDefaultTile()->m_friction);
 }

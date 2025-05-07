@@ -7,7 +7,7 @@ Map::Map(SharedContext* i_context, BaseState* i_state):
 	m_tileCount(0), m_tileSetCount(0), m_mapGravity(512.f), m_loadNextMap(false),
 	m_defaultTile(i_context)
 {
-	m_playerId = -1;
+	
 	m_entityManager = m_context->m_entityManager;
 	m_context->m_gameMap = this;
 	LoadTiles("Tiles.cfg", "Tilesheet");
@@ -25,9 +25,7 @@ Map::~Map() {
 	{
 		return nullptr;
 	}
-	if (i_layer > 0) {
-		std::cout << "bla bla" << std::endl;
-	}
+	
 	auto itr = m_tilemap.find(ConvertCordinates(i_x, i_y, i_layer));
 	return itr != m_tilemap.end() ? itr->second : nullptr;
 }

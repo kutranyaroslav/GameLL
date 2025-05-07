@@ -4,6 +4,7 @@ S_State::S_State(SystemManager* i_systemMgr) : S_Base(System::State,i_systemMgr)
 	Bitmask req;
 	req.turnOnBit((unsigned int)Component::State);
 	m_requiredComponents.push_back(req);
+	req.Clear();
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Move, this);
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Switch_State, this);
 }
