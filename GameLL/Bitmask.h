@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h> 
+#include <iostream>
 using Bitset = uint32_t;
 class Bitmask
 {
@@ -8,10 +9,13 @@ public:
 	Bitmask(const Bitset& i_bits):bits(i_bits){}
 	Bitset getMask() const { return bits; }
 	void setMask(const Bitset& i_bits) {bits = i_bits;}
-	bool Matches(const Bitmask& i_value, const Bitset& i_relevant = 0) const {
+	bool Matches(const Bitmask& i_bits, const Bitset& i_relevant = 0) const {
+		std::cout << "[Matches] i_value: " << i_bits.getMask()
+			<< ", bits: " << bits
+			<< ", relevant: " << i_relevant << std::endl;
 		return(i_relevant ?
-			((i_value.getMask() & i_relevant) == (bits & i_relevant))
-			: (i_value.getMask() == bits));
+			((i_bits.getMask() & i_relevant) == (bits & i_relevant))
+			: (i_bits.getMask() == bits));
 	}
 	bool getBit(const unsigned int& i_pos) const {
 		return((bits & (1 << i_pos)) != 0);

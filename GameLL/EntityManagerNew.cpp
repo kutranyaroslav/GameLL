@@ -47,7 +47,7 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 
 		}
 		else if (type == "Attributes") {
-			if (EntityId == -1) { continue; }
+			if (EntityId != -1) { continue; }
 			Bitset set = 0;
 			Bitmask mask;
 			keystream >> set;
@@ -67,7 +67,7 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 				sheet->Create(m_textureManager);
 			}
 		}
-	}
+ 	}
 	file.close();
 	return EntityId;
 }

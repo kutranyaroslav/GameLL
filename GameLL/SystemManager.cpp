@@ -34,7 +34,7 @@ void SystemManager::Update(float i_dT) {
 	for (auto& itr : m_systems) {
 		itr.second->Update(i_dT);
 	}
-	HandleEvents();
+    HandleEvents();
 }
 void SystemManager::HandleEvents() {
 	for (auto& event : m_entityEvents)

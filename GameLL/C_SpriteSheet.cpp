@@ -9,7 +9,7 @@ void C_SpriteSheet::ReadIn(std::stringstream& i_stream) {
 void C_SpriteSheet::Create(TextureManager* i_textureMgr, const std::string& i_name) {
 	if (m_spriteSheet) { return; }
 	m_spriteSheet = new SpriteSheet(i_textureMgr);
-	m_spriteSheet->LoadSheet("Media/SpriteSheets/" + (i_name != "" ? i_name : m_sheetName) + ".sheet");
+	m_spriteSheet->LoadSheet("Assets\\SpriteSheets\\" + (i_name != "" ? i_name : m_sheetName) + ".sheet");
 }
 void C_SpriteSheet::UpdatePosition(const sf::Vector2f& i_vec) {
 	m_spriteSheet->SetSpritePos(i_vec);
