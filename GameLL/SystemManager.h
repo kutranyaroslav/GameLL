@@ -24,6 +24,7 @@ public:
 	void AddEvent(const EntityId& i_entity, const EventId& i_event);
 	void Update(float i_dT);
 	void HandleEvents();
+	void ProccesLastEvent(S_Base* i_system, const EntityId& i_entity);
 	void Draw(Window* i_wind, unsigned int i_elevation);
 	void EntityModified(const EntityId& i_entity, const Bitmask& i_bits);
 	void RemoveEntity(const EntityId& i_entity);

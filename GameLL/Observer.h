@@ -1,7 +1,9 @@
 #pragma once
 #include <vector>
+#include <queue>
 #include <unordered_map>
 #include "EntityMessages.h"
+#include "C_State.h"
 using MessageType = unsigned int;
 struct TwoFloats { float x; float y; };
 class Observer;
@@ -68,6 +70,17 @@ public:
 		if (itr == m_communicators.end()) { return; }
 		itr->second.BroadCast(i_msg);
 	}
+	void QueueMessage(const Message& i_msg) {
+		m_queuedMessages.push(i_msg);
+	}
+	void ProcessQueuedMessages() {
+		while (!m_queuedMessages.empty())
+		{
+			Dispatch(m_queuedMessages.front());
+			m_queuedMessages.pop();
+		}
+	}
 private:
 	Subscriptions m_communicators;
+	std::queue<Message> m_queuedMessages;
 };

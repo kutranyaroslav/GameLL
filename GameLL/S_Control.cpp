@@ -31,6 +31,6 @@ void S_Control::MoveEntity(const EntityId& i_entity, const Direction& i_dir) {
 void S_Control::Update(float i_dT) {
 	return;
 }
-void S_Control::Notify(const Message& i_message) {
+void S_Control::Notify (const Message& i_message) {
 	return;
 }

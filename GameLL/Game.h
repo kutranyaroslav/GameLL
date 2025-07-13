@@ -22,5 +22,6 @@ private:
 	EntityManagerNew m_entityManager;
 	sf::Clock m_clock;
 	sf::Time m_elapsed;
+	unsigned int manualFrame;
 };
 

@@ -52,10 +52,10 @@ void C_Movable::Move(const Direction& i_dir) {
 		m_acceleration.y += m_speed.y;
 	}
 	else if (i_dir == Direction::Right) {
-		m_acceleration.x -= m_speed.x;
+		m_acceleration.x += m_speed.x;
 	}
 	else if (i_dir == Direction::Left) {
-		m_acceleration.x += m_speed.x;
+		m_acceleration.x -= m_speed.x;
 	}
 }
 
@@ -68,9 +68,11 @@ sf::Vector2f C_Movable::GetSpeed() {
 sf::Vector2f C_Movable::GetAcceleration() {
 	return m_acceleration;
 }
+Direction C_Movable::GetDirection() { return m_direction; }
 float C_Movable::GetMaxVelocity() {
 	return m_velocityMax;
 }
+
 
 void C_Movable::SetAcceleration(const sf::Vector2f& i_vec) {
 	m_acceleration = i_vec;
@@ -81,3 +83,4 @@ void C_Movable::SetVelocity(const sf::Vector2f& i_vec) {
 void C_Movable::SetDirection(const Direction& i_dir) {
 	m_direction = i_dir;
 }
+
