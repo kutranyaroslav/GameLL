@@ -72,7 +72,6 @@ void S_Renderer::SetSheetDirection(const EntityId& i_entity, const Direction& i_
 	}
 	C_SpriteSheet* sheet = entities->GetComponent<C_SpriteSheet>(i_entity, Component::SpriteSheet);
 	sheet->GetSpriteSheet()->SetSpriteDir(i_dir);
-
 }
 
 void S_Renderer::SortDrawables() {

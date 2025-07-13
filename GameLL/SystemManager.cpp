@@ -8,11 +8,11 @@
 #include "S_State.h"
 #include "S_Collision.h"
 SystemManager::SystemManager() :m_entityManager(nullptr){
-	m_systems[System::State] = new S_State(this);
 	m_systems[System::Control] = new S_Control(this);
-	m_systems[System::Collision] = new S_Collision(this);
 	m_systems[System::Movement] = new S_Movement(this);
+	m_systems[System::State] = new S_State(this);
 	m_systems[System::Renderer] = new S_Renderer(this);
+	m_systems[System::Collision] = new S_Collision(this);
 	m_systems[System::SheetAnimation] = new S_SheetAnimation(this);
 
 }
@@ -35,6 +35,7 @@ void SystemManager::Update(float i_dT) {
 		itr.second->Update(i_dT);
 	}
     HandleEvents();
+	m_messages.ProcessQueuedMessages();
 }
 void SystemManager::HandleEvents() {
 	for (auto& event : m_entityEvents)
@@ -90,4 +91,12 @@ void SystemManager::PurgeSystems() {
 		delete system.second;
 	}
 	m_systems.clear();
+}
+
+void SystemManager::ProccesLastEvent(S_Base* i_system, const EntityId& i_entity) {
+	EventId i_event = 0;
+	if (m_entityEvents[i_entity].ProcessEvents(i_event)) {
+		i_system->HandleEvent(i_entity, static_cast<EntityEvent> (i_event));
+	}
+	
 }

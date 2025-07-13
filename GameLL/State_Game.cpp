@@ -1,6 +1,7 @@
 #include "State_Game.h"
 #include "S_Movement.h"
 #include "S_Collision.h"
+#include "C_State.h"
 State_Game::State_Game(StateManager* i_stateManager) :
 	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager)
 {}
@@ -48,6 +49,7 @@ void State_Game::Update(const sf::Time& i_time) {
 	m_testMap->Update(i_time.asSeconds());
 	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
 	
+
 }
 
 void State_Game::Draw() {
@@ -102,20 +104,21 @@ void State_Game::UpdateCamera() {
 	}
 }
 
-void State_Game::Move(EventDetails* i_details) {
-	Message msg((MessageType)EntityMessage::Move);
+void State_Game::Move(EventDetails* i_details){
+	
+	Message msg2((MessageType)EntityMessage::Move);
 	if (i_details->m_name == "Player_Moveleft") {
-		msg.m_int = (int)Direction::Left;
+		msg2.m_int = (int)Direction::Left;
 	}
 	else if (i_details->m_name == "Player_Moveright") {
-		msg.m_int = (int)Direction::Right;
+		msg2.m_int = (int)Direction::Right;
 	}
 	else if (i_details->m_name == "Player_Moveup") {
-		msg.m_int = (int)Direction::Up;
+		msg2.m_int = (int)Direction::Up;
 	}
 	else if (i_details->m_name == "Player_Movedown") {
-		msg.m_int = (int)Direction::Down;
+		msg2.m_int = (int)Direction::Down;
 	}
-	msg.m_receiver = m_player;
-	m_stateManager->GetSharedContext()->m_systemManager->GetMessageHandler()->Dispatch(msg);
+	msg2.m_receiver = m_player;
+	m_stateManager->GetSharedContext()->m_systemManager->GetMessageHandler()->Dispatch(msg2);
 }

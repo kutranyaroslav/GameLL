@@ -2,6 +2,10 @@
 #include "Anim_Base.h"
 #include "SpriteSheet.h"
 void Anim_Directional::CropSprite() {
+	if (m_spriteSheet->GetSpriteDir() == Direction::Left) {
+		int x = m_rowFrame;
+		int y = (int)m_spriteSheet->GetSpriteDir();
+	}
 	sf::IntRect rect(m_spriteSheet->GetSpriteSize().x * m_currentFrame,
 		m_spriteSheet->GetSpriteSize().y * (m_rowFrame + (short)m_spriteSheet->GetSpriteDir()), 
 		m_spriteSheet->GetSpriteSize().x , m_spriteSheet->GetSpriteSize().y);

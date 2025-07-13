@@ -1,4 +1,5 @@
 #include "S_SheetAnimation.h"
+#include "C_Movable.h"
 S_SheetAnimation::S_SheetAnimation(SystemManager* i_systemMgr) : S_Base(System::SheetAnimation, i_systemMgr) {
 	Bitmask req; 
 	req.turnOnBit((unsigned int)Component::SpriteSheet);
@@ -38,15 +39,21 @@ void S_SheetAnimation::Update(float i_dT) {
 void S_SheetAnimation::Notify(const Message& i_message) {
 	if (!HasEntity(i_message.m_receiver)) { return; }
 	EntityMessage m = (EntityMessage)i_message.m_type;
+	C_SpriteSheet* sprite = m_systemMgr->GetEntityManager()->GetComponent<C_SpriteSheet>(i_message.m_receiver, Component::SpriteSheet);
+	C_Movable* mov = m_systemMgr->GetEntityManager()->GetComponent<C_Movable>(i_message.m_receiver, Component::Movable);
 	switch (m) {
-	case EntityMessage::State_Changed:
+	case EntityMessage::State_Changed: {
 		EntityState s = (EntityState)i_message.m_int;
 		switch (s) {
 		case EntityState::Idle:
+			/// in case of idle we change the direction to the right because for now i have only one
+			/// direction of animation idle if it will be changed then u gotta change this 
+			sprite->GetSpriteSheet()->SetSpriteDir(Direction::Right);
+			mov->SetDirection(Direction::Right);
 			ChangeAnimation(i_message.m_receiver, "Idle", true, true);
 			break;
 		case EntityState::Walking:
-			ChangeAnimation(i_message.m_receiver, "Walk", true, true);
+			ChangeAnimation(i_message.m_receiver, "Walk", true, false);
 			break;
 		case EntityState::Attacking:
 			ChangeAnimation(i_message.m_receiver, "Attack", true, false);
@@ -57,7 +64,9 @@ void S_SheetAnimation::Notify(const Message& i_message) {
 			ChangeAnimation(i_message.m_receiver, "Death", true, false);
 			break;
 		}
-	break;
+		break;
+	}
+		
 	}
 }
 void S_SheetAnimation::ChangeAnimation(const EntityId& i_entity,const std::string& i_anim, bool i_play, bool i_loop) {

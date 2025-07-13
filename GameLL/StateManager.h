@@ -51,7 +51,9 @@ class StateManager;
 
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
-		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), m_systemManager(nullptr) {}
+		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
+		m_systemManager(nullptr) {}
+	
 	Window* m_wind;
 	EventManager* m_eventManager;
 	Textbox* m_textbox;

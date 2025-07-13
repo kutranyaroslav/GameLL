@@ -11,14 +11,14 @@ Textbox::~Textbox() {
 void Textbox::Setup(int i_visible, int i_charSize, int i_width, sf::Vector2f i_screenPos) {
 	m_numVisible = i_visible;
 	sf::Vector2f i_offset(2.0f, 2.0f);
-	m_font.loadFromFile(Utils::GetWorkingDirectory() + "Assets/Fonts/ARRIAL.ttf");
+	m_font.loadFromFile(Utils::GetWorkingDirectory() + "Assets/Fonts/ARIAL.ttf");
 	m_content.setFont(m_font);
 	m_content.setString("");
 	m_content.setCharacterSize(i_charSize);
 	m_content.setFillColor(sf::Color::White);
 	m_content.setPosition(i_screenPos + i_offset);
 
-	m_backDrop.setSize(sf::Vector2f((i_visible * (i_charSize * 3.0f)), (i_visible * (i_charSize * 1.2f))));
+	m_backDrop.setSize(sf::Vector2f((i_visible * (i_charSize * 2.0f)), (i_visible * (i_charSize * 1.2f))));
 	m_backDrop.setFillColor(sf::Color(90, 90, 90, 90));
 	m_backDrop.setPosition(i_screenPos);
 }

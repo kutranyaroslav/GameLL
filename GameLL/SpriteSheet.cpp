@@ -52,6 +52,9 @@ bool SpriteSheet::LoadSheet(const std::string& i_file) {
 			else if (type == "Animation") {
 				std::string name;
 				keystream >> name;
+				if (name == "Walk") {
+					std::cerr << "as fuck tired of this shit"<< std::endl;
+				}
 				if (m_animations.find(name) != m_animations.end()) {
 					std::cerr << "Duplicate Animation " << name << "\n";
 					continue;
@@ -102,7 +105,10 @@ void SpriteSheet::SetSpritePos(const sf::Vector2f& i_pos) {
 void SpriteSheet::SetSpriteDir(const Direction& i_dir) {
 	if (m_direction == i_dir) { return; }
 	m_direction = i_dir;
-	m_animationCurrent->CropSprite();
+	/*if (m_animationCurrent->IsPlaying()) {
+		m_animationCurrent->Stop(); 
+	}
+	m_animationCurrent->CropSprite();*/
 }
 Direction SpriteSheet::GetSpriteDir() {
 	return m_direction;
@@ -113,11 +119,15 @@ void SpriteSheet::CropSprite(const sf::IntRect& i_rect) {
 }
 
 bool SpriteSheet::SetAnimation(const std::string& i_name, const bool& i_play, const bool& i_loop) {
+
+	if (i_name == "Walk") {
+	//	__debugbreak();
+	}
 	auto itr = m_animations.find(i_name);
 	if (itr == m_animations.end()) { return false; }
 	if (itr->second == m_animationCurrent) { return false;}
 	if (m_animationCurrent) { m_animationCurrent->Stop(); }
-	m_animationCurrent = itr->second;
+ 	m_animationCurrent = itr->second;
 	m_animationCurrent->SetLooping(i_loop);
 	if (i_play) { m_animationCurrent->Play(); }
 	m_animationCurrent->CropSprite();

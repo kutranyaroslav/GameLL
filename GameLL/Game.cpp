@@ -4,6 +4,7 @@ Game::Game():
 	m_stateManager(&m_context),
 	m_entityManager(&m_systemManager, &m_textureManager)
 {
+	manualFrame = 0;
 	m_systemManager.SetEntityManager(&m_entityManager);
 	m_context.m_wind = &m_window;
 	m_context.m_eventManager = m_window.GetEventManager();
@@ -12,14 +13,16 @@ Game::Game():
 	m_context.m_stateManager = &m_stateManager;
 	m_context.m_entityManager = &m_entityManager;
 	m_context.m_systemManager = &m_systemManager;
+	
 	m_stateManager.SwitchTo(StateType::Intro);
-	m_context.m_textbox->Add("You entered the game");
 } 
 Game::~Game(){}
 
 void Game::Update() {
  	m_window.Update();
 	m_stateManager.Update(m_elapsed);
+	manualFrame++;
+	m_window.GetTextbox()->Add(std::to_string(manualFrame));
 }
 Window* Game::getWindow() {
 	return &m_window;
@@ -36,5 +39,5 @@ void Game::LateUpdate() {
 	RestartClock();
 }
 void Game::RestartClock() {
-	m_elapsed += m_clock.restart();
+	m_elapsed = m_clock.restart();
 }

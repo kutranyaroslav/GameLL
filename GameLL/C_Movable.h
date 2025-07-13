@@ -15,6 +15,7 @@ public:
 	sf::Vector2f GetVelocity();
 	sf::Vector2f GetSpeed();
 	sf::Vector2f GetAcceleration();
+	Direction GetDirection();
 	float GetMaxVelocity();
 	void SetAcceleration(const sf::Vector2f& i_vec);
 	void SetVelocity(const sf::Vector2f& i_vec);

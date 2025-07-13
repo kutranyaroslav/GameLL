@@ -1,4 +1,6 @@
 #include "S_State.h"
+#include "S_Movement.h"
+#include "S_Control.h"
 
 S_State::S_State(SystemManager* i_systemMgr) : S_Base(System::State,i_systemMgr) {
 	Bitmask req;
@@ -13,12 +15,16 @@ void S_State::Update(float i_dT) {
 	for (auto& entity : m_entities) {
 		C_State* state = entities->GetComponent<C_State>(entity, Component::State);
 		if (state->GetState() == EntityState::Walking) {
+			if (state->GetDelay() > 0.f) {
+				state->GetDelay() -= i_dT;
+				continue;
+			}
 			Message msg((MessageType)EntityMessage::IsMoving);
 			msg.m_receiver = entity;
 			m_systemMgr->GetMessageHandler()->Dispatch(msg);
 		}
 	}
-}
+  }
 void S_State::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) {
 	switch (i_event)
 	{
@@ -52,8 +58,10 @@ void S_State::Notify(const Message& i_msg) {
 		}
 		m_systemMgr->AddEvent(i_msg.m_receiver, (EventId)e);
 		ChangeState(i_msg.m_receiver, EntityState::Walking, false);
-	}
+		m_systemMgr->GetEntityManager()->GetComponent<C_State>(i_msg.m_receiver, Component::State)->SetDelay(0.4f);
 		break;
+	}
+		
 
 	case EntityMessage::Switch_State:
 		ChangeState(i_msg.m_receiver, (EntityState)i_msg.m_int, false);
@@ -70,9 +78,9 @@ void S_State::ChangeState(const EntityId& i_entity, const EntityState& i_state, 
 			return;
 		}
 		state->SetState(i_state);
-		Message msg((MessageType)EntityMessage::State_Changed);
-		msg.m_receiver = i_entity;
-		msg.m_int = (int)i_state;
-		m_systemMgr->GetMessageHandler()->Dispatch(msg);
+		Message msgDelayed((MessageType)EntityMessage::State_Changed);
+		msgDelayed.m_receiver = i_entity;
+		msgDelayed.m_int = (int)i_state;
+		m_systemMgr->GetMessageHandler()->QueueMessage(msgDelayed);
 	}
 }

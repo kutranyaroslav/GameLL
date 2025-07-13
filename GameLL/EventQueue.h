@@ -1,19 +1,19 @@
 #pragma once
-#include <queue>
+#include <deque>
 using EventId = unsigned int;
 
 class EventQueue
 {
 public:
-	void AddEvent(const EventId& i_event) { m_events.push(i_event); }
-	void Clear() { while (!m_events.empty()) { m_events.pop();  } }
+	void AddEvent(const EventId& i_event) { m_events.push_back(i_event); }
+	void Clear() { while (!m_events.empty()) { m_events.pop_back();  } }
 	bool ProcessEvents(EventId& i_id) {
 		if (m_events.empty()) { return false; }
-		i_id = m_events.front();
-		m_events.pop();
+		i_id = m_events.back();
+		m_events.pop_back();
 		return true;
 	}
 private:
-	std::queue<EventId> m_events;
+	std::deque<EventId> m_events;
 };
 
