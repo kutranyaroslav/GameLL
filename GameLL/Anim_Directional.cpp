@@ -15,7 +15,7 @@ void Anim_Directional::CropSprite() {
 void Anim_Directional::FrameStep() {
 	if (m_startFrame < m_endFrame) { ++m_currentFrame; }
 	else { --m_currentFrame; }
-	if ((m_startFrame < m_endFrame && m_currentFrame > m_endFrame)
+	if ((m_startFrame < m_endFrame && m_currentFrame >= m_endFrame)
 		|| (m_startFrame > m_endFrame && m_currentFrame < m_endFrame)) {
 		if (m_loop) 
 		{
@@ -28,6 +28,6 @@ void Anim_Directional::FrameStep() {
 }
 
 void Anim_Directional::ReadIn(std::stringstream& i_stream) {
-	i_stream >> m_startFrame >> m_endFrame >> m_rowFrame >> 
-		m_frameTime >> m_frameActionStart >> m_frameActionEnd;
+	i_stream >> m_startFrame >> m_endFrame >> m_rowFrame >>
+		m_frameTime >> m_frameActionStart >> m_frameActionEnd>> m_loop;
 }

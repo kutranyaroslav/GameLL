@@ -52,9 +52,6 @@ bool SpriteSheet::LoadSheet(const std::string& i_file) {
 			else if (type == "Animation") {
 				std::string name;
 				keystream >> name;
-				if (name == "Walk") {
-					std::cerr << "as fuck tired of this shit"<< std::endl;
-				}
 				if (m_animations.find(name) != m_animations.end()) {
 					std::cerr << "Duplicate Animation " << name << "\n";
 					continue;
@@ -119,10 +116,6 @@ void SpriteSheet::CropSprite(const sf::IntRect& i_rect) {
 }
 
 bool SpriteSheet::SetAnimation(const std::string& i_name, const bool& i_play, const bool& i_loop) {
-
-	if (i_name == "Walk") {
-	//	__debugbreak();
-	}
 	auto itr = m_animations.find(i_name);
 	if (itr == m_animations.end()) { return false; }
 	if (itr->second == m_animationCurrent) { return false;}
