@@ -32,7 +32,7 @@ void Anim_Directional::FrameStep() {
 			m_currentFrame = m_startFrame;
 			return;
 		}
-		m_currentFrame = m_endFrameEast;
+		m_currentFrame = EndFrameFromDirection;
 		Pause();
 	}
 }

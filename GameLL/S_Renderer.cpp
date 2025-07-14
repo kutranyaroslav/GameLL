@@ -60,9 +60,6 @@ void S_Renderer::Render(Window* i_wind, unsigned int i_layer) {
 		drawableBounds.width = drawable->GetSize().x;
 		drawableBounds.height = drawable->GetSize().y;
 		if (!i_wind->GetViewSpace().intersects(drawableBounds)) {
-			if (entity == 0) {
-				__debugbreak();
-			}
 			continue;
 		}
 		drawable->Draw(i_wind->GetRenderWindow());
