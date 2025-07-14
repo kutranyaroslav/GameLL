@@ -4,7 +4,7 @@
 
 
 Anim_Base::Anim_Base(): m_currentFrame(0),m_startFrame(0),
-m_endFrame(0),m_rowFrame(0),m_frameTime(0.f),m_elapsedTime(0.f),
+m_endFrameEast(0),m_rowFrame(0),m_frameTime(0.f),m_elapsedTime(0.f),
 m_frameActionStart(-1),m_frameActionEnd(-1), m_loop(false), m_playing(false)
 {}
 Anim_Base::~Anim_Base(){}
@@ -14,7 +14,7 @@ void Anim_Base::SetSpriteSheet(SpriteSheet* i_spriteSheet) {
 }
 
 void Anim_Base::SetFrame(const unsigned int& i_frame) {
-	if ((i_frame >= m_startFrame && i_frame <= m_endFrame) || (i_frame >= m_endFrame && i_frame <= m_startFrame)) {
+	if ((i_frame >= m_startFrame && i_frame <= m_endFrameEast) || (i_frame >= m_endFrameEast && i_frame <= m_startFrame)) {
 		m_currentFrame = i_frame;
 	}
 }
@@ -45,7 +45,9 @@ void Anim_Base::Reset() {
 void Anim_Base::Update(const sf::Time& i_dT) {
 	if (!m_playing) { return; }
 	m_elapsedTime += i_dT.asSeconds();
-	if (m_elapsedTime < m_frameTime) { return; }
+	if (m_elapsedTime < m_frameTime) { 
+		return; 
+	}
 	FrameStep();
 	CropSprite();
 	m_elapsedTime = 0;

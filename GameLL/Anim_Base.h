@@ -34,7 +34,10 @@ protected:
 	virtual void ReadIn(std::stringstream& i_stream) = 0;
 	Frame m_currentFrame;
 	Frame m_startFrame;
-	Frame m_endFrame;
+	Frame m_endFrameEast;
+	Frame m_endFrameWest;
+	Frame m_endFrameNorth;
+	Frame m_endFrameSouth;
 	Frame m_rowFrame;
 	int m_frameActionStart;
 	int m_frameActionEnd;

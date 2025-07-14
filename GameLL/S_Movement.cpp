@@ -86,13 +86,6 @@ void S_Movement::HandleEvent(const EntityId& i_entity, const EntityEvent& i_even
 }
 void S_Movement::Notify(const Message& i_message) {
 	EntityManagerNew* eMgr = m_systemMgr->GetEntityManager();
-	if (eMgr->GetComponent<C_State>(i_message.m_receiver, Component::State)->GetState() == EntityState::Walking) {
-		C_Movable* mov  = eMgr->GetComponent<C_Movable>(i_message.m_receiver, Component::Movable);
-		Direction testDir = mov->GetDirection();
-		sf::Vector2f testVelocity = mov->GetVelocity();
-		sf::Vector2f testAcelleration = mov->GetAcceleration();
-		sf::Vector2f testSpeed = mov->GetSpeed();
-	}
 	EntityMessage m = (EntityMessage)i_message.m_type;
 	switch (m)
 

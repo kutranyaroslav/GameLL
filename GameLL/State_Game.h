@@ -18,8 +18,6 @@ public:
 	void Update(const sf::Time& i_time) override;
 	void MainMenu(EventDetails* i_details);
 	void Pause(EventDetails* i_details);
-	//Test integration of animations
-	void Cast(EventDetails* i_details);
 	
 	void Move(EventDetails* i_details);
 private:

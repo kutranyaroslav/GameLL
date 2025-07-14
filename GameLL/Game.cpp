@@ -22,7 +22,6 @@ void Game::Update() {
  	m_window.Update();
 	m_stateManager.Update(m_elapsed);
 	manualFrame++;
-	m_window.GetTextbox()->Add(std::to_string(manualFrame));
 }
 Window* Game::getWindow() {
 	return &m_window;

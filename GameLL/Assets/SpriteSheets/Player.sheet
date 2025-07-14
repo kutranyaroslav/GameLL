@@ -1,7 +1,7 @@
 Texture PlayerSprite
 Size 64 64
 Scale 1.0 1.0
-|Type|Name|StartFrame|EndFrame|Row|FrameTime|FrameActionStart|End|
+|Type|Name|StartFrame|EndFrame(E)|EndFrame(W)|EndFrame(N)|EndFram(S)|Row|FrameTime|FrameActionStart|End|Looping|
 AnimationType Directional
-Animation Idle 0 6 0 0.2 -1 -1
-Animation Walk 0 8 1 0.2 -1 -1
+Animation Idle 0 6 6 6 6 0 0.2 -1 -1 1
+Animation Walk 0 7 7 5 5 1 0.2 -1 -1 0
