@@ -2,6 +2,7 @@
 #include "S_Movement.h"
 #include "S_Collision.h"
 #include "C_State.h"
+#include "C_Movable.h"
 State_Game::State_Game(StateManager* i_stateManager) :
 	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager)
 {}
@@ -23,13 +24,17 @@ void State_Game::onCreate() {
 	evMgr->AddCallback(StateType::Game, "Player_Moveup", &State_Game::Move, this);
 	evMgr->AddCallback(StateType::Game, "Player_Movedown", &State_Game::Move, this);
 
+	evMgr->AddCallback(StateType::Game, "Player_StopMoveleft", &State_Game::Stop, this);
+	evMgr->AddCallback(StateType::Game, "Player_StopMoveright", &State_Game::Stop, this);
+	evMgr->AddCallback(StateType::Game, "Player_StopMoveup", &State_Game::Stop, this);
+	evMgr->AddCallback(StateType::Game, "Player_StopMovedown", &State_Game::Stop, this);
 	//test integration of maps
 	m_testMap = new Map(m_stateManager->GetSharedContext(), this);
 	m_testMap->LoadMap("/Assets/maps/MAP1.map");
 	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetMap(m_testMap);
 	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetMap(m_testMap); 
 	m_player = m_testMap->GetPlayerId();
-
+	
 }
 
 void State_Game::onDestroy() {
@@ -113,4 +118,13 @@ void State_Game::Move(EventDetails* i_details){
 	}
 	msg2.m_receiver = m_player;
 	m_stateManager->GetSharedContext()->m_systemManager->GetMessageHandler()->Dispatch(msg2);
+}
+void State_Game::Stop(EventDetails* i_details) {
+	C_Movable* mov = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Movable>(m_player, Component::Movable);
+	if (i_details->m_name == "Player_StopMoveleft" || i_details->m_name == "Player_StopMoveright") {
+		mov->SetVelocity(sf::Vector2f(0.f, mov->GetVelocity().y));
+	}
+	else {
+		mov->SetVelocity(sf::Vector2f(mov->GetVelocity().x, 0.f));
+	}
 }

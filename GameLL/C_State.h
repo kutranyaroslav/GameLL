@@ -1,6 +1,6 @@
 #pragma once
 #include "C_Base.h"
-enum class EntityState{Idle,Walking,Attacking,Hurt,Dying};
+enum class EntityState{Idle,Walking,Attacking,Hurt,Dying,Changing_Axis};
 class C_State:public C_Base
 {
 public:

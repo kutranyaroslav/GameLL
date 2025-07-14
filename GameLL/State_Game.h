@@ -20,6 +20,7 @@ public:
 	void Pause(EventDetails* i_details);
 	
 	void Move(EventDetails* i_details);
+	void Stop(EventDetails* i_details);
 private:
 	void UpdateCamera();
 	sf::Texture m_texture;
