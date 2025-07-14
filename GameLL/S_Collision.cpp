@@ -27,21 +27,23 @@ void S_Collision::Update(float i_dT){
 
 void S_Collision::CheckOutOfBounds(C_Position* i_pos, C_Collidable* i_collidable) {
 	unsigned int TileSize = m_gameMap->GetTileSize();
-	if (i_pos->GetPosition().x < 0) {
-		i_pos->SetPosition(sf::Vector2f(0.f, i_pos->GetPosition().y));
+	if (i_pos->GetPosition().x < (i_collidable->GetCollidable().width)/2) {
+		i_pos->SetPosition(sf::Vector2f(i_collidable->GetCollidable().width/2, i_pos->GetPosition().y));
 		i_collidable->SetPosition(i_pos->GetPosition());
 	}
-	else if (i_pos->GetPosition().x > m_gameMap->GetMapSize().x * TileSize) {
-		i_pos->SetPosition(sf::Vector2f(m_gameMap->GetMapSize().x * TileSize, i_pos->GetPosition().y));
+	else if (i_pos->GetPosition().x > ((m_gameMap->GetMapSize().x * TileSize)-i_collidable->GetCollidable().width/2)) {
+		i_pos->SetPosition(sf::Vector2f(((m_gameMap->GetMapSize().x * TileSize)-i_collidable->GetCollidable().width/2), 
+			i_pos->GetPosition().y));
 		i_collidable->SetPosition(i_pos->GetPosition());
 	}
 
-	if (i_pos->GetPosition().y < 0) {
-		i_pos->SetPosition(sf::Vector2f(i_pos->GetPosition().x, 0.f));
+	if (i_pos->GetPosition().y < (i_collidable->GetCollidable().height)/2) {
+		i_pos->SetPosition(sf::Vector2f(i_pos->GetPosition().x, i_collidable->GetCollidable().height/2));
 		i_collidable->SetPosition(i_pos->GetPosition());
 	}
-	else if (i_pos->GetPosition().y > m_gameMap->GetMapSize().y * TileSize) {
-		i_pos->SetPosition(sf::Vector2f(i_pos->GetPosition().x, m_gameMap->GetMapSize().y * TileSize));
+	else if (i_pos->GetPosition().y > ((m_gameMap->GetMapSize().y * TileSize)- i_collidable->GetCollidable().height /2 )) {
+		i_pos->SetPosition(sf::Vector2f(i_pos->GetPosition().x, ((m_gameMap->GetMapSize().y * TileSize)- 
+			i_collidable->GetCollidable().height/2)));
 		i_collidable->SetPosition(i_pos->GetPosition());
 	}
 }

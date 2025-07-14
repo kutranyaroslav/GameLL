@@ -48,6 +48,9 @@ void State_Game::onDestroy() {
 
 void State_Game::Update(const sf::Time& i_time) {
 	SharedContext* context = m_stateManager->GetSharedContext();
+	context->m_textbox->Add("X is " + std::to_string(m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>
+		(m_player, Component::Position)->GetPosition().x) + " Y is " + std::to_string(m_stateManager->GetSharedContext()->m_entityManager
+			->GetComponent<C_Position>(m_player, Component::Position)->GetPosition().y));
 	UpdateCamera();
 	m_testMap->Update(i_time.asSeconds());
 	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
