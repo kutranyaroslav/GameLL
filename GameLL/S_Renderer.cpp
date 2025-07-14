@@ -56,10 +56,13 @@ void S_Renderer::Render(Window* i_wind, unsigned int i_layer) {
 		drawable = entities->GetComponent<C_Drawable>(entity, Component::SpriteSheet);
 		sf::FloatRect drawableBounds;
 		drawableBounds.left = position->GetPosition().x - (drawable->GetSize().x / 2);
-		drawableBounds.top = position->GetPosition().y - drawable->GetSize().y;
+		drawableBounds.top = position->GetPosition().y - (drawable->GetSize().y/2);
 		drawableBounds.width = drawable->GetSize().x;
 		drawableBounds.height = drawable->GetSize().y;
 		if (!i_wind->GetViewSpace().intersects(drawableBounds)) {
+			if (entity == 0) {
+				__debugbreak();
+			}
 			continue;
 		}
 		drawable->Draw(i_wind->GetRenderWindow());

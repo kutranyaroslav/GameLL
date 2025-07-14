@@ -12,13 +12,11 @@ void State_Game::onCreate() {
 	sf::Vector2u size = m_stateManager->GetSharedContext()->m_wind->GetWindowSize();
 	m_view.setSize(size.x, size.y);
 	m_view.setCenter(size.x / 2, size.y / 2);
-	m_view.zoom(0.6f);
 	m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->setView(m_view);
 
 	sf::Vector2u windowSize = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getSize();
 	evMgr->AddCallback(StateType::Game, "Key_Escape", &State_Game::MainMenu, this);
-	evMgr->AddCallback(StateType::Game, "Key_P", &State_Game::Pause, this);
-	evMgr->AddCallback(StateType::Game, "Key_R", &State_Game::Cast, this);
+	evMgr->AddCallback(StateType::Game, "Key_P", &State_Game::Pause, this);     
 
 	evMgr->AddCallback(StateType::Game, "Player_Moveleft", &State_Game::Move, this);
 	evMgr->AddCallback(StateType::Game, "Player_Moveright", &State_Game::Move, this);
@@ -71,12 +69,6 @@ void State_Game::Pause(EventDetails* i_details) {
 	m_stateManager->SwitchTo(StateType::Paused);
 }
 
-void State_Game::Cast(EventDetails* i_details) {
-	if (m_spriteSheet.SetAnimation("Cast", true, true)) {
-		Textbox* textbox = m_stateManager->GetSharedContext()->m_textbox;
-		textbox->Add("Set Animation returned true");
-	}
-}
 
 void State_Game::UpdateCamera() {
 	if (m_player == -1) { return; }
