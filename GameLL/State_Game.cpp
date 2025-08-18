@@ -1,6 +1,7 @@
 #include "State_Game.h"
 #include "S_Movement.h"
 #include "S_Collision.h"
+#include "C_SpriteSheet.h"
 #include "C_State.h"
 #include "C_Movable.h"
 State_Game::State_Game(StateManager* i_stateManager) :
@@ -51,6 +52,9 @@ void State_Game::Update(const sf::Time& i_time) {
 	context->m_textbox->Add("X is " + std::to_string(m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>
 		(m_player, Component::Position)->GetPosition().x) + " Y is " + std::to_string(m_stateManager->GetSharedContext()->m_entityManager
 			->GetComponent<C_Position>(m_player, Component::Position)->GetPosition().y));
+	context->m_textbox->Add("Origin x is " + std::to_string(context->m_entityManager->GetComponent<C_SpriteSheet>(m_player, Component::SpriteSheet)
+		->GetSpriteSheet()->GetSprite()->getOrigin().x) + " y is " + std::to_string(context->m_entityManager->
+			GetComponent<C_SpriteSheet>(m_player, Component::SpriteSheet)->GetSpriteSheet()->GetSprite()->getOrigin().y));
 	UpdateCamera();
 	m_testMap->Update(i_time.asSeconds());
 	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());

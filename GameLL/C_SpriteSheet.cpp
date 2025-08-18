@@ -23,3 +23,4 @@ void C_SpriteSheet::Draw(sf::RenderWindow* i_wind) {
 	m_spriteSheet->Draw(i_wind);
 }
 SpriteSheet* C_SpriteSheet::GetSpriteSheet() { return m_spriteSheet; }
+

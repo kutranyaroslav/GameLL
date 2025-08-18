@@ -141,7 +141,7 @@ void Map::LoadMap(const std::string& i_path) {
 				keystream >> tileId;
 				keystream >> row;
 				if (tileId < 0) { continue; }
-				TileKey key{tileId, row};
+				TileKey key{ tileId, row };
 				auto itr = m_tileset.find(key);
 				if (itr == m_tileset.end()) { continue; }
 				sf::Vector2i tileCords;
@@ -151,6 +151,7 @@ void Map::LoadMap(const std::string& i_path) {
 				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y || tileLayer >= Sheet::Num_Layers) { continue; }
 				Tile* tile = new Tile();
 				tile->m_properties = itr->second;
+				tile->m_solid = tileSolidity;
 				if (!m_tilemap.emplace(ConvertCordinates(tileCords.x, tileCords.y,tileLayer), tile).second) {
 					delete tile;
 					tile = nullptr;

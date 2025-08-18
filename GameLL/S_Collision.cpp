@@ -62,7 +62,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 			for (int l = 0; l < Sheet::Num_Layers; l++) {
 				Tile* t = m_gameMap->GetTile(x, y, l);
 				if (!t) { continue; }
-				if (!t->m_solid) { continue; }
+ 				if (!t->m_solid) { continue; }
 				sf::FloatRect TileAABB(x * TileSize, y * TileSize, TileSize, TileSize);
 				sf::FloatRect intersection;
 				EntityAABB.intersects(TileAABB,intersection);
@@ -89,7 +89,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 				resolve = (col.m_tileBounds.left + TileSize) - EntityAABB.left;
 			}
 			else {
-				resolve = (EntityAABB.left + EntityAABB.width) - col.m_tileBounds.left;
+				resolve = -((EntityAABB.left + EntityAABB.width) - col.m_tileBounds.left);
 			}
 			i_pos->MoveBy(resolve, 0);
 			i_col->SetPosition(i_pos->GetPosition());
@@ -101,7 +101,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 				resolve = (col.m_tileBounds.top + TileSize) - EntityAABB.top;
 			}
 			else {
-				resolve = (EntityAABB.top + EntityAABB.height) - col.m_tileBounds.top;
+				resolve = -((EntityAABB.top + EntityAABB.height) - col.m_tileBounds.top);
 				
 			}
 			i_pos->MoveBy(0, resolve);
