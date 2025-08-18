@@ -129,6 +129,12 @@ void S_Movement::StopEntity(const EntityId& i_entity, const Axis& i_axis) {
 }
 void S_Movement::SetDirection(const EntityId& i_entity, const Direction& i_dir) {
 	C_Movable* movable = m_systemMgr->GetEntityManager()->GetComponent<C_Movable>(i_entity, Component::Movable);
+	C_State* state = m_systemMgr->GetEntityManager()->GetComponent<C_State>(i_entity, Component::State);
+	Direction oldDir = movable->GetDirection();
+	if (oldDir != i_dir) {
+			movable->SetVelocity(sf::Vector2f(0.f, 0.f));
+			state->SetState(EntityState::Changing_Axis);
+	}
 	movable->SetDirection(i_dir);
 	Message msg((MessageType)EntityMessage::Direction_Changed);
 	msg.m_receiver = i_entity;

@@ -140,3 +140,4 @@ Anim_Base* SpriteSheet::GetCurrentAnim() {
 	return m_animationCurrent;
 }
 
+sf::Sprite* SpriteSheet::GetSprite() { return &m_sprite; }

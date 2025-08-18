@@ -22,6 +22,7 @@ public:
 	sf::Vector2i GetSpriteSize();
 	Direction GetSpriteDir();
 	Anim_Base* GetCurrentAnim();
+	sf::Sprite* GetSprite();
 private:
 	std::string m_texture;
 	sf::Sprite m_sprite;

@@ -28,7 +28,7 @@ void Anim_Directional::FrameStep() {
 	if ((m_startFrame < EndFrameFromDirection && m_currentFrame >= EndFrameFromDirection)
 		|| (m_startFrame > EndFrameFromDirection && m_currentFrame < EndFrameFromDirection)) {
 		if (m_loop) 
-		{
+		{ 
 			m_currentFrame = m_startFrame;
 			return;
 		}
