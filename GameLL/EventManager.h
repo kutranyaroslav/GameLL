@@ -8,7 +8,7 @@
 #include <sstream>
 #include <functional>
 #include <algorithm>
-
+#include "GUI_Events.h"
 
 
 enum class EventType {
@@ -24,7 +24,8 @@ enum class EventType {
 	MouseLeft = sf::Event::MouseLeft,
 	Closed = sf::Event::Closed,
 	TextEntered = sf::Event::TextEntered,
-	Keyboard = sf::Event::Count + 1, Mouse, Joystick,
+	Keyboard = sf::Event::Count + 1, Mouse, Joystick, GUI_Click,
+	GUI_Release, GUI_Hover, GUI_Leave
 	
 	
 };
@@ -32,9 +33,11 @@ enum class EventType {
 struct EventInfo {
 	EventInfo() { m_code = 0; }
 	EventInfo(int i_code):m_code(i_code) {}
+	EventInfo(GUI_Event i_guiEvent): m_guiEvent(i_guiEvent){}
 	union 
 	{
 		int m_code;
+		GUI_Event m_guiEvent;
 	};
 };
 struct EventDetails {
@@ -49,12 +52,18 @@ struct EventDetails {
 	sf::Vector2i m_mouse;
 	int mouseWheelDelta;
 	int m_keyCode;
+	std::string m_guiInterface;
+	std::string m_guiElement;
+	GUI_EventType m_guiEvent;
 	void Clear() {
 		m_size = sf::Vector2i(0, 0);
 		m_textEntered = 0;
 		m_mouse = sf::Vector2i(0, 0 );
 		mouseWheelDelta = 0;
 		m_keyCode = -1;
+		m_guiInterface = "";
+		m_guiElement = "";
+		m_guiEvent = GUI_EventType::None;
 	}
 };
 
@@ -63,8 +72,15 @@ using Events = std::vector<std::pair<EventType, EventInfo>>;
 struct Binding {
 	Binding(const std::string& i_name):
 		m_name(i_name), m_details(i_name), c(0)
-	{
-
+	{}
+	~Binding() {
+		for (auto itr = m_events.begin(); itr != m_events.end(); ++itr) {
+			if (itr->first == EventType::GUI_Click || itr->first == EventType::GUI_Release ||
+				itr->first == EventType::GUI_Hover || itr->first == EventType::GUI_Leave) {
+				delete[] itr->second.m_guiEvent.m_interface;
+				delete[] itr->second.m_guiEvent.m_element;
+			}
+		}
 	}
 	void BindEvent(EventType i_type, EventInfo i_eventInfo = EventInfo())
 	{
@@ -104,6 +120,7 @@ public:
 		return true;
 	}
 	void HandleEvent(sf::Event& i_event);
+	void HandleEvent(GUI_Event& i_event);
 	void Update();
 	sf::Vector2i GetMousePos(sf::RenderWindow* i_wind = nullptr) {
 		return i_wind ? sf::Mouse::getPosition(*i_wind) : sf::Mouse::getPosition();

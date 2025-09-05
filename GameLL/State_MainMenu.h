@@ -1,5 +1,6 @@
 #pragma once
 #include "StateManager.h"
+#include "GUI_Manager.h"
 class State_MainMenu : public BaseState
 {
 public:
@@ -11,6 +12,8 @@ public:
 	void Draw() override;
 	void Update(const sf::Time& i_time) override;
 	void MouseClick(EventDetails* i_details);
+	void Play(EventDetails* i_details);
+	void Quit(EventDetails* i_details);
 private:
 	sf::Text m_text;
 	sf::Vector2f m_buttonSize;

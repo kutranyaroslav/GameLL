@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "StateManager.h"
 #include "SpriteSheet.h"
+#include "GUI_Manager.h"
 class Game
 {
 public :
@@ -20,6 +21,8 @@ private:
 	SharedContext m_context;
 	SystemManager m_systemManager;
 	EntityManagerNew m_entityManager;
+	FontManager m_fontManager;
+	GUI_Manager m_guiManager;
 	sf::Clock m_clock;
 	sf::Time m_elapsed;
 	unsigned int manualFrame;

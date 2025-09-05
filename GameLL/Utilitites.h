@@ -2,6 +2,7 @@
 #define RUNNING_WINDOWS
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <algorithm>
 namespace Utils {
 
@@ -12,6 +13,7 @@ namespace Utils {
     inline std::string GetWorkingDirectory() {
         HMODULE hModule = GetModuleHandle(nullptr);
         if (hModule) {
+            //Potential Error point if you change directory you probably  will need to do more of pathremovefilespeca
             char path[256];
             GetModuleFileNameA(hModule, path, sizeof(path));
             PathRemoveFileSpecA(path);
@@ -22,6 +24,20 @@ namespace Utils {
 
         }
         return "";
+    }
+    inline void ReadQuotedString(std::stringstream& i_stream, std::string& i_string) {
+        i_stream >> i_string;
+        if (i_string.at(0) == '"')
+        {
+            while ((i_string.at(i_string.length() - 1) != '"') || !i_stream.eof()) {
+                std::string str;
+                i_stream >> str;
+                i_string.append(" " + str);
+            }
+
+        }
+        i_string.erase(std::remove(i_string.begin(), i_string.end(), '"'), i_string.end());
+
     }
 #elif defined RUNNING_LINUX
 #include <unistd.h>
