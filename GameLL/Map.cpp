@@ -40,7 +40,7 @@ void Map::Update(float i_dT) {
 		PurgeMap();
 		m_loadNextMap = false;
 		if (m_nextMap != ""){
-			LoadMap("Assets/maps/" + m_nextMap);
+			LoadMap("Assets/Maps/" + m_nextMap);
 
 		}
 		else {

@@ -14,7 +14,6 @@ void State_intro::onCreate(){
 	m_introSprite.setPosition(windowSize.x / 2.0f, 0);
 	
 	m_font.loadFromFile( Utils::GetWorkingDirectory() + "Assets/Fonts/Arima-VariableFont_wght.ttf");
-	
 	m_text.setFont(m_font);
 	m_text.setString({ "Press space to continue" });
 	m_text.setCharacterSize(15);
@@ -47,11 +46,7 @@ void State_intro::Draw() {
 	}
 }
 void State_intro::Continue(EventDetails* i_details) {
-	if (m_timePassed > 5) {
-		//this bullshit just for test purposes later on clean it up
-		m_stateManager->Remove(StateType::Intro);
 		m_stateManager->SwitchTo(StateType::MainMenu);
-	}
 }
  void State_intro::Activate() {
 

@@ -4,85 +4,55 @@ State_MainMenu::State_MainMenu(StateManager* i_stateManager) :
 	BaseState(i_stateManager) {}
 
 void State_MainMenu::onCreate() {
-
-	m_font.loadFromFile(Utils::GetWorkingDirectory()+"Assets/Fonts/ARIAL.TTF");
-	m_text.setFont(m_font);
-	m_text.setString(sf::String("MAIN MENU"));
-	m_text.setCharacterSize(18);
-
-	sf::FloatRect textRect = m_text.getGlobalBounds();
-	m_text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2);
-	m_text.setPosition(400, 100);
-	m_buttonSize = sf::Vector2f(300.0f, 32.0f);
-	m_buttonPadding = 4;
-	m_buttonPos = sf::Vector2f(400, 200);
-	
-	std::string str[3];
-	str[0] = "PLAY";
-	str[1] = "Credits";
-	str[2] = "Exit";
-
-	for (int i = 0; i < 3; ++i) {
-		sf::Vector2f buttonPosition(m_buttonPos.x, m_buttonPos.y + (i * (m_buttonSize.y + m_buttonPadding)));
-		m_rects[i].setSize(m_buttonSize);
-		m_rects[i].setFillColor(sf::Color::Red);
-		m_rects[i].setOrigin(m_buttonSize.x / 2.0f, m_buttonSize.y / 2.0f);
-		m_rects[i].setPosition(buttonPosition);
-
-		m_labels[i].setFont(m_font);
-		m_labels[i].setString(sf::String(str[i]));
-		m_labels[i].setCharacterSize(12);
-
-		sf::FloatRect rect = m_labels[i].getLocalBounds();
-		m_labels[i].setOrigin(rect.left + rect.width / 2.0f, rect.top + rect.height / 2.0f);
-		m_labels[i].setPosition(buttonPosition);
-	}
+	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
+	guiMgr->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
+	guiMgr->GetInterface(StateType::MainMenu, "MainMenu")->SetPosition(sf::Vector2f(250.f, 168.f));
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-	evMgr->AddCallback(StateType::MainMenu, "Mouse_Left", &State_MainMenu::MouseClick, this);
+	evMgr->AddCallback(StateType::MainMenu,"MainMenu_Play", &State_MainMenu::Play, this);
+	evMgr->AddCallback(StateType::MainMenu, "MainMenu_Quit",&State_MainMenu::Quit, this);
 }
 
 void State_MainMenu::onDestroy() {
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-	evMgr->RemoveCallback(StateType::MainMenu, "Mouse_Left");
+	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
+	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Play");
+	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Quit");
+	guiMgr->RemoveInterface(StateType::MainMenu, "MainMenu");
+
 }
 
 void State_MainMenu::Activate() {
-	if (m_stateManager->HasState(StateType::Game) && m_labels[0].getString() == "PLAY") {
-		m_labels[0].setString("RESUME");
-		sf::FloatRect rect = m_labels[0].getLocalBounds();
-		m_labels[0].setOrigin(rect.left + rect.width / 2.0f, rect.top + rect.height / 2.0f);
+	auto play = m_stateManager->GetSharedContext()->m_guiManager->GetInterface(StateType::MainMenu, "MainMenu")
+		->GetElement("Play");
+	if (!play) {
+		return;
+	}
+	if (m_stateManager->HasState(StateType::Game)) {
+		play->SetText("Resume");
+	}
+	else {
+		play->SetText("Play");
 	}
 }
 
 void State_MainMenu::Deactivate(){}
 
 void State_MainMenu::MouseClick(EventDetails* i_details) {
-	sf::Vector2i mousepos = i_details->m_mouse;
-	float halfX = m_buttonSize.x / 2;
-	float halfY = m_buttonSize.y / 2;
-	for (int i = 0; i < 3; ++i) {
-		if (mousepos.x >= m_rects[i].getPosition().x - halfX && mousepos.x <= m_rects[i].getPosition().x + halfX
-			&& mousepos.y >= m_rects[i].getPosition().y - halfY && mousepos.y <= m_rects[i].getPosition().y + halfY) {
-			if (i == 0) {
-				m_stateManager->SwitchTo(StateType::Game);
-			}
-			else if (i == 1) {
-				//credits state to be done
-			}
-			else if (i == 2) {
-				m_stateManager->GetSharedContext()->m_wind->Close();
-			}
-		}
-	}
+
+}
+
+void State_MainMenu::Play(EventDetails* i_details)
+{
+	m_stateManager->SwitchTo(StateType::Game);
+}
+
+void State_MainMenu::Quit(EventDetails* i_details)
+{
+	m_stateManager->GetSharedContext()->m_wind->Close();
 }
 
 void State_MainMenu::Update(const sf::Time& i_time){}
 
 void State_MainMenu::Draw() {
-	sf::RenderWindow* window = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow();
-	window->draw(m_text);
-	for (int i = 0; i < 3; ++i) {
-		window->draw(m_rects[i]);
-		window->draw(m_labels[i]);
-	}
+	
 }

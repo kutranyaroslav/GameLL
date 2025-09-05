@@ -3,6 +3,9 @@
 #include "TextureManager.h"
 #include "SystemManager.h"
 #include "EntityManagerNew.h"
+#include "FontManager.h"
+
+class GUI_Manager;
 class EntityManager;
 class StateManager;
 
@@ -52,7 +55,7 @@ class StateManager;
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
 		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
-		m_systemManager(nullptr) {}
+		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr) {}
 	
 	Window* m_wind;
 	EventManager* m_eventManager;
@@ -62,6 +65,8 @@ struct SharedContext {
 	EntityManagerNew* m_entityManager;
 	Map* m_gameMap;
 	SystemManager* m_systemManager;
+	FontManager* m_fontManager;
+	GUI_Manager* m_guiManager;
 	
 };
 

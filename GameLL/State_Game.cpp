@@ -31,7 +31,7 @@ void State_Game::onCreate() {
 	evMgr->AddCallback(StateType::Game, "Player_StopMovedown", &State_Game::Stop, this);
 	//test integration of maps
 	m_testMap = new Map(m_stateManager->GetSharedContext(), this);
-	m_testMap->LoadMap("/Assets/maps/MAP1.map");
+	m_testMap->LoadMap("/Assets/Maps/MAP1.map");
 	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetMap(m_testMap);
 	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetMap(m_testMap); 
 	m_player = m_testMap->GetPlayerId();
