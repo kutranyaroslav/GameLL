@@ -96,6 +96,7 @@ void StateManager::ProcessRequests() {
 
 void StateManager::SwitchTo(const StateType& i_type) {
 	m_shared->m_eventManager->SetCurrentState(i_type);
+	m_shared->m_guiManager->SetCurrentState(i_type);
 	for (auto itr = m_states.begin(); itr != m_states.end(); itr++) {
 		if (itr->first == i_type) {
 			m_states.back().second->Deactivate();

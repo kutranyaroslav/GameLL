@@ -1,5 +1,7 @@
 State Neutral
-Size 300 150
-TextSize 12
+Position 100 50
+BgColor 0 255 0 255
+BgImage Bg2
+TextSize 24
 Font Main
 /State

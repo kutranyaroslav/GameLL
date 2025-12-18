@@ -6,7 +6,7 @@ State_MainMenu::State_MainMenu(StateManager* i_stateManager) :
 void State_MainMenu::onCreate() {
 	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
 	guiMgr->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
-	guiMgr->GetInterface(StateType::MainMenu, "MainMenu")->SetPosition(sf::Vector2f(250.f, 168.f));
+	
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	evMgr->AddCallback(StateType::MainMenu,"MainMenu_Play", &State_MainMenu::Play, this);
 	evMgr->AddCallback(StateType::MainMenu, "MainMenu_Quit",&State_MainMenu::Quit, this);

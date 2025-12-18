@@ -38,7 +38,7 @@ GUI_Element* GUI_Interface::GetElement(const std::string& i_name)const {
 
 bool GUI_Interface::AddElement(const GUI_ElementType& i_type, const std::string& i_name) {
 	auto itr = m_elements.find(i_name);
-	if (itr == m_elements.end()) { return false; }
+	if (itr != m_elements.end()) { return false; }
 	GUI_Element* element = m_guiManager->CreateElement(i_type, this);
 	if (!element) { return false; }
 	element->SetOwner(this);
@@ -170,10 +170,10 @@ void GUI_Interface::Draw(sf::RenderTarget* i_target) {
 	i_target->draw(m_backdrop);
 	i_target->draw(m_content);
 	i_target->draw(m_control);
-	
+	i_target->draw(m_visual.m_text);
 	if (!m_showTitleBar) { return; }
 	i_target->draw(m_titleBar);
-	i_target->draw(m_visual.m_text);
+	
 }
 void GUI_Interface::ApplyStyle() {
 	GUI_Element::ApplyStyle();

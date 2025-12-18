@@ -215,10 +215,13 @@ bool GUI_Manager::LoadInterface(const StateType& i_state, const std::string& i_i
 				keystream >> *e;
 				e->SetPosition(position);
 				if (!LoadStyle(style, e)) { continue; }
+			
+
 			}
 			
 
 		}
+		return true;
 	}
 	else {
 		return false;
@@ -265,7 +268,7 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 				if (key == "Size") {
 					keystream >> temporaryStyle.m_size.x >> temporaryStyle.m_size.y;
 				}
-				else if (key == "Bg") {
+				else if (key == "BgColor") {
 					int r, g, b, a = 0;
 					keystream >> r >> g >> b >> a;
 					temporaryStyle.m_backgroundColor = sf::Color(r, g, b, a);
@@ -305,6 +308,11 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 				}
 				else if (key == "GlyphPadding") {
 					keystream >> temporaryStyle.m_glyphPadding.x >> temporaryStyle.m_glyphPadding.y;
+				}
+				else if (key == "Position") {
+					int a, b = 0;
+					keystream >> a >> b;
+					i_element->SetPosition(sf::Vector2f(a, b));
 				}
 				else {
 					return false;

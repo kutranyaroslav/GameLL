@@ -113,9 +113,10 @@ void GUI_Element::UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& 
 
 
 void GUI_Element::ApplyStyle() {
+	ApplyBgStyle();
 	ApplyTextStyle();
 	ApplyGlyphStyle();
-	ApplyBgStyle();
+	
 	if (IsControl()) {
 		m_owner->AdjustContentSize();
 	}
@@ -130,26 +131,30 @@ void GUI_Element::ApplyTextStyle() {
 		m_visual.m_text.setCharacterSize(currentStyle.m_textSize);
 		if (currentStyle.m_textCenterOrigin) {
 			sf::FloatRect rect = m_visual.m_text.getLocalBounds();
-			m_visual.m_text.setOrigin(rect.left + rect.width / 2.0f, rect.top + rect.height / 2.0f);
+			sf::FloatRect rectBg = m_visual.m_backgroundSolid.getLocalBounds();
+			m_visual.m_text.setOrigin(rect.left + rect.width/2.f, rect.top + rect.height/2.f);
+			m_visual.m_text.setStyle(sf::Text::Bold);
+			m_visual.m_text.setPosition(m_position.x + m_styles[m_state].m_size.x/2.f, m_position.y + m_styles[m_state].m_size.y/2.f);
+			
 		}
 		else {
 			m_visual.m_text.setOrigin(0.f, 0.f);
+			m_visual.m_text.setPosition(m_position + currentStyle.m_textPadding);
 		}
 	}
-	m_visual.m_text.setPosition(m_position + currentStyle.m_textPadding);
+	
 }
 
 void GUI_Element::ApplyBgStyle() {
 	TextureManager* textureMgr = m_owner->GetGuiManager()->GetSharedContext()->m_textureManager;
 	const GUI_Style& currentStyle = m_styles[m_state];
+	m_visual.m_backgroundSolid.setSize(currentStyle.m_size);
+	m_visual.m_backgroundSolid.setFillColor(currentStyle.m_backgroundColor);
+	m_visual.m_backgroundSolid.setPosition(m_position);
 	if (currentStyle.m_backgroundImage != "") {
 		m_visual.m_backgroundImage.setColor(currentStyle.m_backgroundImageColor);
 		m_visual.m_backgroundImage.setTexture(*textureMgr->GetResource(currentStyle.m_backgroundImage));
 		m_visual.m_backgroundImage.setPosition(m_position);
-
-		m_visual.m_backgroundSolid.setSize(currentStyle.m_size);
-		m_visual.m_backgroundSolid.setFillColor(currentStyle.m_backgroundColor);
-		m_visual.m_backgroundSolid.setPosition(m_position);
 	}
 }
 

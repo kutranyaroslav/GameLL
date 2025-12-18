@@ -82,9 +82,17 @@ struct Binding {
 			}
 		}
 	}
-	void BindEvent(EventType i_type, EventInfo i_eventInfo = EventInfo())
+	bool BindEvent(EventType i_type, EventInfo i_eventInfo = EventInfo())
 	{
-		m_events.emplace_back(i_type, i_eventInfo);
+		try
+		{
+			m_events.emplace_back(i_type, i_eventInfo);
+			return true;
+		}
+		catch (const std::bad_alloc&) // in case memory allocation fails
+		{
+			return false;
+		}
 	}
 	Events m_events;
 	std::string m_name;
