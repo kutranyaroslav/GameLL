@@ -16,7 +16,6 @@ Game::Game():
 	m_context.m_systemManager = &m_systemManager;
 	m_context.m_guiManager = &m_guiManager;
 	m_context.m_fontManager = &m_fontManager;
-	m_fontManager.RequireResource("Main");
 	
 	m_stateManager.SwitchTo(StateType::MainMenu);
 } 

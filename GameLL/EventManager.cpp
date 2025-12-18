@@ -27,6 +27,8 @@ bool EventManager::RemoveBinding(std::string i_name) {
 	m_bindings.erase(itr);
 	return true;
 }
+
+//handling of main events 
 void EventManager::HandleEvent(sf::Event& i_event) {
 	for (auto& b_itr : m_bindings) {
 		Binding* bind = b_itr.second;
@@ -154,7 +156,7 @@ void EventManager::Update() {
 }
 void EventManager::LoadBindings() {
 	std::string delimiter = ":";
-	std::ifstream bindings; 
+	std::ifstream bindings;
 	bindings.open("binding_config.cfg");
 	if (!bindings.is_open()) {
 		std::cout << "Something went wrong " << std::endl;
@@ -198,11 +200,12 @@ void EventManager::LoadBindings() {
 				eventInfo.m_guiEvent.m_element = e;
 			}
 			else {
-				int code = stoi(keyval.substr(end + delimiter.length(), 
-					keyval.find(delimiter, end + delimiter.length())));
-				eventInfo.m_code = code;
+			int code = stoi(keyval.substr(end + delimiter.length(),
+				keyval.find(delimiter, end + delimiter.length())));
+			
+			eventInfo.m_code = code;
 			}
-			bind->BindEvent(event, eventInfo);
+
 			try {
 				EventType type = static_cast<EventType>(std::stoi(keyval.substr(0, end)));
 				int code = std::stoi(keyval.substr(end + delimiter.length()));
@@ -218,9 +221,10 @@ void EventManager::LoadBindings() {
 		}
 		if (!AddBinding(bind)) { delete bind; }
 		bind = nullptr;
+		}
+		bindings.close();
 	}
-	bindings.close();
-}
+
 void EventManager::setFocus(bool i_focus) {
 	m_hasFocus = i_focus;
 }

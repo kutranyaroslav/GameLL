@@ -1,5 +1,8 @@
 State Neutral
-Size 118 32
+Size 150 32
 TextColor 255 255 255 255
-TextSize 24
+TextSize 20
+BgColor 255 0 0 255
+Font Main
+TextCenterOrigin
 /State

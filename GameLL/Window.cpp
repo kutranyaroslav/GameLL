@@ -41,6 +41,7 @@ void Window::Update() {
 			m_eventManager.setFocus(m_isFocused);
 		}
  		m_eventManager.HandleEvent(event);
+		
 	}
 	m_eventManager.Update();
 	sf::View view = GetRenderWindow()->getView();
