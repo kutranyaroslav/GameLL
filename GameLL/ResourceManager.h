@@ -13,6 +13,7 @@ public:
 		LoadPaths(i_pathsFile);
 	}
 	virtual ~ResourceManager() { PurgeResources(); }
+	//The way to get certain resource that was require before
 	T* GetResource(const std::string& i_id) {
 		auto res = Find(i_id);
 		return res ? res->first : nullptr;

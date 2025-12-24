@@ -155,6 +155,7 @@ void EventManager::Update() {
 	
 }
 void EventManager::LoadBindings() {
+	//TO DO Fix the problem of bindings GUI_EVENTS not being binded probebly cause code initialized only in else
 	std::string delimiter = ":";
 	std::ifstream bindings;
 	bindings.open("binding_config.cfg");
@@ -191,7 +192,7 @@ void EventManager::LoadBindings() {
 					start = end + delimiter.length();
 					end = keyval.length();
 					element = keyval.substr(start, end);
-				}
+				}		
 				char* w = new char[window.length() + 1];
 				char* e = new char[element.length() + 1];
 				strcpy_s(w, window.length() + 1, window.c_str() );
@@ -208,8 +209,11 @@ void EventManager::LoadBindings() {
 
 			try {
 				EventType type = static_cast<EventType>(std::stoi(keyval.substr(0, end)));
-				int code = std::stoi(keyval.substr(end + delimiter.length()));
-				EventInfo eventInfo(code);
+				if (event != EventType::GUI_Click && event != EventType::GUI_Release &&
+					event != EventType::GUI_Hover && event != EventType::GUI_Leave) {
+					int code = std::stoi(keyval.substr(end + delimiter.length()));
+					eventInfo.m_code = code;
+				}
 				bind->BindEvent(type, eventInfo);
 			}
 			catch (const std::exception& e) {
@@ -219,7 +223,7 @@ void EventManager::LoadBindings() {
 				break;
 			}
 		}
-		if (!AddBinding(bind)) { delete bind; }
+		if (bind) { if (!AddBinding(bind)) { delete bind; } }
 		bind = nullptr;
 		}
 		bindings.close();

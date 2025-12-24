@@ -1,7 +1,9 @@
 State Neutral
-Position 100 50
-BgColor 0 255 0 255
+Position 0 0
+Size 1980 1080
+BgColor 0 0 0 0
 BgImage Bg2
+BgFullElement
 TextSize 24
 Font Main
 /State

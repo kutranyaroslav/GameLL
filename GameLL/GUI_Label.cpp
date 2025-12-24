@@ -28,4 +28,5 @@ void GUI_Label::Draw(sf::RenderTarget* i_target) {
 		i_target->draw(m_visual.m_glyph);
 	}
 	i_target->draw(m_visual.m_text);
+	i_target->draw(m_visual.m_backgroundImage);
 }

@@ -147,11 +147,20 @@ void GUI_Element::ApplyTextStyle() {
 
 void GUI_Element::ApplyBgStyle() {
 	TextureManager* textureMgr = m_owner->GetGuiManager()->GetSharedContext()->m_textureManager;
+	
+	
 	const GUI_Style& currentStyle = m_styles[m_state];
 	m_visual.m_backgroundSolid.setSize(currentStyle.m_size);
 	m_visual.m_backgroundSolid.setFillColor(currentStyle.m_backgroundColor);
 	m_visual.m_backgroundSolid.setPosition(m_position);
 	if (currentStyle.m_backgroundImage != "") {
+		if (currentStyle.m_backgroundImageFullElement) {
+			float intefaceWidth = m_styles[m_state].m_size.x;
+			float interfaceHeight = m_styles[m_state].m_size.y;
+			float scaleX = intefaceWidth / textureMgr->GetResource(currentStyle.m_backgroundImage)->getSize().x;
+			float scaleY = interfaceHeight / textureMgr->GetResource(currentStyle.m_backgroundImage)->getSize().y;
+			m_visual.m_backgroundImage.setScale(scaleX, scaleY);
+		}
 		m_visual.m_backgroundImage.setColor(currentStyle.m_backgroundImageColor);
 		m_visual.m_backgroundImage.setTexture(*textureMgr->GetResource(currentStyle.m_backgroundImage));
 		m_visual.m_backgroundImage.setPosition(m_position);

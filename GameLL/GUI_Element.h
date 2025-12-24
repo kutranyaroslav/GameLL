@@ -11,7 +11,7 @@ enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield }
 class GUI_Manager;
 
 struct GUI_Style {
-	GUI_Style() :m_textSize(12), m_textCenterOrigin(false), m_backgroundImageColor(255, 255, 255, 255) {
+	GUI_Style() :m_textSize(12), m_textCenterOrigin(false),m_backgroundImageFullElement(false), m_backgroundImageColor(255, 255, 255, 255) {
 		sf::Color none = sf::Color(0, 0, 0, 0);
 		m_backgroundColor = none;
 		m_elementColor = none;
@@ -27,6 +27,7 @@ struct GUI_Style {
 	sf::Vector2f m_textPadding;
 	unsigned int m_textSize;
 	bool m_textCenterOrigin;
+	bool m_backgroundImageFullElement;
 	std::string m_glyph;
 	sf::Vector2f m_glyphPadding;
 };
@@ -66,10 +67,10 @@ public:
 	bool GerRedraw();
 	void SetState(const GUI_ElementState& i_state);
 	GUI_ElementState& GetState();
-	GUI_ElementType& GetType();
 	sf::Vector2f& GetPosition();
 	void SetContentSize(sf::Vector2f& i_size);
 	sf::Vector2f& GetSize();
+	GUI_ElementType& GetType();
 	void SetActive(const bool& const i_acitve);
 	const bool& GetActive()const;
 	void SetText(const std::string& i_string);

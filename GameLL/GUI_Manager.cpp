@@ -281,6 +281,9 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 					keystream >> r >> g >> b >> a;
 					temporaryStyle.m_backgroundImageColor = sf::Color(r, g, b, a);
 				}
+				else if (key == "BgFullElement") {
+					temporaryStyle.m_backgroundImageFullElement = true;
+				}
 				else if (key == "TextColor") {
 					int r, g, b, a = 0;
 					keystream >> r >> g >> b >> a;

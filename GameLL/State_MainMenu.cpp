@@ -1,12 +1,13 @@
 #include "State_MainMenu.h"
+#include "GUI_Manager.h"
 
 State_MainMenu::State_MainMenu(StateManager* i_stateManager) :
 	BaseState(i_stateManager) {}
 
 void State_MainMenu::onCreate() {
 	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
+	Window* wind = m_stateManager->GetSharedContext()->m_wind;
 	guiMgr->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
-	
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	evMgr->AddCallback(StateType::MainMenu,"MainMenu_Play", &State_MainMenu::Play, this);
 	evMgr->AddCallback(StateType::MainMenu, "MainMenu_Quit",&State_MainMenu::Quit, this);
@@ -17,7 +18,7 @@ void State_MainMenu::onDestroy() {
 	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
 	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Play");
 	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Quit");
-	guiMgr->RemoveInterface(StateType::MainMenu, "MainMenu");
+	//potential memory leak cause we create interface but destroy it in gui_manager 
 
 }
 

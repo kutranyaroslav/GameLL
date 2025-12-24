@@ -1,7 +1,7 @@
 #include "Window.h"
 
 Window::Window() {
-	Setup("Window", sf::Vector2u(640, 480));
+	Setup("Window", sf::Vector2u(1980, 1080));
 	
 }
 
