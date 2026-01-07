@@ -1,9 +1,10 @@
 #include "Game.h"
+#include "S_Sound.h"
 Game::Game():
 	m_window(),
 	m_stateManager(&m_context),
 	m_entityManager(&m_systemManager, &m_textureManager),
-	m_guiManager(m_window.GetEventManager(),&m_context)
+	m_guiManager(m_window.GetEventManager(),&m_context),m_soundManager(&m_audioManager)
 {
 	manualFrame = 0;
 	m_systemManager.SetEntityManager(&m_entityManager);
@@ -16,7 +17,8 @@ Game::Game():
 	m_context.m_systemManager = &m_systemManager;
 	m_context.m_guiManager = &m_guiManager;
 	m_context.m_fontManager = &m_fontManager;
-	
+	m_context.m_soundManager = &m_soundManager;
+	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
 	m_stateManager.SwitchTo(StateType::MainMenu);
 } 
 Game::~Game(){
@@ -31,6 +33,7 @@ void Game::Update() {
 	}
  	m_window.Update();
 	m_stateManager.Update(m_elapsed);
+	m_soundManager.Update(m_elapsed.asSeconds());
 }
 Window* Game::getWindow() {
 	return &m_window;

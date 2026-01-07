@@ -5,7 +5,7 @@
 
 Anim_Base::Anim_Base(): m_currentFrame(0),m_startFrame(0),
 m_endFrameEast(0),m_rowFrame(0),m_frameTime(0.f),m_elapsedTime(0.f),
-m_frameActionStart(-1),m_frameActionEnd(-1), m_loop(false), m_playing(false)
+m_frameActionStart(-1),m_frameActionEnd(-1), m_loop(false), m_playing(false),m_hasMoved(false)
 {}
 Anim_Base::~Anim_Base(){}
 
@@ -13,10 +13,13 @@ void Anim_Base::SetSpriteSheet(SpriteSheet* i_spriteSheet) {
 	m_spriteSheet = i_spriteSheet;
 }
 
-void Anim_Base::SetFrame(const unsigned int& i_frame) {
+bool Anim_Base::SetFrame(const unsigned int& i_frame) {
 	if ((i_frame >= m_startFrame && i_frame <= m_endFrameEast) || (i_frame >= m_endFrameEast && i_frame <= m_startFrame)) {
 		m_currentFrame = i_frame;
+		m_hasMoved = true;
+		return true;
 	}
+	return false;
 }
 void Anim_Base::SetName(const std::string& i_name) {
 	m_name = i_name;
@@ -29,6 +32,11 @@ bool Anim_Base::IsInAction() {
 	return (m_currentFrame >= m_frameActionStart && m_currentFrame <= m_frameActionEnd);
 }
 bool Anim_Base::IsPlaying() { return m_playing; }
+bool Anim_Base::CheckMoved() {
+	bool result = m_hasMoved; 
+	m_hasMoved = false;
+	return result;
+}
 void Anim_Base::SetLooping(const bool& i_loop) {
 	m_loop = i_loop;
 }
@@ -36,6 +44,9 @@ void Anim_Base::Play() { m_playing = true; }
 void Anim_Base::Pause() { m_playing = false; }
 void Anim_Base::Stop() { m_playing = false; Reset(); }
 
+Frame Anim_Base::GetCurrentFrame() {
+	return m_currentFrame;
+}
 void Anim_Base::Reset() {
 	m_currentFrame = m_startFrame;
 	m_elapsedTime = 0.0f;

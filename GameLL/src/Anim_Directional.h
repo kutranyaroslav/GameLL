@@ -1,4 +1,4 @@
-#pragma 
+#pragma once 
 #include <sstream>
 #include "Anim_Base.h"
 

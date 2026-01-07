@@ -13,6 +13,7 @@ public:
 	virtual ~Anim_Base();
 	bool IsInAction();
 	bool IsPlaying();
+	bool CheckMoved();
 	void Play();
 	void Pause();
 	void Reset();
@@ -25,9 +26,10 @@ public:
 
 	void SetLooping(const bool& i_loop);
 	void SetSpriteSheet(SpriteSheet* i_spriteSheet);
-	void SetFrame(const unsigned int& i_frame);
+	bool SetFrame(const unsigned int& i_frame);
 	void SetName(const std::string& i_name);
 	std::string GetName();
+	Frame GetCurrentFrame();
 protected:
 	virtual void FrameStep() = 0;
 	virtual void CropSprite() = 0;
@@ -45,6 +47,7 @@ protected:
 	float m_elapsedTime;
 	bool m_loop;
 	bool m_playing;
+	bool m_hasMoved;
 	std::string m_name;
 	SpriteSheet* m_spriteSheet;
 };
