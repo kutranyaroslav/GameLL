@@ -18,23 +18,19 @@ void Anim_Directional::FrameStep() {
 		break;
 	case Direction::Left:
 		EndFrameFromDirection = m_endFrameWest;
+		break;
 	case Direction::Up:
 		EndFrameFromDirection = m_endFrameNorth;
+		break;
 	case Direction::Down:
 		EndFrameFromDirection = m_endFrameSouth;
+		break;
 	}
-	if (m_startFrame < EndFrameFromDirection) { ++m_currentFrame; }
-	else { --m_currentFrame; }
-	if ((m_startFrame < EndFrameFromDirection && m_currentFrame >= EndFrameFromDirection)
-		|| (m_startFrame > EndFrameFromDirection && m_currentFrame < EndFrameFromDirection)) {
-		if (m_loop) 
-		{ 
-			m_currentFrame = m_startFrame;
-			return;
-		}
-		m_currentFrame = EndFrameFromDirection;
-		Pause();
-	}
+	bool b = SetFrame(m_currentFrame + (m_startFrame <= EndFrameFromDirection ? 1 : -1));
+	if (b) { return; }
+	if (m_loop) { SetFrame(m_startFrame); }
+	else { SetFrame(EndFrameFromDirection); Pause(); }
+	
 }
 
 void Anim_Directional::ReadIn(std::stringstream& i_stream) {

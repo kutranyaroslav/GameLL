@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "StateManager.h"
 #include "SpriteSheet.h"
+#include "SoundManager.h"
 #include "GUI_Manager.h"
 class Game
 {
@@ -23,6 +24,8 @@ private:
 	EntityManagerNew m_entityManager;
 	FontManager m_fontManager;
 	GUI_Manager m_guiManager;
+	AudioManager m_audioManager;
+	SoundManager m_soundManager;
 	sf::Clock m_clock;
 	sf::Time m_elapsed;
 	unsigned int manualFrame;

@@ -6,6 +6,7 @@
 #include "State_Paused.h"
 #include "GUI_Manager.h"
 #include "Map.h"
+#include "SoundManager.h"
 StateManager::StateManager(SharedContext* i_shared):
 	m_shared(i_shared)
 {
@@ -111,8 +112,10 @@ void StateManager::SwitchTo(const StateType& i_type) {
 	}
 	if (!m_states.empty()) { m_states.back().second->Deactivate(); }
 	CreateState(i_type);
-	m_states.back().second->Activate();
 	m_shared->m_wind->GetRenderWindow()->setView(m_states.back().second->m_view);
+	m_shared->m_soundManager->ChangeState(i_type);
+	m_states.back().second->Activate();
+	
 }
 
 
@@ -131,6 +134,7 @@ void StateManager::RemoveState(const StateType& i_type) {
 			itr->second->onDestroy();
 			delete itr->second;
 			m_states.erase(itr);
+			m_shared->m_soundManager->RemoveState(i_type);
 			return;
 		}
 	}

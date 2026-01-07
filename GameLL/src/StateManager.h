@@ -8,6 +8,8 @@
 class GUI_Manager;
 class EntityManager;
 class StateManager;
+class AudioManager;
+class SoundManager;
 
 class Map;
 class BaseState {
@@ -55,7 +57,7 @@ class StateManager;
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
 		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
-		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr) {}
+		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr) {}
 	
 	Window* m_wind;
 	EventManager* m_eventManager;
@@ -67,6 +69,9 @@ struct SharedContext {
 	SystemManager* m_systemManager;
 	FontManager* m_fontManager;
 	GUI_Manager* m_guiManager;
+	SoundManager* m_soundManager;
+	AudioManager* m_audioManager;
+
 	
 };
 

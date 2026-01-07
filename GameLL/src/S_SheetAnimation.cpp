@@ -15,6 +15,13 @@ void S_SheetAnimation::Update(float i_dT) {
 		C_State* state = entities->GetComponent<C_State>(entity, Component::State);
 		sprite->GetSpriteSheet()->Update(sf::seconds(i_dT));
 		const std::string& animName = sprite->GetSpriteSheet()->GetCurrentAnim()->GetName();
+		if (sprite->GetSpriteSheet()->GetCurrentAnim()->CheckMoved()) {
+			int frame = sprite->GetSpriteSheet()->GetCurrentAnim()->GetCurrentFrame();
+			Message msg((MessageType)EntityMessage::Frame_Change);
+			msg.m_receiver = entity;
+			msg.m_int = frame;
+			m_systemMgr->GetMessageHandler()->Dispatch(msg);
+		}
 		if (animName == "Attack") {
 			if (!sprite->GetSpriteSheet()->GetCurrentAnim()->IsPlaying()) {
 				Message msg((MessageType)EntityMessage::Switch_State);
@@ -46,10 +53,6 @@ void S_SheetAnimation::Notify(const Message& i_message) {
 		EntityState s = (EntityState)i_message.m_int;
 		switch (s) {
 		case EntityState::Idle:
-			/// in case of idle we change the direction to the right because for now i have only one
-			/// direction of animation idle if it will be changed then u gotta change this 
-			sprite->GetSpriteSheet()->SetSpriteDir(Direction::Right);
-			mov->SetDirection(Direction::Right);
 			ChangeAnimation(i_message.m_receiver, "Idle", true, true);
 			break;
 		case EntityState::Walking:

@@ -1,5 +1,6 @@
 #include "State_MainMenu.h"
 #include "GUI_Manager.h"
+#include "SoundManager.h"
 
 State_MainMenu::State_MainMenu(StateManager* i_stateManager) :
 	BaseState(i_stateManager) {}
@@ -34,6 +35,7 @@ void State_MainMenu::Activate() {
 	else {
 		play->SetText("Play");
 	}
+	m_stateManager->GetSharedContext()->m_soundManager->PlayMusic("MainMenuTheme", 100.f, true);
 }
 
 void State_MainMenu::Deactivate(){}

@@ -13,3 +13,5 @@ Component 3 160 70 70 0
 Component 4
 |Collidable|m_AABB.width|m_AABB.height|m_offset.x|m_offset.y|Origin|
 Component 5 64 64 5 5 1
+|SoundEmitter|sound|
+Component 6 footstep:1,4

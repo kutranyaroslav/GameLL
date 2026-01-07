@@ -61,11 +61,12 @@ public:
 	void LoadPaths(const std::string& i_pathFile) {
 		std::ifstream paths;
 		std::string directory = Utils::GetWorkingDirectory();
-		std::string fullway = directory + i_pathFile;
+		std::string fullway = directory + "nav//" + i_pathFile;
 		paths.open(fullway);
 		if (paths.is_open()) {
 			std::string line;
 			while (std::getline(paths, line)) {
+				if (line[0] == '|') { continue; }
 				std::stringstream keystream(line);
 				std::string pathName;
 				std::string path;
