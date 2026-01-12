@@ -99,7 +99,7 @@ void Map::PurgeTileSet() {
 
 void Map::LoadTiles(const std::string& i_path, const std::string& i_texture) {
 	std::ifstream file;
-	file.open(Utils::GetWorkingDirectory() + i_path);
+	file.open(Utils::GetWorkingDirectory() + "nav//"+ i_path);
 	if (file.is_open()) {
 		std::string line;
 		while (std::getline(file, line)) {

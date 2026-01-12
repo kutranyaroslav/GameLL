@@ -158,7 +158,7 @@ void EventManager::LoadBindings() {
 	//TO DO Fix the problem of bindings GUI_EVENTS not being binded probebly cause code initialized only in else
 	std::string delimiter = ":";
 	std::ifstream bindings;
-	bindings.open("binding_config.cfg");
+	bindings.open(Utils::GetWorkingDirectory() + "nav//" + "binding_config.cfg");
 	if (!bindings.is_open()) {
 		std::cout << "Something went wrong " << std::endl;
 		return;

@@ -9,6 +9,7 @@
 #include <functional>
 #include <algorithm>
 #include "GUI_Events.h"
+#include "Utilitites.h"
 
 
 enum class EventType {
