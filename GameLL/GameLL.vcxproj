@@ -158,6 +158,7 @@
     <ClCompile Include="src\C_SoundListener.cpp" />
     <ClCompile Include="src\C_SpriteSheet.cpp" />
     <ClCompile Include="src\C_State.cpp" />
+    <ClCompile Include="src\dev\State_Developement.cpp" />
     <ClCompile Include="src\Enemy.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\EntityManagerNew.cpp" />
@@ -214,6 +215,7 @@
     <ClInclude Include="src\C_SoundListener.h" />
     <ClInclude Include="src\C_SpriteSheet.h" />
     <ClInclude Include="src\C_State.h" />
+    <ClInclude Include="src\dev\State_Developement.h" />
     <ClInclude Include="src\Directions.h" />
     <ClInclude Include="src\ECS_Types.h" />
     <ClInclude Include="src\Enemy.h" />
