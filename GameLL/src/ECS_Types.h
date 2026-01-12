@@ -1,6 +1,6 @@
 #pragma once
 using ComponentType = unsigned int; 
-#define N_COMPONENT_TYPES 6
+#define N_COMPONENT_TYPES 8
 
 enum class Component {
 	Position = 0, SpriteSheet, State, Movable, Controller,Collidable, SoundEmitter, SoundListener
