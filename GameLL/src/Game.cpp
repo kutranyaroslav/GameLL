@@ -20,9 +20,8 @@ Game::Game() :
 	m_context.m_soundManager = &m_soundManager;
 	//TO DO Erase after developement done
 	if (m_context.m_stateManager) {
-		if (m_context.m_stateManager->HasState(StateType::Developement)) {
 			ErrorLogManager* log = m_context.m_errorLogManager->GetInstance();
-			log->createFile(Utils::GetWorkingDirectory() + "dev//devlog.txt");
+			log->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
 			try {
 				THROW_EXCEPTION(1, "test error");
 			}
@@ -34,13 +33,14 @@ Game::Game() :
 				log->Flush();
 
 			}
-		}
+		
 	}
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
 	m_stateManager.SwitchTo(StateType::MainMenu);
 }
 Game::~Game(){
 	m_fontManager.ReleaseResource("Main");
+	m_context.m_errorLogManager->GetInstance()->Close();
 }
 
 void Game::Update() {

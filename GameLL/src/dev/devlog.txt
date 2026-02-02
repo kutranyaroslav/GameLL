@@ -1,0 +1,3 @@
+******* Error *****
+06:32:49
+Exception Number: 1 Description: test error Source File: C:\Users\mariakutran\source\repos\kutranyaroslav\GameLL\GameLL\src\Game.cpp Line: 26*********************

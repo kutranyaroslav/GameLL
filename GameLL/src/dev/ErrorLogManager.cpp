@@ -43,13 +43,13 @@ void ErrorLogManager::LogException(cException e) {
 //return time in form hours:mins:secs
 std::string ErrorLogManager::GetTimeString() {
 	std::stringstream TimeStr;
-	tm* pTime;
+	tm pTime;
 	time_t ctTime; time(&ctTime);
-	pTime = localtime(&ctTime);
+	localtime_s(&pTime,&ctTime);
 
-	TimeStr << std::setw(2) << std::setfill("0") << pTime->tm_hour << ":";
-	TimeStr << std::setw(2) << std::setfill("0") << pTime->tm_min << ":";
-	TimeStr << std::setw(2) << std::setfill("0") << pTime->tm_sec;
+	TimeStr << std::setw(2) << std::setfill('0') << pTime.tm_hour << ":";
+	TimeStr << std::setw(2) << std::setfill('0') << pTime.tm_min << ":";
+	TimeStr << std::setw(2) << std::setfill('0') << pTime.tm_sec;
 	return TimeStr.str();
 }
 
