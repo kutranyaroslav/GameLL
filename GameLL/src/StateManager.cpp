@@ -4,6 +4,7 @@
 #include "State_MainMenu.h"
 #include "State_Game.h"
 #include "State_Paused.h"
+#include "dev/State_Developement.h"
 #include "GUI_Manager.h"
 #include "Map.h"
 #include "SoundManager.h"
@@ -14,6 +15,8 @@ StateManager::StateManager(SharedContext* i_shared):
 	RegisterState<State_MainMenu>(StateType::MainMenu);
 	RegisterState<State_Game>(StateType::Game);
 	RegisterState<State_Paused>(StateType::Paused);
+	//TO DO LATER IN GAME MODE THIS STATE MUST BE ERASED MANUALLY
+	RegisterState<State_Developement>(StateType::Developement);
 	/*RegisterState<State_GameOver>(StateType::GameOver);
 	RegisterState<State_Credits>(StateType::Credits);*/
 }
