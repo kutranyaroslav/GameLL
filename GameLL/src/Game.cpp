@@ -1,10 +1,10 @@
 #include "Game.h"
 #include "S_Sound.h"
-Game::Game():
+Game::Game() :
 	m_window(),
 	m_stateManager(&m_context),
 	m_entityManager(&m_systemManager, &m_textureManager),
-	m_guiManager(m_window.GetEventManager(),&m_context),m_soundManager(&m_audioManager)
+	m_guiManager(m_window.GetEventManager(), &m_context), m_soundManager(&m_audioManager)
 {
 	manualFrame = 0;
 	m_systemManager.SetEntityManager(&m_entityManager);
@@ -18,11 +18,29 @@ Game::Game():
 	m_context.m_guiManager = &m_guiManager;
 	m_context.m_fontManager = &m_fontManager;
 	m_context.m_soundManager = &m_soundManager;
+	//TO DO Erase after developement done
+	if (m_context.m_stateManager) {
+			ErrorLogManager* log = m_context.m_errorLogManager->GetInstance();
+			log->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
+			try {
+				THROW_EXCEPTION(1, "test error");
+			}
+			catch (cException& e){
+				log->GetLogBuffer() << "******* Error *****\n";
+				log->Flush();
+				log->LogException(e);
+				log->GetLogBuffer() << "*********************\n";
+				log->Flush();
+
+			}
+		
+	}
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
 	m_stateManager.SwitchTo(StateType::MainMenu);
-} 
+}
 Game::~Game(){
 	m_fontManager.ReleaseResource("Main");
+	m_context.m_errorLogManager->GetInstance()->Close();
 }
 
 void Game::Update() {

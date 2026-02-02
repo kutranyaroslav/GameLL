@@ -4,7 +4,7 @@
 #include "SystemManager.h"
 #include "EntityManagerNew.h"
 #include "FontManager.h"
-
+#include "dev/ErrorLogManager.h"
 class GUI_Manager;
 class EntityManager;
 class StateManager;
@@ -50,14 +50,16 @@ protected:
 
 
 enum class StateType {
-	Intro = 1, MainMenu, Game, Paused, GameOver, Credits
+	Intro = 1, MainMenu, Game, Paused, GameOver, Credits, Developement
 };
 class StateManager;
 
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
 		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
-		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr) {}
+		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr) {
+		
+	}
 	
 	Window* m_wind;
 	EventManager* m_eventManager;
@@ -71,7 +73,7 @@ struct SharedContext {
 	GUI_Manager* m_guiManager;
 	SoundManager* m_soundManager;
 	AudioManager* m_audioManager;
-
+	ErrorLogManager* m_errorLogManager;
 	
 };
 

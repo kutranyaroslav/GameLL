@@ -9,6 +9,13 @@
 
 enum Sheet { Tile_Size = 32, Sheet_Width = 512, Sheet_Height = 256, Num_Layers = 6 };
 using TileId = unsigned int;
+//all the potential info for world manager
+struct MapProps {
+	unsigned int m_id; 
+	std::string m_name; 
+	unsigned int m_width; 
+	unsigned int m_height; 
+};
 
 struct TileInfo {
 	TileInfo(SharedContext* i_context, const std::string& i_texture = "", TileId i_id = 0, unsigned int i_row = 0) :
