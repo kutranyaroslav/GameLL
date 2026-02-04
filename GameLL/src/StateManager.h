@@ -1,10 +1,10 @@
 #pragma once
-#include "Window.h"
 #include "TextureManager.h"
 #include "SystemManager.h"
 #include "EntityManagerNew.h"
 #include "FontManager.h"
 #include "dev/ErrorLogManager.h"
+#include "Window.h"
 class GUI_Manager;
 class EntityManager;
 class StateManager;

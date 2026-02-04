@@ -1,8 +1,9 @@
+|Size must be entered like thi number% or number if absolute
 State Neutral
 Position 0 0
-Size 1980 1080
-BgColor 0 0 0 0
+Size 100% 100%
 BgImage Bg2
+BgColor 255 255 255 255
 BgFullElement
 TextSize 24
 Font Main

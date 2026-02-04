@@ -8,6 +8,7 @@
 #include "GUI_Manager.h"
 #include "Map.h"
 #include "SoundManager.h"
+
 StateManager::StateManager(SharedContext* i_shared):
 	m_shared(i_shared)
 {

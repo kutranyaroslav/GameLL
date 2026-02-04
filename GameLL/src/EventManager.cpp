@@ -1,6 +1,7 @@
 #include "EventManager.h"
-
-EventManager::EventManager() {
+#include "StateManager.h"
+EventManager::EventManager()
+{
 	m_hasFocus = true;
 	LoadBindings();
 	
@@ -216,8 +217,11 @@ void EventManager::LoadBindings() {
 				}
 				bind->BindEvent(type, eventInfo);
 			}
-			catch (const std::exception& e) {
-				std::cout << "Error parsing event or code: " << e.what() << " for " << keyval << std::endl;
+			catch (const cException& e) {
+				THROW_EXCEPTION(100048, "Bind failed: - " + bind->m_name);
+				if (m_context){
+					m_context->m_errorLogManager->GetInstance()->LogException(e);
+				}
 				delete bind;
 				bind = nullptr;
 				break;
@@ -234,4 +238,7 @@ void EventManager::setFocus(bool i_focus) {
 }
 void EventManager::SetCurrentState(const StateType& i_type) {
 	m_currentState = i_type;
+}
+void EventManager::SetContext(SharedContext* i_context) {
+	m_context = i_context;
 }

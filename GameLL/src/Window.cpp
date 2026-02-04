@@ -1,6 +1,7 @@
 #include "Window.h"
 
-Window::Window() {
+Window::Window()
+{
 	Setup("Window", sf::Vector2u(1980, 1080));
 	
 }
@@ -44,11 +45,6 @@ void Window::Update() {
 		
 	}
 	m_eventManager.Update();
-	sf::View view = GetRenderWindow()->getView();
-	sf::Vector2f viewSize = view.getSize();
-	sf::Vector2f viewCenter = view.getCenter();
-	sf::Vector2f viewTopLeft = viewCenter - (viewSize / 2.0f);
-	m_textbox.Setup(5, 16, 200, viewTopLeft);
 }
 
 sf::RenderWindow* Window::GetRenderWindow() {

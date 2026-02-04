@@ -10,6 +10,7 @@ Game::Game() :
 	m_systemManager.SetEntityManager(&m_entityManager);
 	m_context.m_wind = &m_window;
 	m_context.m_eventManager = m_window.GetEventManager();
+	m_context.m_eventManager->setFocus(&m_context);
 	m_context.m_textbox = m_window.GetTextbox();
 	m_context.m_textureManager = &m_textureManager;
 	m_context.m_stateManager = &m_stateManager;
@@ -19,22 +20,7 @@ Game::Game() :
 	m_context.m_fontManager = &m_fontManager;
 	m_context.m_soundManager = &m_soundManager;
 	//TO DO Erase after developement done
-	if (m_context.m_stateManager) {
-			ErrorLogManager* log = m_context.m_errorLogManager->GetInstance();
-			log->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
-			try {
-				THROW_EXCEPTION(1, "test error");
-			}
-			catch (cException& e){
-				log->GetLogBuffer() << "******* Error *****\n";
-				log->Flush();
-				log->LogException(e);
-				log->GetLogBuffer() << "*********************\n";
-				log->Flush();
-
-			}
-		
-	}
+	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
 	m_stateManager.SwitchTo(StateType::MainMenu);
 }

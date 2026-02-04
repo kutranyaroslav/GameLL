@@ -266,7 +266,28 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 			else {
 				if (currentState == "") { continue; }
 				if (key == "Size") {
-					keystream >> temporaryStyle.m_size.x >> temporaryStyle.m_size.y;
+					std::string numTypeX, numTypeY;
+					keystream >> numTypeX;
+					keystream >> numTypeY;
+					bool absolute_x = (numTypeX.find('%') == std::string::npos ? true : false);
+					bool absolute_y = (numTypeY.find('%') == std::string::npos ? true : false);
+					if (absolute_x) {
+						temporaryStyle.m_size.x = std::stoi(numTypeX);
+					}
+					else {
+						numTypeX.pop_back();
+						double percent_x = std::stod(numTypeX) /100.0;
+						temporaryStyle.m_size.x = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x * percent_x;
+					}
+					if(absolute_y){
+						temporaryStyle.m_size.y = std::stoi(numTypeY);
+					}
+					else {
+						numTypeY.pop_back();
+						double percent_y = std::stod(numTypeY) / 100.0;
+						temporaryStyle.m_size.y = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y * percent_y;
+					}
+					
 				}
 				else if (key == "BgColor") {
 					int r, g, b, a = 0;

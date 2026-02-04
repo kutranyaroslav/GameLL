@@ -11,6 +11,9 @@
 #include "GUI_Events.h"
 #include "Utilitites.h"
 
+struct SharedContext;
+
+
 
 enum class EventType {
 	KeyDown = sf::Event::KeyPressed,
@@ -136,9 +139,10 @@ public:
 	}
 	void setFocus(bool i_focus);
 	void SetCurrentState(const StateType& i_type);
+	void SetContext(SharedContext* i_contex);
 private:
 	void LoadBindings();
-
+	SharedContext* m_context;
 	Bindings m_bindings;
 	Callbacks m_callbacks;
 	StateType m_currentState;
