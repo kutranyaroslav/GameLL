@@ -1,5 +1,6 @@
 #pragma once
 #include "StateManager.h"
+#include "dev/ErrorLogManager.h"
 class State_Paused:public BaseState
 {
 public:

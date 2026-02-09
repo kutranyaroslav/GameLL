@@ -94,6 +94,7 @@ public:
 	void Remove(const StateType& i_type);
 
 	SharedContext* GetSharedContext();
+	BaseState* GetCurrentState();
 private:
 	void CreateState(const StateType& i_type);
 	void RemoveState(const StateType& i_type);
@@ -104,6 +105,7 @@ private:
 			return new T(this);
 			};
 	}
+	BaseState* m_currentState;
 	SharedContext* m_shared;
 	StateContainer m_states;
 	TypeContainer m_toRemove;

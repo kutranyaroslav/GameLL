@@ -10,12 +10,6 @@
 enum Sheet { Tile_Size = 32, Sheet_Width = 512, Sheet_Height = 256, Num_Layers = 6 };
 using TileId = unsigned int;
 //all the potential info for world manager
-struct MapProps {
-	unsigned int m_id; 
-	std::string m_name; 
-	unsigned int m_width; 
-	unsigned int m_height; 
-};
 
 struct TileInfo {
 	TileInfo(SharedContext* i_context, const std::string& i_texture = "", TileId i_id = 0, unsigned int i_row = 0) :
@@ -73,7 +67,7 @@ using TileSet = std::unordered_map<TileKey, TileInfo*>;
 class Map
 {
 public:
-	Map(SharedContext* i_context, BaseState* i_currentState);
+	Map(SharedContext* i_context);
 	~Map();
 	Tile* GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer);
 	TileInfo* GetDefaultTile();
@@ -105,7 +99,6 @@ private:
 	std::string m_nextMap;
 	bool m_loadNextMap;
 	std::string m_backgroundTexture;
-	BaseState* m_currentState;
 	SharedContext* m_context;
 	EntityManagerNew* m_entityManager;
 

@@ -1,5 +1,5 @@
 #include "State_Paused.h"
-
+#include "dev/ErrorLogManager.h"
 State_Paused::State_Paused(StateManager* i_stateManager):
 	BaseState(i_stateManager){}
 
@@ -20,6 +20,14 @@ void State_Paused::onCreate() {
 	m_rect.setFillColor(sf::Color(0, 0, 0, 150));
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	evMgr->AddCallback(StateType::Paused, "Key_P", &State_Paused::Unpause, this);
+	try {
+		m_stateManager->GetCurrentState();
+	}
+	catch (const cException& e) {
+		THROW_EXCEPTION(1, "read on null ");
+		m_stateManager->GetSharedContext()->m_errorLogManager->createFile("devlog.txt");
+		m_stateManager->GetSharedContext()->m_errorLogManager->LogException(e);
+	}
 
 }
 

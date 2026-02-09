@@ -199,6 +199,7 @@
     <ClCompile Include="src\TextureManager.cpp" />
     <ClCompile Include="src\Utilitites.cpp" />
     <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\Wolrd.cpp" />
     <ClCompile Include="src\World.cpp" />
     <ClCompile Include="src\WorldManager.cpp" />
   </ItemGroup>

@@ -77,6 +77,11 @@ void StateManager::Update(const sf::Time& i_time) {
 
 SharedContext* StateManager::GetSharedContext() { return m_shared; }
 
+BaseState* StateManager::GetCurrentState()
+{
+	return m_currentState;
+}
+
 bool StateManager::HasState(const StateType& i_type){
 	for (auto itr = m_states.begin(); itr != m_states.end(); ++itr) {
 		if (itr->first == i_type) {
@@ -107,6 +112,7 @@ void StateManager::SwitchTo(const StateType& i_type) {
 			m_states.back().second->Deactivate();
 			StateType tmp_type = itr->first;
 			BaseState* tmp_state = itr->second;
+			m_currentState = itr->second;
 			m_states.erase(itr);
 			m_states.emplace_back(tmp_type, tmp_state);
 			tmp_state->Activate();
@@ -129,6 +135,7 @@ void StateManager::CreateState(const StateType& i_type) {
 	BaseState* state = newState->second();
 	state->m_view = m_shared->m_wind->GetRenderWindow()->getDefaultView();
 	m_states.emplace_back(i_type, state);
+	m_currentState = m_states.back().second;
 	state->onCreate();
 }
 

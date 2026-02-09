@@ -2,8 +2,8 @@
 
 
 
-Map::Map(SharedContext* i_context, BaseState* i_state):
-	m_context(i_context), m_currentState(i_state), m_maxMapSize(32,32),
+Map::Map(SharedContext* i_context):
+	m_context(i_context), m_maxMapSize(32,32),
 	m_tileCount(0), m_tileSetCount(0), m_mapGravity(512.f), m_loadNextMap(false),
 	m_defaultTile(i_context)
 {
@@ -44,7 +44,7 @@ void Map::Update(float i_dT) {
 
 		}
 		else {
-			m_currentState->GetStateManager()->SwitchTo(StateType::Paused);
+			m_context->m_stateManager->SwitchTo(StateType::Paused);
 		}
 		m_nextMap = "";
 	}
@@ -171,7 +171,7 @@ void Map::LoadMap(const std::string& i_path) {
 				}
 				sf::Texture* texture = m_context->m_textureManager->GetResource(m_backgroundTexture);
 				m_background.setTexture(*texture);
-				sf::Vector2f viewSize = m_currentState->GetView().getSize();
+				sf::Vector2f viewSize = m_context->m_stateManager->GetCurrentState()->GetView().getSize();
 				sf::Vector2u TextureSize = texture->getSize();
 				sf::Vector2f scaleFactors;
 				scaleFactors.x = viewSize.x / TextureSize.x;
