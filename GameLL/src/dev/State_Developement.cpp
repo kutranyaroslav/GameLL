@@ -7,6 +7,7 @@ State_Developement::State_Developement(StateManager* i_stateManager)
 
 void State_Developement::onCreate()
 {
+	m_state = StateType::Developement;
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
 	gui->LoadInterface(StateType::Developement, "ListBottomDevMode.interface", "ListBottom");
 

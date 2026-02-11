@@ -5,6 +5,7 @@ State_intro::State_intro(StateManager* i_stateManager):
 	BaseState(i_stateManager)
 {}
 void State_intro::onCreate(){
+	m_state = StateType::Intro;
 	m_timePassed = 0.0f;
 	sf::Vector2u windowSize = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getSize();
 	m_introTexture.loadFromFile("D:/Programming/SFML_5/SFML_5/assets/Kunoichi/Hurt.png");

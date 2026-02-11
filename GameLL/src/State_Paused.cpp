@@ -4,6 +4,7 @@ State_Paused::State_Paused(StateManager* i_stateManager):
 	BaseState(i_stateManager){}
 
 void State_Paused::onCreate() {
+	m_state = StateType::Paused;
 	SetTransparent(true);
 	m_font.loadFromFile("D:/Programming/SFML_5/SFML_5/ARIAL.TTF");
 	

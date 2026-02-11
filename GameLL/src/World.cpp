@@ -1,0 +1,70 @@
+#include "World.h"
+
+
+World::World(SharedContext* i_context) :m_context(i_context), m_currentMap(nullptr)
+{
+}
+World::~World() {
+	Purge();
+}
+
+bool World::AddMap(const std::string& i_name, const std::string& i_tileset, const std::string& i_texture)
+{
+	auto itr = m_maps.find(i_name);
+	if (itr != m_maps.end()) { return false; }
+	Map* map = new Map(m_context, i_tileset, i_texture);
+	if (!map) { return false; }
+	m_maps.emplace(i_name, map);
+	return true;
+}
+
+bool World::RemoveMap(const std::string& i_name)
+{
+	auto itr = m_maps.find(i_name);
+	if (itr == m_maps.end()) { return false; }
+	delete itr->second;
+	m_maps.erase(itr);
+	return true;
+}
+bool World::HasMap(const std::string& i_name) {
+	return m_maps.find(i_name) != m_maps.end();
+}
+
+bool World::LoadMap(const std::string& i_name) {
+	auto itr = m_maps.find(i_name);
+	if (itr == m_maps.end()) { return false; }
+	if (!itr->second) { return false; }
+	itr->second->LoadMap("Assets//Maps//" + i_name + ".map");
+	m_currentMap = itr->second;
+	return true;
+
+}
+
+Map* World::GetMap(const std::string& i_name) {
+	auto itr = m_maps.find(i_name);
+	if (itr == m_maps.end()) { return nullptr; }
+	return itr->second;
+}
+Map* World::GetCurrentMap() { return m_currentMap; }
+
+void World::Purge() {
+	for (auto& itr : m_maps) {
+		delete itr.second;
+		itr.second = nullptr;
+	}
+}
+
+
+void World::Update(float i_dT) {
+	if (m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Game ||
+		m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Developement) {
+		if (m_currentMap) { m_currentMap->Update(i_dT); }
+	}
+}
+
+void World::Draw(unsigned int i_layer) {
+	if (m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Game ||
+		m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Developement) {
+		if (m_currentMap) { m_currentMap->Draw(i_layer); }
+	}
+}

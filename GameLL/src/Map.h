@@ -1,10 +1,9 @@
 #pragma once
 #include "StateManager.h"
-#include "unordered_map"
 #include "Utilitites.h"
 #include "EntityManagerNew.h"
 #include <fstream>
-
+#include <unordered_map>
 
 
 enum Sheet { Tile_Size = 32, Sheet_Width = 512, Sheet_Height = 256, Num_Layers = 6 };
@@ -67,7 +66,7 @@ using TileSet = std::unordered_map<TileKey, TileInfo*>;
 class Map
 {
 public:
-	Map(SharedContext* i_context);
+	Map(SharedContext* i_context,const std::string& i_tileset,const std::string& i_texture);
 	~Map();
 	Tile* GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer);
 	TileInfo* GetDefaultTile();
@@ -86,6 +85,8 @@ private:
 	void PurgeMap();
 	void PurgeTileSet();
 
+	std::string m_tilesetName;
+	std::string m_texture;
 	TileSet m_tileset;
 	TileMap m_tilemap;
 	sf::Sprite m_background;

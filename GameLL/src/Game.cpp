@@ -4,7 +4,7 @@ Game::Game() :
 	m_window(),
 	m_stateManager(&m_context),
 	m_entityManager(&m_systemManager, &m_textureManager),
-	m_guiManager(m_window.GetEventManager(), &m_context), m_soundManager(&m_audioManager)
+	m_guiManager(m_window.GetEventManager(), &m_context), m_soundManager(&m_audioManager),m_world(&m_context)
 {
 	manualFrame = 0;
 	m_systemManager.SetEntityManager(&m_entityManager);
@@ -19,8 +19,10 @@ Game::Game() :
 	m_context.m_guiManager = &m_guiManager;
 	m_context.m_fontManager = &m_fontManager;
 	m_context.m_soundManager = &m_soundManager;
+	m_context.m_world = &m_world;
 	//TO DO Erase after developement done
 	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
+
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
 	m_stateManager.SwitchTo(StateType::MainMenu);
 }
@@ -38,6 +40,7 @@ void Game::Update() {
  	m_window.Update();
 	m_stateManager.Update(m_elapsed);
 	m_soundManager.Update(m_elapsed.asSeconds());
+	m_world.Update(m_elapsed.asSeconds());
 }
 Window* Game::getWindow() {
 	return &m_window;

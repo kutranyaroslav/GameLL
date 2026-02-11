@@ -2,21 +2,19 @@
 
 
 
-Map::Map(SharedContext* i_context):
+Map::Map(SharedContext* i_context, const std::string& i_tileset, const std::string& i_texture):
 	m_context(i_context), m_maxMapSize(32,32),
 	m_tileCount(0), m_tileSetCount(0), m_mapGravity(512.f), m_loadNextMap(false),
-	m_defaultTile(i_context)
+	m_defaultTile(i_context), m_tilesetName(i_tileset), m_texture(i_texture)
 {
 	
 	m_entityManager = m_context->m_entityManager;
-	m_context->m_gameMap = this;
-	LoadTiles("Tiles.cfg", "Tilesheet");
+	LoadTiles(m_tilesetName, i_texture);
 
 }
 Map::~Map() {
 	PurgeMap();
 	PurgeTileSet();
-	m_context->m_gameMap = nullptr;
 }
  Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
 	if(i_x < 0 || i_y < 0 || i_x>= m_maxMapSize.x 

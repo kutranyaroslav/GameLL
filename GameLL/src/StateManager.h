@@ -5,6 +5,7 @@
 #include "FontManager.h"
 #include "dev/ErrorLogManager.h"
 #include "Window.h"
+class World;
 class GUI_Manager;
 class EntityManager;
 class StateManager;
@@ -39,9 +40,11 @@ public:
 	bool IsTranscendent() const { return m_transcendent; }
 	StateManager* GetStateManager() { return m_stateManager; }
 	sf::View& GetView() { return m_view; }
+	StateType GetState() { return m_state; }
 
 
 protected:
+	StateType m_state;
 	sf::View m_view;
 	StateManager* m_stateManager;
 	bool m_transparent;
@@ -56,8 +59,10 @@ class StateManager;
 
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
-		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
-		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr) {
+		m_textureManager(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
+		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr),
+	m_world(nullptr)
+	{
 		
 	}
 	
@@ -67,13 +72,13 @@ struct SharedContext {
 	TextureManager* m_textureManager;
 	StateManager* m_stateManager;
 	EntityManagerNew* m_entityManager;
-	Map* m_gameMap;
 	SystemManager* m_systemManager;
 	FontManager* m_fontManager;
 	GUI_Manager* m_guiManager;
 	SoundManager* m_soundManager;
 	AudioManager* m_audioManager;
 	ErrorLogManager* m_errorLogManager;
+	World* m_world;
 	
 };
 

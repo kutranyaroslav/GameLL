@@ -6,6 +6,7 @@ State_MainMenu::State_MainMenu(StateManager* i_stateManager) :
 	BaseState(i_stateManager) {}
 
 void State_MainMenu::onCreate() {
+	m_state = StateType::MainMenu;
 	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
 	Window* wind = m_stateManager->GetSharedContext()->m_wind;
 	guiMgr->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
