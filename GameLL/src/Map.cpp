@@ -1,16 +1,18 @@
 #include "Map.h"
+#include "S_Collision.h"
+#include "S_Movement.h"
 
 
-
-Map::Map(SharedContext* i_context, const std::string& i_tileset, const std::string& i_texture):
+Map::Map(SharedContext* i_context, const std::string& i_tileset, const std::string& i_texture) :
 	m_context(i_context), m_maxMapSize(32,32),
 	m_tileCount(0), m_tileSetCount(0), m_mapGravity(512.f), m_loadNextMap(false),
-	m_defaultTile(i_context), m_tilesetName(i_tileset), m_texture(i_texture)
+	m_defaultTile(i_context), m_tilesetName(i_tileset), m_texture(i_texture), m_settedUp(false)
 {
-	
+	if (i_tileset != "" && i_texture != "") { 
+		m_settedUp = true; 
+	}
+	if (m_settedUp) { SetUp(m_tilesetName, m_texture); }
 	m_entityManager = m_context->m_entityManager;
-	LoadTiles(m_tilesetName, i_texture);
-
 }
 Map::~Map() {
 	PurgeMap();
@@ -34,18 +36,6 @@ unsigned int Map::ConvertCordinates(const unsigned int& i_x, const unsigned int&
 
 
 void Map::Update(float i_dT) {
-	if (m_loadNextMap) {
-		PurgeMap();
-		m_loadNextMap = false;
-		if (m_nextMap != ""){
-			LoadMap("Assets/Maps/" + m_nextMap);
-
-		}
-		else {
-			m_context->m_stateManager->SwitchTo(StateType::Paused);
-		}
-		m_nextMap = "";
-	}
 	sf::FloatRect viewSpace = m_context->m_wind->GetViewSpace();
 	m_background.setPosition(viewSpace.left, viewSpace.top);
 }
@@ -74,6 +64,13 @@ void Map::Draw(unsigned int i_layer) {
 			++count;
 		}
 	}
+}
+
+void Map::SetUp(const std::string& i_tileset, const std::string& i_texture)
+{
+	SetTileSet(i_tileset);
+	SetTexture(i_texture);
+	m_settedUp = true;
 }
 
 void Map::PurgeMap() {
@@ -124,8 +121,10 @@ void Map::LoadTiles(const std::string& i_path, const std::string& i_texture) {
 	}
 }
 void Map::LoadMap(const std::string& i_path) {
+	if (!m_settedUp) { return; }
+	LoadTiles(m_tilesetName, m_texture);
 	std::ifstream file; 
-	file.open(Utils::GetWorkingDirectory() + i_path);
+	file.open(Utils::GetWorkingDirectory()+ "Assets//Maps//" + i_path);
 	if (file.is_open()) {
 		std::string line; 
 		while (std::getline(file, line)) {
@@ -157,8 +156,14 @@ void Map::LoadMap(const std::string& i_path) {
 				}
 				std::string warp;
 				keystream >> warp;
-				tile->m_warp = false;
-				if (warp == "WARP") { tile->m_warp = true; }
+				tile->m_checkout = false;
+				if (warp == "CHECKOUT") { 
+					std::string nextmap;
+					keystream >> nextmap;
+					tile->m_checkout = true;
+					tile->m_checkoutMap = nextmap;
+					m_checkoutTiles.emplace(std::make_pair(nextmap, tile));
+				}
 			}
 			else if(type == "BACKGROUND") {
 				if (m_backgroundTexture != "") { continue; }
@@ -185,28 +190,6 @@ void Map::LoadMap(const std::string& i_path) {
 			else if (type == "DEFAULT_FRICTION") {
 				keystream >> m_defaultTile.m_friction.x >> m_defaultTile.m_friction.y;
 			}
-			else if (type == "NEXTMAP") {
-				keystream >> m_nextMap;
-			}
-			/*else if (type == "PLAYER") {
-				if (m_playerId == -1) { continue; }
-				m_playerId = m_entityManager->Add(EntityType::Player);
-				if (m_playerId < 0) { continue; }
-				float playerX = 0; float playerY = 0;
-				keystream >> playerX >> playerY;
-				m_entityManager->Find(m_playerId)->SetPosition(playerX, playerY);
-				m_playerStart = sf::Vector2f(playerX, playerY);
-			}
-			else if (type == "ENEMY") {
-				std::string enemyName;
-				keystream >> enemyName;
-				int enemyId = m_entityManager->Add(EntityType::Enemy, enemyName);
-				if (enemyId < 0) { continue; }
-				float enemyX = 0; float enemyY = 0;
-				keystream >> enemyX >> enemyY;
-				m_entityManager->Find(enemyId)->SetPosition(enemyX, enemyY);
-
-			}*/
 			else if (type == "ENTITY") {
 				std::string name; 
 				keystream >> name;
@@ -220,11 +203,20 @@ void Map::LoadMap(const std::string& i_path) {
 				if (position) { keystream >> *position; }
 			}
 		}
+
+		m_context->m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetMap(this);
+		m_context->m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetMap(this);
 		file.close();
+
 	}
+	
 }
 
-void Map::LoadNext() { m_loadNextMap = true; }
+void Map::LoadNext(const std::string& i_name) { 
+	PurgeMap();
+	m_checkoutTiles.clear();
+	LoadMap(i_name);
+}
 
 
 float Map::GetGravity() const { return m_mapGravity; }
@@ -233,4 +225,13 @@ TileInfo* Map::GetDefaultTile() { return &m_defaultTile; }
 unsigned int Map::GetTileSize()const { return Sheet::Tile_Size; }
 const sf::Vector2u& Map::GetMapSize() const { return m_maxMapSize; }
 const sf::Vector2f& Map::GetPlayerStart() const { return m_playerStart; }
+void Map::SetTileSet(const std::string& i_tileset)
+{
+	m_tilesetName = i_tileset;
+}
+void Map::SetTexture(const std::string& i_texture)
+{
+	m_texture = i_texture;
+}
 int Map::GetPlayerId() { return m_playerId; }
+bool Map::GetSettedUp() { return m_settedUp; }

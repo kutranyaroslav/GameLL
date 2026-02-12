@@ -1,6 +1,5 @@
 #include "World.h"
 
-
 World::World(SharedContext* i_context) :m_context(i_context), m_currentMap(nullptr)
 {
 }
@@ -34,10 +33,25 @@ bool World::LoadMap(const std::string& i_name) {
 	auto itr = m_maps.find(i_name);
 	if (itr == m_maps.end()) { return false; }
 	if (!itr->second) { return false; }
-	itr->second->LoadMap("Assets//Maps//" + i_name + ".map");
+	itr->second->LoadMap(i_name + ".map");
 	m_currentMap = itr->second;
 	return true;
 
+}
+//to do the logic for switching between the maps
+bool World::LoadNext(const std::string& i_name, const std::string& i_tileset, const std::string& i_texture)
+{
+	if (!AddMap(i_name, i_tileset, i_texture)) { return false; }
+	auto itr = m_maps.find(i_name);
+	return true;
+}
+
+bool World::SetUp(const std::string& i_name, const std::string& i_tileset, const std::string& i_texture)
+{
+	auto itr = m_maps.find(i_name);
+	if (itr == m_maps.end()) { return false; }
+	if (!itr->second) { return false; }
+	itr->second->SetUp(i_tileset, i_texture);
 }
 
 Map* World::GetMap(const std::string& i_name) {

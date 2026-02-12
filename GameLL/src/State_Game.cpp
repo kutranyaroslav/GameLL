@@ -35,11 +35,12 @@ void State_Game::onCreate() {
 	if (!m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "Tiles.cfg", "Tilesheet")) { __debugbreak(); }
 	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP1");
 	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetMap(
-	m_stateManager->GetSharedContext()->m_world->GetCurrentMap());
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetMap(
-		m_stateManager->GetSharedContext()->m_world->GetCurrentMap()); 
+	
 	m_player = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetPlayerId();
+	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetWorld
+		(m_stateManager->GetSharedContext()->m_world);
+	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetWorld(
+	m_stateManager->GetSharedContext()->m_world);
 	
 }
 

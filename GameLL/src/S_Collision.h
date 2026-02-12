@@ -1,7 +1,7 @@
 #pragma once
 #include "S_Base.h"
 #include "C_Collidable.h"
-#include "Map.h"
+#include "World.h"
 #include <vector>
 struct CollisionElement {
 	CollisionElement(float i_area, TileInfo* i_info, const sf::FloatRect& i_bounds) :
@@ -15,6 +15,7 @@ class S_Collision:public S_Base
 {
 public:
 	S_Collision(SystemManager* i_systemMgr);
+	void SetWorld(World* i_world);
 	void SetMap(Map* i_map);
 	Map* GetMap();
 	void Update(float i_dT) override;
@@ -26,5 +27,6 @@ private:
 	void EntityCollisions();
 
 	Map* m_gameMap;
+	World* m_world;
 };
 
