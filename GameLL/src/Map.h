@@ -67,13 +67,17 @@ using TileSet = std::unordered_map<TileKey, TileInfo*>;
 class Map
 {
 public:
-	Map(SharedContext* i_context,const std::string& i_tileset = "", const std::string& i_texture= "");
+	Map(SharedContext* i_context,const std::string& i_tilesetName
+		,const std::string& i_tileset = "", const std::string& i_texture= "");
 	~Map();
+	bool AddTileset(const std::string& i_name, const std::string& i_path, const std::string& i_texture);
+	bool RemoveTileset(const std::string& i_name);
+	bool HasTileset(const std::string& i_name);
 	void LoadMap(const std::string& i_path);
 	void LoadNext(const std::string& i_name);
 	void Update(float i_dT);
 	void Draw(unsigned int i_layer);
-	void SetUp(const std::string& i_tileset, const std::string& i_texture);
+	
 	//SETTERS AND GETTER
 
 	void SetTileSet(const std::string& i_tileset);
@@ -85,17 +89,17 @@ public:
 	unsigned int GetTileSize()const;
 	const sf::Vector2u& GetMapSize() const;
 	const sf::Vector2f& GetPlayerStart()const;
-	bool GetSettedUp();
+	
 private:
 	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
-	void LoadTiles(const std::string& i_path, const std::string& i_texture);
+	bool LoadTiles(const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles);
 	void PurgeMap();
 	void PurgeTileSet();
 	
 
 	std::string m_tilesetName;
 	std::string m_texture;
-	TileSet m_tileset;
+	std::unordered_map<std::string, TileSet> m_tilesets;
 	TileMap m_tilemap;
 	sf::Sprite m_background;
 	TileInfo m_defaultTile;
@@ -106,7 +110,7 @@ private:
 	int m_playerId; 
 	float m_mapGravity;
 	bool m_loadNextMap;
-	bool m_settedUp;
+	
 	std::unordered_map<std::string, Tile*> m_checkoutTiles;
 	std::string m_backgroundTexture;
 	SharedContext* m_context;

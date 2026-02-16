@@ -32,7 +32,8 @@ void State_Game::onCreate() {
 	evMgr->AddCallback(StateType::Game, "Player_StopMoveup", &State_Game::Stop, this);
 	evMgr->AddCallback(StateType::Game, "Player_StopMovedown", &State_Game::Stop, this);
 	//test integration of maps
-	if (!m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "Tiles.cfg", "Tilesheet")) { __debugbreak(); }
+	if (!m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "TestTileset","Tiles.cfg", "Tilesheet")) { __debugbreak(); }
+	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP1", "TestTileset2", "Tiles.cfg", "Tilesheet2");
 	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP1");
 	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
 	

@@ -7,11 +7,12 @@ World::~World() {
 	Purge();
 }
 
-bool World::AddMap(const std::string& i_name, const std::string& i_tileset, const std::string& i_texture)
+bool World::AddMap(const std::string& i_name,const std::string& i_tilesetName ,
+	const std::string& i_tileset, const std::string& i_texture)
 {
 	auto itr = m_maps.find(i_name);
 	if (itr != m_maps.end()) { return false; }
-	Map* map = new Map(m_context, i_tileset, i_texture);
+	Map* map = new Map(m_context, i_tilesetName,i_tileset, i_texture);
 	if (!map) { return false; }
 	m_maps.emplace(i_name, map);
 	return true;
@@ -46,13 +47,26 @@ bool World::LoadNext(const std::string& i_name, const std::string& i_tileset, co
 	return true;
 }
 
-bool World::SetUp(const std::string& i_name, const std::string& i_tileset, const std::string& i_texture)
+bool World::AddTileset(const std::string& i_mapName, const std::string& i_tilesetName, const std::string& i_path, const std::string& i_texture)
 {
-	auto itr = m_maps.find(i_name);
-	if (itr == m_maps.end()) { return false; }
-	if (!itr->second) { return false; }
-	itr->second->SetUp(i_tileset, i_texture);
+	if (!HasMap(i_mapName)) { return false; }
+	Map* map = GetMap(i_mapName);
+	return map->AddTileset(i_tilesetName, i_path, i_texture);
 }
+
+bool World::RemoveTileset(const std::string& i_mapName, const std::string& i_tilesetName){
+	if (!HasMap(i_mapName)) { return false; }
+	Map* map = GetMap(i_mapName);
+	return map->RemoveTileset(i_tilesetName);
+}
+
+bool World::HasTileset(const std::string& i_mapName, const std::string& i_tilesetName)
+{
+	if (!HasMap(i_mapName)) { return false; }
+	Map* map = GetMap(i_mapName);
+	return map->HasTileset(i_tilesetName);
+}
+
 
 Map* World::GetMap(const std::string& i_name) {
 	auto itr = m_maps.find(i_name);

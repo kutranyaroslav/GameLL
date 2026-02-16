@@ -3,20 +3,43 @@
 #include "S_Movement.h"
 
 
-Map::Map(SharedContext* i_context, const std::string& i_tileset, const std::string& i_texture) :
+Map::Map(SharedContext* i_context,const std::string& i_tilesetName
+	,const std::string& i_tileset, const std::string& i_texture) :
 	m_context(i_context), m_maxMapSize(32,32),
 	m_tileCount(0), m_tileSetCount(0), m_mapGravity(512.f), m_loadNextMap(false),
-	m_defaultTile(i_context), m_tilesetName(i_tileset), m_texture(i_texture), m_settedUp(false)
+	m_defaultTile(i_context), m_tilesetName(i_tileset), m_texture(i_texture)
 {
-	if (i_tileset != "" && i_texture != "") { 
-		m_settedUp = true; 
+	if (i_tileset != "" && i_texture != "" && i_tilesetName != "") {
+		AddTileset(i_tilesetName, i_tileset, i_texture);
 	}
-	if (m_settedUp) { SetUp(m_tilesetName, m_texture); }
 	m_entityManager = m_context->m_entityManager;
 }
 Map::~Map() {
 	PurgeMap();
 	PurgeTileSet();
+}
+bool Map::AddTileset(const std::string& i_name, const std::string& i_path, const std::string& i_texture)
+{	
+	auto itr = m_tilesets.find(i_name);
+	if (itr != m_tilesets.end()) { return false; }
+	TileSet tileset;
+	if(!LoadTiles(i_path,i_texture,tileset)){return false;}
+	return m_tilesets.emplace(i_name, std::move(tileset)).second;
+
+}
+bool Map::RemoveTileset(const std::string& i_name) {
+	auto itr = m_tilesets.find(i_name);
+	if (itr == m_tilesets.end()) { return false; }
+	for (auto& itr2 : itr->second) {
+		delete itr2.second;
+	}
+	itr->second.clear();
+	m_tilesets.erase(itr);
+	return true;
+
+}
+bool Map::HasTileset(const std::string& i_name) {
+	return m_tilesets.find(i_name)!= m_tilesets.end();
 }
  Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
 	if(i_x < 0 || i_y < 0 || i_x>= m_maxMapSize.x 
@@ -66,12 +89,7 @@ void Map::Draw(unsigned int i_layer) {
 	}
 }
 
-void Map::SetUp(const std::string& i_tileset, const std::string& i_texture)
-{
-	SetTileSet(i_tileset);
-	SetTexture(i_texture);
-	m_settedUp = true;
-}
+
 
 void Map::PurgeMap() {
 	m_tileCount = 0;
@@ -85,14 +103,18 @@ void Map::PurgeMap() {
 	m_backgroundTexture = "";
 }
 void Map::PurgeTileSet() {
-	for (auto& itr : m_tileset) {
-		delete itr.second;
+	for (auto& itr : m_tilesets) {
+		TileSet& itr2 = itr.second;
+		for (auto& tilepair : itr2) {
+			delete tilepair.second;
+		}
+		itr2.clear();
 	}
-	m_tileset.clear();
+	m_tilesets.clear();
 	m_tileSetCount = 0;
 }
 
-void Map::LoadTiles(const std::string& i_path, const std::string& i_texture) {
+bool Map::LoadTiles(const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles) {
 	std::ifstream file;
 	file.open(Utils::GetWorkingDirectory() + "nav//"+ i_path);
 	if (file.is_open()) {
@@ -110,19 +132,20 @@ void Map::LoadTiles(const std::string& i_path, const std::string& i_texture) {
 			TileInfo* tile = new TileInfo(m_context, i_texture, tileId, tileRow);
 			keystream >> tile->m_name >> tile->m_friction.x >> tile->m_friction.y >>
 				tile->m_deadly;
-			if (!m_tileset.emplace(key, tile).second) {
+			if (!i_outTiles.emplace(key, tile).second) {
 				std::cout << "Dublicate file \n " << std::endl;
 				delete tile;
 			}
-
-			
 		}
 		file.close();
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 void Map::LoadMap(const std::string& i_path) {
-	if (!m_settedUp) { return; }
-	LoadTiles(m_tilesetName, m_texture);
+	if (m_tilesets.empty()) { return; }
 	std::ifstream file; 
 	file.open(Utils::GetWorkingDirectory()+ "Assets//Maps//" + i_path);
 	if (file.is_open()) {
@@ -135,19 +158,24 @@ void Map::LoadMap(const std::string& i_path) {
 			if (type == "TILE") {
 				int tileId = 0;
 				int row = 0;
+				std::string tilesetname;
+				keystream >> tilesetname;
 				keystream >> tileId;
 				keystream >> row;
 				if (tileId < 0) { continue; }
 				TileKey key{ tileId, row };
-				auto itr = m_tileset.find(key);
-				if (itr == m_tileset.end()) { continue; }
+				auto itr = m_tilesets.find(tilesetname);
+				if (itr == m_tilesets.end()) { continue; }
+				TileSet& itr2 = itr->second;
+				auto itr3 = itr2.find(key);
+				if (itr3 == itr2.end()) { continue; }
 				sf::Vector2i tileCords;
 				unsigned int tileLayer;
 				unsigned int tileSolidity;
 				keystream >> tileCords.x >> tileCords.y >> tileLayer >> tileSolidity;
 				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y || tileLayer >= Sheet::Num_Layers) { continue; }
 				Tile* tile = new Tile();
-				tile->m_properties = itr->second;
+				tile->m_properties = itr3->second;
 				tile->m_solid = tileSolidity;
 				if (!m_tilemap.emplace(ConvertCordinates(tileCords.x, tileCords.y,tileLayer), tile).second) {
 					delete tile;
@@ -234,4 +262,3 @@ void Map::SetTexture(const std::string& i_texture)
 	m_texture = i_texture;
 }
 int Map::GetPlayerId() { return m_playerId; }
-bool Map::GetSettedUp() { return m_settedUp; }

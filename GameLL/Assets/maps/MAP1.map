@@ -6,13 +6,13 @@ DEFAULT_FRICTION 0.1 0.1
 NEXTMAP MAP2.map
 |ENTITY|Name|x|y|elevation
 ENTITY PLAYER 120 120 2 
-|TILE|id|row|x|y|layer|solid|
+|TILE|tilesetname|id|row|x|y|layer|solid|
 |TestRoom|
 |TopWall|
-TILE 2 2 0 0 2 1
-TILE 2 2 1 0 2 1
-TILE 2 2 2 0 2 1
-TILE 2 2 3 0 2 1
+TILE TestTileset 2 2 0 0 2 1
+TILE TestTileset 2 2 1 0 2 1
+TILE TestTileset 2 2 2 0 2 1
+TILE TestTileset2 0 0 3 0 2 1
 TILE 2 2 4 0 2 1
 TILE 2 2 5 0 2 1
 TILE 2 2 6 0 2 1
