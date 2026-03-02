@@ -9,6 +9,7 @@ public:
 	void Deactivate() override;
 	void Draw()override;
 	void Update(const sf::Time& i_time)override;
+	void React(EventDetails* i_details);
 private:
 
 };

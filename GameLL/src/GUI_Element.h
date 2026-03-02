@@ -30,6 +30,7 @@ struct GUI_Style {
 	bool m_backgroundImageFullElement;
 	std::string m_glyph;
 	sf::Vector2f m_glyphPadding;
+	sf::Vector2f m_margin;
 };
 struct GUI_Visual {
 	sf::RectangleShape m_backgroundSolid;
@@ -68,6 +69,7 @@ public:
 	void SetState(const GUI_ElementState& i_state);
 	GUI_ElementState& GetState();
 	sf::Vector2f& GetPosition();
+	sf::Vector2f& GetMargin();
 	void SetContentSize(sf::Vector2f& i_size);
 	sf::Vector2f& GetSize();
 	GUI_ElementType& GetType();

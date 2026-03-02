@@ -22,6 +22,7 @@ public:
 	bool HasTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 	Map* GetMap(const std::string& i_name);
 	Map* GetCurrentMap();
+	TileSet* GetTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 
 	void Update(float i_dT);
 	void Draw(unsigned int i_layer);

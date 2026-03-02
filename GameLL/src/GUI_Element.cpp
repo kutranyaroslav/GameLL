@@ -29,6 +29,7 @@ void GUI_Element::SetPosition(const sf::Vector2f& i_pos) {
 
 }
 sf::Vector2f& GUI_Element::GetPosition() { return m_position; }
+sf::Vector2f& GUI_Element::GetMargin() { return m_styles[m_state].m_margin; }
 sf::Vector2f GUI_Element::GetGlobalPosition() {
 	sf::Vector2f position = GetPosition();
 	if (m_owner == nullptr) { return position; }

@@ -41,6 +41,10 @@ bool Map::RemoveTileset(const std::string& i_name) {
 bool Map::HasTileset(const std::string& i_name) {
 	return m_tilesets.find(i_name)!= m_tilesets.end();
 }
+
+TileSet* Map::GetTileset(const std::string& i_name) {
+	return &m_tilesets.find(i_name)->second;
+}
  Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
 	if(i_x < 0 || i_y < 0 || i_x>= m_maxMapSize.x 
 		|| i_y >= m_maxMapSize.y || i_layer < 0 || i_layer >= Sheet::Num_Layers
@@ -52,6 +56,11 @@ bool Map::HasTileset(const std::string& i_name) {
 	auto itr = m_tilemap.find(ConvertCordinates(i_x, i_y, i_layer));
 	return itr != m_tilemap.end() ? itr->second : nullptr;
 }
+
+ const std::unordered_map<std::string, TileSet>& Map::GetTilesets()
+ {
+	 return m_tilesets;
+ }
 
 unsigned int Map::ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const{
 	return ((i_layer * m_maxMapSize.y + i_y) * m_maxMapSize.x + i_x);

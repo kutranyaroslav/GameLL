@@ -297,6 +297,9 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 				else if (key == "BgImage") {
 					keystream >> temporaryStyle.m_backgroundImage;
 				}
+				else if (key == "Margin") {
+					keystream >> temporaryStyle.m_margin.x >> temporaryStyle.m_margin.y;
+				}
 				else if (key == "BgImageColor") {
 					int r, g, b, a = 0;
 					keystream >> r >> g >> b >> a;

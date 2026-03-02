@@ -75,6 +75,12 @@ Map* World::GetMap(const std::string& i_name) {
 }
 Map* World::GetCurrentMap() { return m_currentMap; }
 
+TileSet* World::GetTileset(const std::string& i_mapName, const std::string& i_tilesetName) {
+	if (!HasMap(i_mapName)) { return nullptr; }
+	Map* map = GetMap(i_mapName);
+	return map->GetTileset(i_tilesetName);
+}
+
 void World::Purge() {
 	for (auto& itr : m_maps) {
 		delete itr.second;

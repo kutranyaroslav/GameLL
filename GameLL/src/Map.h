@@ -72,6 +72,7 @@ public:
 	~Map();
 	bool AddTileset(const std::string& i_name, const std::string& i_path, const std::string& i_texture);
 	bool RemoveTileset(const std::string& i_name);
+
 	bool HasTileset(const std::string& i_name);
 	void LoadMap(const std::string& i_path);
 	void LoadNext(const std::string& i_name);
@@ -84,12 +85,13 @@ public:
 	void SetTexture(const std::string& i_texture);
 	int GetPlayerId();
 	Tile* GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer);
+	const std::unordered_map<std::string, TileSet>& GetTilesets();
 	TileInfo* GetDefaultTile();
 	float GetGravity()const;
 	unsigned int GetTileSize()const;
 	const sf::Vector2u& GetMapSize() const;
 	const sf::Vector2f& GetPlayerStart()const;
-	
+	TileSet* GetTileset(const std::string& i_name);
 private:
 	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
 	bool LoadTiles(const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles);
