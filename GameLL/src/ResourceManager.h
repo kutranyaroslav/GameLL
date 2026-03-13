@@ -84,6 +84,7 @@ private:
 	std::unordered_map<std::string, std::string> m_paths;
 
 	std::pair<T*, unsigned int>* Find(const std::string& i_id) {
+		if (i_id == "") { return nullptr; }
 		auto itr = m_resources.find(i_id);
 		return itr != m_resources.end() ? &itr->second : nullptr;
 	}

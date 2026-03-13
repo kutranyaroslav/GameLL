@@ -47,6 +47,7 @@ protected:
 	StateType m_state;
 	sf::View m_view;
 	StateManager* m_stateManager;
+	std::vector<std::string> m_dynamicCallbacks;
 	bool m_transparent;
 	bool m_transcendent;
 };

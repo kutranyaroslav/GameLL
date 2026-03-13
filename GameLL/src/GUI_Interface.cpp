@@ -76,6 +76,10 @@ void GUI_Interface::ReadIn(std::stringstream& i_stream) {
 
 }
 void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
+	if(m_guiManager->m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Developement)
+	{
+		__debugbreak();
+	}
 	DefocusTextFields();
 	if (m_titleBar.getGlobalBounds().contains(i_mousePos) && m_movable && m_showTitleBar) {
 		m_beingMoved = true;

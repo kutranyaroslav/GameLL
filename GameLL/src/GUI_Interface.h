@@ -37,7 +37,7 @@ public:
 	void RedrawControls();
 	void UpdateScrollHorizontal(unsigned int i_percent);
 	void UpdateScrollVertical(unsigned int i_percent);
-
+	void AdjustContentSize(GUI_Element* i_reference = nullptr);
 	sf::Vector2f& GetGlobalPosition() const;
 
 	GUI_Element* GetElement(const std::string& i_name)const;
@@ -51,7 +51,6 @@ public:
 	void Focus();
 private:
 	void DefocusTextFields();
-	void AdjustContentSize( GUI_Element* i_reference = nullptr);
 	void SetContentSize(const sf::Vector2f& i_vec);
 
 	Elements m_elements;

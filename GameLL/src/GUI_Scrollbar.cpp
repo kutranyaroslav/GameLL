@@ -56,6 +56,7 @@ void GUI_Scrollbar::Update(float i_dT) {
 	m_mouseMoveLast = mousepos;
 	bool horizontal = m_sliderType == SliderType::Horizontal;
 	m_slider.move((horizontal ? sf::Vector2f(difference.x, 0.f) : sf::Vector2f(0.f, difference.y)));
+	// check out of borders for slider rectshape
 	if (horizontal && m_slider.getPosition().x < 0) {
 		m_slider.setPosition(sf::Vector2f(0, m_slider.getPosition().y));
 	}

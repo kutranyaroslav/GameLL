@@ -1,0 +1,12 @@
+State Neutral
+Size 150 32
+BgColor 20 0 0 255	
+BgFullElement
+Position 700 0
+/State
+State Hover
+BgColor 255 100 0 255
+/State
+State Clicked
+BgColor 255 150 0 255
+/State
