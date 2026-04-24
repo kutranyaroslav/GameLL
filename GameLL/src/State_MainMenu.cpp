@@ -27,6 +27,11 @@ void State_MainMenu::onDestroy() {
 }
 
 void State_MainMenu::Activate() {
+	//deactivating all the elements before after the state will be changed because otherwise gui elements stay in clicked state
+	GUI_Interface* i = m_stateManager->GetSharedContext()->m_guiManager->GetInterface(StateType::MainMenu, "MainMenu");
+	for (auto& e : i->GetElements()) {
+		e.second->SetState(GUI_ElementState::Neutral);
+	}
 	auto play = m_stateManager->GetSharedContext()->m_guiManager->GetInterface(StateType::MainMenu, "MainMenu")
 		->GetElement("Play");
 	if (!play) {

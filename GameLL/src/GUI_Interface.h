@@ -44,6 +44,7 @@ public:
 	sf::Vector2f GetContentSize();
 	sf::Vector2f GetPadding();
 	GUI_Manager* GetGuiManager();
+	const Elements& GetElements();
 	bool IsBeingMoved();
 	bool IsFocused();
 	bool GetContentRedraw();
@@ -85,6 +86,8 @@ private:
 	sf::RenderTexture* m_controlTexture;
 	sf::Sprite m_control;
 	bool m_controlRedraw;
+
+	sf::Text debugText;
 
 };
 

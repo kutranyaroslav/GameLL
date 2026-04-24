@@ -75,7 +75,7 @@ void GUI_Element::ReleaseResources() {
 	}
 }
 void GUI_Element::ReleaseTexture(const std::string& i_name) {
-	if (i_name == "") { return; }
+	if (i_name == "" || m_owner == nullptr) { return; }
 	m_owner->GetGuiManager()->GetSharedContext()->m_textureManager->ReleaseResource(i_name);
 }
 
@@ -85,12 +85,12 @@ void GUI_Element::RequireTexture(const std::string& i_name) {
 }
 
 void GUI_Element::ReleaseFont(const std::string& i_name) {
-	if (i_name == "") { return; }
+	if (i_name == "" || m_owner == nullptr) { return; }
 	m_owner->GetGuiManager()->GetSharedContext()->m_fontManager->ReleaseResource(i_name);
 }
 
 void GUI_Element::RequireFont(const std::string& i_name) {
-	if (i_name == "") { return; }
+	if (i_name == "" || m_owner == nullptr) { return; }
 	m_owner->GetGuiManager()->GetSharedContext()->m_fontManager->RequireResource(i_name);
 }
 

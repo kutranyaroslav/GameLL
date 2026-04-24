@@ -94,14 +94,8 @@ void GUI_Manager::Draw(sf::RenderWindow* i_wind) {
 }
 
 void GUI_Manager::HandleClick(EventDetails* i_details) {
-
-	std::ofstream log("click_debug.log", std::ios::trunc);
 	sf::Vector2i rawPixel = sf::Mouse::getPosition(*m_context->m_wind->GetRenderWindow());
 	sf::Vector2i windowPos = m_context->m_wind->GetRenderWindow()->getPosition(); // window's position on desktop
-	log << "Raw sf::Mouse::getPosition(*wind): " << rawPixel.x << "," << rawPixel.y << "\n";
-	log << "Window position on desktop: " << windowPos.x << "," << windowPos.y << "\n";
-	log << "sf::Mouse::getPosition() global: " << sf::Mouse::getPosition().x << "," << sf::Mouse::getPosition().y << "\n";
-	log.close();
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
 	sf::Vector2i mousePos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
@@ -142,7 +136,6 @@ void GUI_Manager::HandleTextEntered(EventDetails* i_details) {
 
 void GUI_Manager::SetCurrentState(const StateType& i_state) {
 	if (m_currentState == i_state) { return; }
-	HandleRelease(nullptr);
 	m_currentState = i_state;
 }
 

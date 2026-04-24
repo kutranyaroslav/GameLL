@@ -10,6 +10,8 @@ GUI_Interface::GUI_Interface(const std::string& i_name, GUI_Manager* i_guiMgr):
 	m_backdropTexture = new sf::RenderTexture();
 	m_contentTexture = new sf::RenderTexture();
 	m_controlTexture = new sf::RenderTexture();
+	debugText.setPosition(1300, 10);
+	debugText.setFont(*m_guiManager->GetSharedContext()->m_fontManager->GetResource("Main"));
 }
 
 GUI_Interface::~GUI_Interface() {
@@ -133,6 +135,11 @@ void GUI_Interface::OnLeave() {
 }
 
 void GUI_Interface::Update(float i_dT) {
+	std::stringstream ss;
+	for (auto& element : m_elements) {
+		ss << "Element Name: " << element.second->GetName() << " State: " << (int)element.second->GetState() << "\n";
+	}
+	debugText.setString(ss.str());
 	sf::Vector2i pixel = sf::Mouse::getPosition(*m_guiManager->GetSharedContext()->m_wind->GetRenderWindow());
 	sf::Vector2f mousePos = m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->mapPixelToCoords(pixel,
 		m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->getDefaultView());
@@ -162,7 +169,8 @@ void GUI_Interface::Update(float i_dT) {
 		m_guiManager->AddEvent(event);
 	}
 }
-void GUI_Interface::Draw(sf::RenderTarget* i_target) {
+void GUI_Interface::Draw(sf::RenderTarget* i_target) { 
+	i_target->draw(debugText);
 	i_target->draw(m_backdrop);
 	i_target->draw(m_content);
 	i_target->draw(m_control);
@@ -316,6 +324,10 @@ sf::Vector2f GUI_Interface::GetGlobalPosition() {
 sf::Vector2f GUI_Interface::GetPadding() { return m_elementPadding; }
 sf::Vector2f GUI_Interface::GetContentSize() { return m_contentSize; }
 GUI_Manager* GUI_Interface::GetGuiManager() { return m_guiManager; }
+const Elements& GUI_Interface::GetElements()
+{
+	return m_elements;
+}
 bool GUI_Interface::IsBeingMoved() { return m_beingMoved; }
 bool GUI_Interface::IsFocused() { return m_focused; }
 void GUI_Interface::Focus() { m_focused = true; }
