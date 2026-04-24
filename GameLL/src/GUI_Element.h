@@ -86,13 +86,13 @@ public:
 		return i_stream;
 	}
 protected:
-	void ApplyTextStyle();
-	void ApplyBgStyle();
-	void ApplyGlyphStyle();
-	void RequireTexture(const std::string& i_name);
-	void RequireFont(const std::string& i_name);
-	void ReleaseTexture(const std::string& i_name);
-	void ReleaseFont(const std::string& i_name);
+	virtual void ApplyTextStyle();
+	virtual void ApplyBgStyle();
+	virtual void ApplyGlyphStyle();
+	virtual void RequireTexture(const std::string& i_name);
+	virtual void RequireFont(const std::string& i_name);
+	virtual void ReleaseTexture(const std::string& i_name);
+	virtual void ReleaseFont(const std::string& i_name);
 	void ReleaseResources();
 
 	std::string m_name;

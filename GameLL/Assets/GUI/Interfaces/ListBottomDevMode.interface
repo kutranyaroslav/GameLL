@@ -1,3 +1,2 @@
 Interface ListBottom ListBottom.style 10 10 Immovable Title "List"
 Element Scrollbar Scrollbar 1880 1080 ListBottomScroller.style Vertical
-Element Label Play 75 68 MainMenuLabel.style "PLAY"

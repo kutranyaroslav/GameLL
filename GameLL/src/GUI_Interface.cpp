@@ -1,9 +1,8 @@
 #include "GUI_Interface.h"
 #include "GUI_Manager.h"
-
-
+#include <sstream>
 GUI_Interface::GUI_Interface(const std::string& i_name, GUI_Manager* i_guiMgr):
-	GUI_Element(i_name,GUI_ElementType::Window, this), m_parent(nullptr),
+	GUI_Element(i_name,GUI_ElementType::Window, nullptr), m_parent(nullptr),
 	m_guiManager(i_guiMgr), m_movable(false), m_beingMoved(false),
 	m_showTitleBar(false), m_focused(false), m_scrollHorizontal(0),
 	m_scrollVertical(0), m_contentRedraw(true), m_controlRedraw(true)
@@ -20,6 +19,7 @@ GUI_Interface::~GUI_Interface() {
 	for (auto& itr : m_elements) {
 		delete itr.second;
 	}
+
 }
 void GUI_Interface::SetPosition(const sf::Vector2f& i_pos) {
 	GUI_Element::SetPosition(i_pos);
@@ -76,11 +76,8 @@ void GUI_Interface::ReadIn(std::stringstream& i_stream) {
 
 }
 void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
-	if(m_guiManager->m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Developement)
-	{
-		__debugbreak();
-	}
 	DefocusTextFields();
+
 	if (m_titleBar.getGlobalBounds().contains(i_mousePos) && m_movable && m_showTitleBar) {
 		m_beingMoved = true;
 	}
@@ -136,14 +133,9 @@ void GUI_Interface::OnLeave() {
 }
 
 void GUI_Interface::Update(float i_dT) {
-	sf::Vector2f mousePos = sf::Vector2f(m_guiManager->GetSharedContext()->m_eventManager->GetMousePos(
-		m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()));
-	if (m_beingMoved && m_moveMouseLast != mousePos) {
-		sf::Vector2f difference = mousePos - m_moveMouseLast;
-		m_moveMouseLast = mousePos;
-		sf::Vector2f newPosition = m_position + difference; 
-		SetPosition(newPosition);
-	}
+	sf::Vector2i pixel = sf::Mouse::getPosition(*m_guiManager->GetSharedContext()->m_wind->GetRenderWindow());
+	sf::Vector2f mousePos = m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->mapPixelToCoords(pixel,
+		m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->getDefaultView());
 	for (auto& itr : m_elements) {
 		if (itr.second->m_needsRedraw) {
 			if (itr.second->IsControl()) { m_controlRedraw = true; }
@@ -159,7 +151,7 @@ void GUI_Interface::Update(float i_dT) {
 		event.m_clickCoordinates.y = mousePos.y;
 		if(IsInside(mousePos)&& itr.second->IsInside(mousePos)&&
 			!m_titleBar.getGlobalBounds().contains(mousePos)){
-			if (itr.second->GetState() != GUI_ElementState::Neutral) { continue; }
+			if (itr.second->GetState() != GUI_ElementState::Neutral) { continue; } 
 			itr.second->OnHover(mousePos);
 			event.m_type = GUI_EventType::Hover;
 		}
@@ -277,7 +269,7 @@ void GUI_Interface::UpdateScrollVertical(unsigned int i_percent) {
 	if (i_percent > 100) { return; }
 	m_scrollVertical = ((m_contentSize.y - GetSize().y) / 100) * i_percent;
 	sf::IntRect rect = m_content.getTextureRect(); 
-	m_content.setTextureRect(sf::IntRect(m_scrollHorizontal, m_scrollHorizontal, rect.width, rect.height));
+	m_content.setTextureRect(sf::IntRect(m_scrollHorizontal, m_scrollVertical, rect.width, rect.height));
 }
 
 void GUI_Interface::AdjustContentSize( GUI_Element* i_reference) {
@@ -312,7 +304,7 @@ void GUI_Interface::AdjustContentSize( GUI_Element* i_reference) {
 
 void GUI_Interface::SetContentSize(const sf::Vector2f& i_vec) { m_contentSize = i_vec; }
 
-sf::Vector2f& GUI_Interface::GetGlobalPosition()const {
+sf::Vector2f GUI_Interface::GetGlobalPosition() {
 	sf::Vector2f position = m_position;
 	GUI_Interface* i = m_parent;
 	while (i) {
@@ -327,6 +319,83 @@ GUI_Manager* GUI_Interface::GetGuiManager() { return m_guiManager; }
 bool GUI_Interface::IsBeingMoved() { return m_beingMoved; }
 bool GUI_Interface::IsFocused() { return m_focused; }
 void GUI_Interface::Focus() { m_focused = true; }
+
+void GUI_Interface::ReleaseTexture(const std::string& i_name) {
+	if (i_name == "") { return; }
+	m_guiManager->GetSharedContext()->m_textureManager->ReleaseResource(i_name);
+}
+
+void GUI_Interface::RequireTexture(const std::string& i_name) {
+	if (i_name == "") { return; }
+	m_guiManager->GetSharedContext()->m_textureManager->RequireResource(i_name);
+}
+
+void GUI_Interface::ReleaseFont(const std::string& i_name) {
+	if (i_name == "") { return; }
+	m_guiManager->GetSharedContext()->m_fontManager->ReleaseResource(i_name);
+}
+
+void GUI_Interface::RequireFont(const std::string& i_name) {
+	if (i_name == "") { return; }
+	m_guiManager->GetSharedContext()->m_fontManager->RequireResource(i_name);
+}
+
+void GUI_Interface::ApplyTextStyle() {
+	FontManager* fonts = m_guiManager->GetSharedContext()->m_fontManager;
+	const GUI_Style& currentStyle = m_styles[m_state];
+	if (currentStyle.m_textFont != "") {
+		m_visual.m_text.setFont(*fonts->GetResource(currentStyle.m_textFont));
+		m_visual.m_text.setFillColor(currentStyle.m_textColor);
+		m_visual.m_text.setCharacterSize(currentStyle.m_textSize);
+		if (currentStyle.m_textCenterOrigin) {
+			sf::FloatRect rect = m_visual.m_text.getLocalBounds();
+			sf::FloatRect rectBg = m_visual.m_backgroundSolid.getLocalBounds();
+			m_visual.m_text.setOrigin(rect.left + rect.width / 2.f, rect.top + rect.height / 2.f);
+			m_visual.m_text.setStyle(sf::Text::Bold);
+			m_visual.m_text.setPosition(m_position.x + m_styles[m_state].m_size.x / 2.f, m_position.y + m_styles[m_state].m_size.y / 2.f);
+
+		}
+		else {
+			m_visual.m_text.setOrigin(0.f, 0.f);
+			m_visual.m_text.setPosition(m_position + currentStyle.m_textPadding);
+		}
+	}
+
+}
+
+void GUI_Interface::ApplyBgStyle() {
+	TextureManager* textureMgr = m_guiManager->GetSharedContext()->m_textureManager;
+
+
+	const GUI_Style& currentStyle = m_styles[m_state];
+	m_visual.m_backgroundSolid.setSize(currentStyle.m_size);
+	m_visual.m_backgroundSolid.setFillColor(currentStyle.m_backgroundColor);
+	m_visual.m_backgroundSolid.setPosition(m_position);
+	if (currentStyle.m_backgroundImage != "") {
+		if (currentStyle.m_backgroundImageFullElement) {
+			float intefaceWidth = m_styles[m_state].m_size.x;
+			float interfaceHeight = m_styles[m_state].m_size.y;
+			float scaleX = intefaceWidth / textureMgr->GetResource(currentStyle.m_backgroundImage)->getSize().x;
+			float scaleY = interfaceHeight / textureMgr->GetResource(currentStyle.m_backgroundImage)->getSize().y;
+			m_visual.m_backgroundImage.setScale(scaleX, scaleY);
+		}
+		m_visual.m_backgroundImage.setColor(currentStyle.m_backgroundImageColor);
+		m_visual.m_backgroundImage.setTexture(*textureMgr->GetResource(currentStyle.m_backgroundImage));
+		m_visual.m_backgroundImage.setPosition(m_position);
+	}
+}
+
+void GUI_Interface::ApplyGlyphStyle() {
+	TextureManager* textureMgr = m_guiManager->GetSharedContext()->m_textureManager;
+	const GUI_Style& currentStyle = m_styles[m_state];
+	if (currentStyle.m_glyph != "") {
+		m_visual.m_glyph.setTexture(*textureMgr->GetResource(currentStyle.m_glyph));
+	}
+	m_visual.m_glyph.setPosition(m_position + currentStyle.m_glyphPadding);
+
+}
+
+
 bool GUI_Interface::GetContentRedraw() { return m_contentRedraw; }
 bool GUI_Interface::GetControlRedraw() { return m_controlRedraw; }
 

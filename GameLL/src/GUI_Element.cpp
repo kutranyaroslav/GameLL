@@ -80,7 +80,7 @@ void GUI_Element::ReleaseTexture(const std::string& i_name) {
 }
 
 void GUI_Element::RequireTexture(const std::string& i_name) {
-	if (i_name == "") { return; }
+	if (i_name == "" || m_owner == nullptr) { return; }
 	m_owner->GetGuiManager()->GetSharedContext()->m_textureManager->RequireResource(i_name);
 }
 

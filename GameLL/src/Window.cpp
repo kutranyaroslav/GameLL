@@ -2,7 +2,7 @@
 
 Window::Window()
 {
-	Setup("Window", sf::Vector2u(1980, 1080));
+	Setup("Window", sf::Vector2u(1920, 1080));
 	
 }
 

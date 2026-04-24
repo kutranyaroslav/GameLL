@@ -107,25 +107,27 @@ void StateManager::ProcessRequests() {
 void StateManager::SwitchTo(const StateType& i_type) {
 	m_shared->m_eventManager->SetCurrentState(i_type);
 	m_shared->m_guiManager->SetCurrentState(i_type);
+
 	for (auto itr = m_states.begin(); itr != m_states.end(); itr++) {
 		if (itr->first == i_type) {
-			m_states.back().second->Deactivate();
+			if (m_currentState) { m_currentState->Deactivate(); } // safe deactivate
 			StateType tmp_type = itr->first;
 			BaseState* tmp_state = itr->second;
-			m_currentState = itr->second;
+			m_currentState = tmp_state;
 			m_states.erase(itr);
 			m_states.emplace_back(tmp_type, tmp_state);
 			tmp_state->Activate();
 			m_shared->m_wind->GetRenderWindow()->setView(tmp_state->m_view);
+			m_shared->m_soundManager->ChangeState(i_type); // fix bug 1
 			return;
 		}
 	}
+
 	if (!m_states.empty()) { m_states.back().second->Deactivate(); }
 	CreateState(i_type);
 	m_shared->m_wind->GetRenderWindow()->setView(m_states.back().second->m_view);
 	m_shared->m_soundManager->ChangeState(i_type);
 	m_states.back().second->Activate();
-	
 }
 
 

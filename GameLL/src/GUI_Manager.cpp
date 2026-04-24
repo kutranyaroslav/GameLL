@@ -55,7 +55,11 @@ bool GUI_Manager::RemoveInterface(const StateType& i_state, const std::string& i
 }
 
 void GUI_Manager::Update(float i_dT) {
-	sf::Vector2i mousePos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
+	sf::Vector2i mousePxPos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
+	
+	// convert from pixel space to view/world space
+	sf::Vector2f mousePos = m_context->m_wind->GetRenderWindow()->mapPixelToCoords(mousePxPos);
+	// now use mousePos (Vector2f) everywhere instead of sf::Vector2f(mousePos)
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
 	std::vector<std::pair<std::string ,GUI_Interface*>> ordered(state->second.begin(), state->second.end());
@@ -90,6 +94,14 @@ void GUI_Manager::Draw(sf::RenderWindow* i_wind) {
 }
 
 void GUI_Manager::HandleClick(EventDetails* i_details) {
+
+	std::ofstream log("click_debug.log", std::ios::trunc);
+	sf::Vector2i rawPixel = sf::Mouse::getPosition(*m_context->m_wind->GetRenderWindow());
+	sf::Vector2i windowPos = m_context->m_wind->GetRenderWindow()->getPosition(); // window's position on desktop
+	log << "Raw sf::Mouse::getPosition(*wind): " << rawPixel.x << "," << rawPixel.y << "\n";
+	log << "Window position on desktop: " << windowPos.x << "," << windowPos.y << "\n";
+	log << "sf::Mouse::getPosition() global: " << sf::Mouse::getPosition().x << "," << sf::Mouse::getPosition().y << "\n";
+	log.close();
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
 	sf::Vector2i mousePos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());

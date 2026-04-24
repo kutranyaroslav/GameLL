@@ -4,6 +4,7 @@
 #include "C_SpriteSheet.h"
 #include "C_State.h"
 #include "C_Movable.h"
+#include "GUI_Manager.h"
 #include "World.h"
 State_Game::State_Game(StateManager* i_stateManager) :
 	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager)
@@ -13,6 +14,8 @@ void State_Game::onCreate() {
 	m_state = StateType::Game;
 	Textbox* textboxTest = m_stateManager->GetSharedContext()->m_textbox;
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
+	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager; 
+	gui->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
 	sf::Vector2u size = m_stateManager->GetSharedContext()->m_wind->GetWindowSize();
 	m_view.setSize(size.x, size.y);
 	m_view.setCenter(size.x / 2, size.y / 2);

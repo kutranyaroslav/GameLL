@@ -38,7 +38,7 @@ public:
 	void UpdateScrollHorizontal(unsigned int i_percent);
 	void UpdateScrollVertical(unsigned int i_percent);
 	void AdjustContentSize(GUI_Element* i_reference = nullptr);
-	sf::Vector2f& GetGlobalPosition() const;
+	sf::Vector2f GetGlobalPosition();
 
 	GUI_Element* GetElement(const std::string& i_name)const;
 	sf::Vector2f GetContentSize();
@@ -49,6 +49,14 @@ public:
 	bool GetContentRedraw();
 	bool GetControlRedraw();
 	void Focus();
+
+	virtual void RequireTexture(const std::string& i_name) override;
+	virtual void RequireFont(const std::string& i_name) override;
+	virtual void ReleaseTexture(const std::string& i_name)override;
+	virtual void ReleaseFont(const std::string& i_name)override;
+	virtual void ApplyBgStyle() override;
+	virtual void ApplyTextStyle() override;
+	virtual void ApplyGlyphStyle() override;
 private:
 	void DefocusTextFields();
 	void SetContentSize(const sf::Vector2f& i_vec);
@@ -77,5 +85,6 @@ private:
 	sf::RenderTexture* m_controlTexture;
 	sf::Sprite m_control;
 	bool m_controlRedraw;
+
 };
 
