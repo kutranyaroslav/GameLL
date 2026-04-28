@@ -24,5 +24,6 @@ private:
     sf::RectangleShape m_slider;
     sf::Vector2f m_mouseMoveLast;
     int m_percentage;
+	sf::Text debugText;
 };
 

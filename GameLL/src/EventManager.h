@@ -31,7 +31,6 @@ enum class EventType {
 	Keyboard = sf::Event::Count + 1, Mouse, Joystick, GUI_Click,
 	GUI_Release, GUI_Hover, GUI_Leave
 
-
 };
 struct EventInfo {
 	EventInfo() { m_code = 0; }

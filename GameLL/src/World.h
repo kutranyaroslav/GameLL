@@ -15,13 +15,14 @@ public:
 	bool RemoveMap(const std::string& i_name);
 	bool HasMap(const std::string& i_name);
 	bool LoadMap(const std::string& i_name);
-	bool LoadNext(const std::string& i_name, const std::string&i_tileset = "", const std::string& i_texture = "");
+	bool SwitchTo(const std::string& i_name, const std::string&i_tileset = "", const std::string& i_texture = "");
 	bool AddTileset(const std::string& i_mapName, const std::string& i_tilesetName,
 		const std::string& i_path, const std::string& i_texture);
 	bool RemoveTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 	bool HasTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 	Map* GetMap(const std::string& i_name);
 	Map* GetCurrentMap();
+	Maps& GetMaps();
 	TileSet* GetTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 
 	void Update(float i_dT);

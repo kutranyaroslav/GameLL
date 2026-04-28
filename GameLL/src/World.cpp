@@ -1,7 +1,13 @@
 #include "World.h"
-
+#include <filesystem>
 World::World(SharedContext* i_context) :m_context(i_context), m_currentMap(nullptr)
 {
+	std::string path = Utils::GetWorkingDirectory() + "Assets/maps/";
+	for (const auto& entry : std::filesystem::directory_iterator(path)) {
+		if(entry.path().extension() == ".map"){
+			AddMap(entry.path().stem().string());
+		}
+	}
 }
 World::~World() {
 	Purge();
@@ -11,8 +17,11 @@ bool World::AddMap(const std::string& i_name,const std::string& i_tilesetName ,
 	const std::string& i_tileset, const std::string& i_texture)
 {
 	auto itr = m_maps.find(i_name);
-	if (itr != m_maps.end()) { return false; }
-	Map* map = new Map(m_context, i_tilesetName,i_tileset, i_texture);
+	if (itr != m_maps.end() && !itr->second->HasTileset(i_tileset)) { 
+		AddTileset(i_name, i_tilesetName, i_tileset, i_texture);
+		return false; 
+	}
+	Map* map = new Map(m_context,i_name ,i_tilesetName,i_tileset, i_texture);
 	if (!map) { return false; }
 	m_maps.emplace(i_name, map);
 	return true;
@@ -40,10 +49,14 @@ bool World::LoadMap(const std::string& i_name) {
 
 }
 //to do the logic for switching between the maps
-bool World::LoadNext(const std::string& i_name, const std::string& i_tileset, const std::string& i_texture)
+bool World::SwitchTo(const std::string& i_name, const std::string& i_tileset, const std::string& i_texture)
 {
-	if (!AddMap(i_name, i_tileset, i_texture)) { return false; }
-	auto itr = m_maps.find(i_name);
+	if (m_maps.empty()) { return false; }
+	if (m_maps.find(i_name) == m_maps.end()){ return false;}
+	if (!HasMap(i_name)) { return false; }
+	if (GetCurrentMap()->GetMapName() == i_name) { return false; }
+	m_currentMap = GetMap(i_name);
+	GetCurrentMap()->LoadNext(i_name + ".map");
 	return true;
 }
 
@@ -74,6 +87,11 @@ Map* World::GetMap(const std::string& i_name) {
 	return itr->second;
 }
 Map* World::GetCurrentMap() { return m_currentMap; }
+
+Maps& World::GetMaps()
+{
+	return m_maps;
+}
 
 TileSet* World::GetTileset(const std::string& i_mapName, const std::string& i_tilesetName) {
 	if (!HasMap(i_mapName)) { return nullptr; }

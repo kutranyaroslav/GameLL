@@ -18,6 +18,8 @@ struct GUI_Style {
 		m_textColor = none;
 	}
 	sf::Vector2f m_size;
+	// for slider
+	sf::Vector2f m_elementSize; 
 	sf::Color m_backgroundColor;
 	sf::Color m_elementColor;
 	std::string m_backgroundImage;

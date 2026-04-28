@@ -1,0 +1,12 @@
+State Neutral
+Size 160 40
+BgColor 70 130 180 255
+BgFullElement
+TextColor 255 255 255 255
+TextSize 22
+TextPadding 18 18
+Position 112 0
+TextCenterOrigin
+Margin 12 12
+Font Main
+/State

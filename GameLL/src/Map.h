@@ -67,7 +67,7 @@ using TileSet = std::unordered_map<TileKey, TileInfo*>;
 class Map
 {
 public:
-	Map(SharedContext* i_context,const std::string& i_tilesetName
+	Map(SharedContext* i_context,const std::string& i_mapName = "", const std::string& i_tilesetName= ""
 		,const std::string& i_tileset = "", const std::string& i_texture= "");
 	~Map();
 	bool AddTileset(const std::string& i_name, const std::string& i_path, const std::string& i_texture);
@@ -91,6 +91,8 @@ public:
 	unsigned int GetTileSize()const;
 	const sf::Vector2u& GetMapSize() const;
 	const sf::Vector2f& GetPlayerStart()const;
+	void SetMapName(const std::string& i_name);
+	std::string GetMapName();
 	TileSet* GetTileset(const std::string& i_name);
 private:
 	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
@@ -101,6 +103,7 @@ private:
 
 	std::string m_tilesetName;
 	std::string m_texture;
+	std::string m_mapName;
 	std::unordered_map<std::string, TileSet> m_tilesets;
 	TileMap m_tilemap;
 	sf::Sprite m_background;
@@ -116,6 +119,5 @@ private:
 	std::unordered_map<std::string, Tile*> m_checkoutTiles;
 	std::string m_backgroundTexture;
 	SharedContext* m_context;
-	EntityManagerNew* m_entityManager;
 
 };

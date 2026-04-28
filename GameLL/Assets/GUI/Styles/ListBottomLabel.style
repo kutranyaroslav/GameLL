@@ -1,18 +1,20 @@
 State Neutral
-Size 150 32
-BgColor 255 0 0 255	
+Size 160 40
+BgColor 40 44 52 255
 BgFullElement
-TextColor 255 255 255 255
-TextSize 14
-TextPadding 15 16
-Position 700 0
+TextColor 220 220 220 255
+TextSize 22
+TextPadding 18 18
+Position 680 0
 TextCenterOrigin
-Margin 10 10
+Margin 12 12
 Font Main
 /State
 State Hover
-BgColor 255 100 0 255
+BgColor 70 130 180 255
+TextColor 255 255 255 255
 /State
 State Clicked
-BgColor 255 150 0 255
+BgColor 30 90 140 255
+TextColor 200 230 255 255
 /State

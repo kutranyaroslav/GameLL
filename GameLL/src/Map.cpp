@@ -3,16 +3,15 @@
 #include "S_Movement.h"
 
 
-Map::Map(SharedContext* i_context,const std::string& i_tilesetName
-	,const std::string& i_tileset, const std::string& i_texture) :
-	m_context(i_context), m_maxMapSize(32,32),
+Map::Map(SharedContext* i_context, const std::string& i_mapName, const std::string& i_tilesetName
+	, const std::string& i_tileset, const std::string& i_texture ) :
+	m_context(i_context), m_maxMapSize(32, 32),
 	m_tileCount(0), m_tileSetCount(0), m_mapGravity(512.f), m_loadNextMap(false),
-	m_defaultTile(i_context), m_tilesetName(i_tileset), m_texture(i_texture)
+	m_defaultTile(i_context), m_tilesetName(i_tileset), m_texture(i_texture), m_mapName(i_mapName)
 {
 	if (i_tileset != "" && i_texture != "" && i_tilesetName != "") {
 		AddTileset(i_tilesetName, i_tileset, i_texture);
 	}
-	m_entityManager = m_context->m_entityManager;
 }
 Map::~Map() {
 	PurgeMap();
@@ -40,6 +39,11 @@ bool Map::RemoveTileset(const std::string& i_name) {
 }
 bool Map::HasTileset(const std::string& i_name) {
 	return m_tilesets.find(i_name)!= m_tilesets.end();
+}
+
+std::string Map::GetMapName()
+{
+	return m_mapName;
 }
 
 TileSet* Map::GetTileset(const std::string& i_name) {
@@ -106,7 +110,7 @@ void Map::PurgeMap() {
 		delete itr.second;
 	}
 	m_tilemap.clear();
-	m_entityManager->Purge();
+	m_context->m_entityManager->Purge();
 	if (m_backgroundTexture == "") { return; }
 	m_context->m_textureManager->ReleaseResource(m_backgroundTexture);
 	m_backgroundTexture = "";
@@ -262,6 +266,10 @@ TileInfo* Map::GetDefaultTile() { return &m_defaultTile; }
 unsigned int Map::GetTileSize()const { return Sheet::Tile_Size; }
 const sf::Vector2u& Map::GetMapSize() const { return m_maxMapSize; }
 const sf::Vector2f& Map::GetPlayerStart() const { return m_playerStart; }
+void Map::SetMapName(const std::string& i_name)
+{
+	m_mapName = i_name;
+}
 void Map::SetTileSet(const std::string& i_tileset)
 {
 	m_tilesetName = i_tileset;

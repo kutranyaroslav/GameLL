@@ -11,4 +11,6 @@ public:
 	void Update(const sf::Time& i_time)override;
 	void React(EventDetails* i_details);
 private:
+	unsigned int m_layerIndex;
+	std::string m_currentTileset;
 };

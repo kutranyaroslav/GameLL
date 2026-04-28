@@ -21,7 +21,9 @@ EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i
 	AddComponentType<C_SoundListener>(Component::SoundListener);
 }
 
-EntityManagerNew::~EntityManagerNew() { Purge(); }
+EntityManagerNew::~EntityManagerNew() { 
+	Purge(); 
+}
 
 int EntityManagerNew::AddEntity(const Bitmask& i_mask) {
 	unsigned int entity = m_idCounter;

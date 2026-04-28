@@ -87,7 +87,6 @@ private:
 	sf::Sprite m_control;
 	bool m_controlRedraw;
 
-	sf::Text debugText;
 
 };
 

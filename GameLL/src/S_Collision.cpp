@@ -70,7 +70,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 				//checks for collision with check out points 
 				if (t->m_checkout) {
 					if (!m_world) { continue; }
-					m_world->LoadNext(t->m_checkoutMap);
+					m_world->SwitchTo(t->m_checkoutMap);
 				}
  				if (!t->m_solid) { continue; }
 				sf::FloatRect TileAABB(x * TileSize, y * TileSize, TileSize, TileSize);

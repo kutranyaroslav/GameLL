@@ -1,8 +1,11 @@
 #include "GUI_Scrollbar.h"
+#include <sstream>
 
-GUI_Scrollbar::GUI_Scrollbar(const std::string& i_name, GUI_Interface* i_owner):
-GUI_Element(i_name, GUI_ElementType::Scrollbar, i_owner){
+GUI_Scrollbar::GUI_Scrollbar(const std::string& i_name, GUI_Interface* i_owner) :
+	GUI_Element(i_name, GUI_ElementType::Scrollbar, i_owner) {
 	m_isControl = true;
+	debugText.setPosition(1400, 10);
+	debugText.setFont(*i_owner->GetGuiManager()->GetSharedContext()->m_fontManager->GetResource("Main"));
 }
 
 GUI_Scrollbar::~GUI_Scrollbar(){}
@@ -46,6 +49,21 @@ void GUI_Scrollbar::UpdateStyle(const GUI_ElementState& i_state, const GUI_Style
 	}
 }
 void GUI_Scrollbar::Update(float i_dT) {
+	std::stringstream ss;
+	bool horizontal = m_sliderType == SliderType::Horizontal;
+	ss << "Owner size: " << (horizontal ? m_owner->GetSize().x : m_owner->GetSize().y) << "\n";
+	ss << "Content size: " << (horizontal ? m_owner->GetContentSize().x : m_owner->GetContentSize().y) << "\n";
+	ss << "sliderSize: " << m_slider.getSize().x << " " << m_slider.getSize().y << "\n";
+	ss << "bgSize: " << m_visual.m_backgroundSolid.getSize().x << " " << m_visual.m_backgroundSolid.getSize().y << "\n";
+	ss << "ElementColor: " << (int)m_styles[m_state].m_elementColor.r << " "
+		<< (int)m_styles[m_state].m_elementColor.g << " "
+		<< (int)m_styles[m_state].m_elementColor.b << " "
+		<< (int)m_styles[m_state].m_elementColor.a << "\n";
+	ss << "BgColor: " << (int)m_styles[m_state].m_backgroundColor.r << " "
+		<< (int)m_styles[m_state].m_backgroundColor.g << " "
+		<< (int)m_styles[m_state].m_backgroundColor.b << " "
+		<< (int)m_styles[m_state].m_backgroundColor.a << "\n";
+	debugText.setString(ss.str());
 	if (GetState() != GUI_ElementState::Clicked) {
 		return;
 	}
@@ -54,7 +72,6 @@ void GUI_Scrollbar::Update(float i_dT) {
 	if (m_mouseMoveLast == mousepos) { return; }
 	sf::Vector2f difference = mousepos - m_mouseMoveLast;
 	m_mouseMoveLast = mousepos;
-	bool horizontal = m_sliderType == SliderType::Horizontal;
 	m_slider.move((horizontal ? sf::Vector2f(difference.x, 0.f) : sf::Vector2f(0.f, difference.y)));
 	// check out of borders for slider rectshape
 	if (horizontal && m_slider.getPosition().x < 0) {
@@ -77,6 +94,7 @@ void GUI_Scrollbar::Update(float i_dT) {
 	SetRedraw(true);
 }
 void GUI_Scrollbar::Draw(sf::RenderTarget* i_target) {
+	i_target->draw(debugText);
 	i_target->draw(m_visual.m_backgroundSolid);
 	i_target->draw(m_slider);
 }
@@ -95,8 +113,8 @@ void GUI_Scrollbar::ApplyStyle() {
 		m_owner->GetContentSize().y / m_owner->GetSize().y);
 	if (sizeFactor < 1.f) { sizeFactor = 1.f; }
 	float sliderSize = (horizontal ? m_owner->GetSize().x : m_owner->GetSize().y) / sizeFactor;
-	m_slider.setSize((horizontal? sf::Vector2f(sliderSize, bgSolid.getSize().y) :
-		sf::Vector2f(bgSolid.getSize().x , sliderSize)));
+	m_slider.setSize((horizontal? sf::Vector2f(m_styles[m_state].m_elementSize.x, bgSolid.getSize().y) :
+		sf::Vector2f(bgSolid.getSize().x , m_styles[m_state].m_elementSize.y)));
 	bgSolid.setPosition(GetPosition());
 }
 
