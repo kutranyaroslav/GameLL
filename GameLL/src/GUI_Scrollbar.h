@@ -21,7 +21,6 @@ public:
 	void SetPosition(const sf::Vector2f& i_pos) override;
 private: 
     SliderType m_sliderType;
-    sf::RectangleShape m_slider;
     sf::Vector2f m_mouseMoveLast;
     int m_percentage;
 	sf::Text debugText;

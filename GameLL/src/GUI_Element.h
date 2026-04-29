@@ -6,7 +6,7 @@
 
 
 
-enum class GUI_ElementState { Neutral, Focused, Clicked };
+enum class GUI_ElementState { Neutral, Focused, Clicked};
 enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield };
 class GUI_Manager;
 
@@ -61,27 +61,31 @@ public:
 	virtual void UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style);
 	virtual void ApplyStyle();
 	virtual void SetPosition(const sf::Vector2f& i_pos);
-
+	//setters
 	void SetName(const std::string& i_name);
-	std::string& GetName();
 	void SetOwner(GUI_Interface* i_owner);
-	GUI_Interface* GetOwner();
 	void SetRedraw(const bool& i_redraw);
-	bool GerRedraw();
 	void SetState(const GUI_ElementState& i_state);
+	void SetContentSize(sf::Vector2f& i_size);
+	void SetSize(const sf::Vector2f& i_size);
+	void SetWorkArea(float i_area);
+	void SetActive(const bool& const i_acitve);
+	void SetText(const std::string& i_string);
+	//getters
+	std::string& GetName();
+	GUI_Interface* GetOwner();
+	bool GerRedraw();
 	GUI_ElementState& GetState();
 	sf::Vector2f& GetPosition();
 	sf::Vector2f& GetMargin();
-	void SetContentSize(sf::Vector2f& i_size);
 	sf::Vector2f& GetSize();
 	GUI_ElementType& GetType();
-	void SetActive(const bool& const i_acitve);
 	const bool& GetActive()const;
-	void SetText(const std::string& i_string);
 	const std::string& GetText()const;
 	const bool IsControl();
 	bool IsInside(const sf::Vector2f& i_point);
 	sf::Vector2f GetGlobalPosition();
+	sf::RectangleShape& GetSlider();
 
 	friend std::stringstream& operator>>(std::stringstream& i_stream, GUI_Element& b) {
 		b.ReadIn(i_stream);
@@ -103,7 +107,9 @@ protected:
 	GUI_Visual m_visual;
 	GUI_ElementType m_type;
 	GUI_ElementState m_state;
+	sf::RectangleShape m_slider;
 	GUI_Interface* m_owner;
+	float m_workArea;
 
 	bool m_needsRedraw;
 	bool m_active;

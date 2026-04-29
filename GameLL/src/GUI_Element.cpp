@@ -40,7 +40,20 @@ sf::Vector2f GUI_Element::GetGlobalPosition() {
 	return position;
 }
 
+sf::RectangleShape& GUI_Element::GetSlider()
+{
+	return m_slider;
+}
+
 void GUI_Element::SetContentSize(sf::Vector2f& i_size) { m_styles.at(m_state).m_size = i_size; }
+void GUI_Element::SetSize(const sf::Vector2f& i_size)
+{
+		m_styles[m_state].m_size = i_size;
+}
+void GUI_Element::SetWorkArea(float i_area)
+{
+	m_workArea = i_area;
+}
 sf::Vector2f& GUI_Element::GetSize()
 {
 	return m_styles.at(m_state).m_size;

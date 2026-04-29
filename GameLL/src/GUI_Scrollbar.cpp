@@ -46,24 +46,11 @@ void GUI_Scrollbar::UpdateStyle(const GUI_ElementState& i_state, const GUI_Style
 	}
 	else {
 		m_styles[m_state].m_size.y = m_owner->GetSize().y;
+	
 	}
 }
 void GUI_Scrollbar::Update(float i_dT) {
-	std::stringstream ss;
 	bool horizontal = m_sliderType == SliderType::Horizontal;
-	ss << "Owner size: " << (horizontal ? m_owner->GetSize().x : m_owner->GetSize().y) << "\n";
-	ss << "Content size: " << (horizontal ? m_owner->GetContentSize().x : m_owner->GetContentSize().y) << "\n";
-	ss << "sliderSize: " << m_slider.getSize().x << " " << m_slider.getSize().y << "\n";
-	ss << "bgSize: " << m_visual.m_backgroundSolid.getSize().x << " " << m_visual.m_backgroundSolid.getSize().y << "\n";
-	ss << "ElementColor: " << (int)m_styles[m_state].m_elementColor.r << " "
-		<< (int)m_styles[m_state].m_elementColor.g << " "
-		<< (int)m_styles[m_state].m_elementColor.b << " "
-		<< (int)m_styles[m_state].m_elementColor.a << "\n";
-	ss << "BgColor: " << (int)m_styles[m_state].m_backgroundColor.r << " "
-		<< (int)m_styles[m_state].m_backgroundColor.g << " "
-		<< (int)m_styles[m_state].m_backgroundColor.b << " "
-		<< (int)m_styles[m_state].m_backgroundColor.a << "\n";
-	debugText.setString(ss.str());
 	if (GetState() != GUI_ElementState::Clicked) {
 		return;
 	}
@@ -86,9 +73,14 @@ void GUI_Scrollbar::Update(float i_dT) {
 	else if(m_slider.getPosition().y + m_slider.getSize().y > m_owner->GetSize().y){
 		m_slider.setPosition(m_slider.getPosition().x, m_owner->GetSize().y - m_slider.getSize().y);
 	}
+	else if (horizontal && m_owner->GetElement("ScrollbarVertical") && ((m_slider.getPosition().x + m_slider.getSize().x) >
+		(m_owner->GetElement("ScrollbarVertical")->GetPosition().x) )){
+		m_slider.setPosition(m_owner->GetElement("ScrollbarVertical")->GetPosition().x - m_slider.getSize().x, m_slider.getPosition().y);
+
+	}
 	float workArea = (horizontal ? m_owner->GetSize().x - m_slider.getSize().x
 		: m_owner->GetSize().y - m_slider.getSize().y);
-	int percentage = ((horizontal ? m_slider.getPosition().x : m_slider.getPosition().y) / workArea) * 100 ;
+	int percentage = ((horizontal ? m_slider.getPosition().x : m_slider.getPosition().y) / m_workArea) * 100 ;
 	if (horizontal) { m_owner->UpdateScrollHorizontal(percentage); }
 	else { m_owner->UpdateScrollVertical(percentage); }
 	SetRedraw(true);
@@ -105,17 +97,33 @@ void GUI_Scrollbar::ApplyStyle() {
 	auto& bgSolid = m_visual.m_backgroundSolid;
 	SetPosition((horizontal ? sf::Vector2f(0, m_owner->GetSize().y - bgSolid.getSize().y): 
 		sf::Vector2f(m_owner->GetSize().x - bgSolid.getSize().x ,0)));
-	bgSolid.setSize((horizontal ? sf::Vector2f(m_owner->GetSize().x, m_styles[m_state].m_size.y) :
-		sf::Vector2f(m_styles[m_state].m_size.x, m_owner->GetSize().y)));
-	m_slider.setPosition((horizontal? m_slider.getPosition().x : GetPosition().x ), 
+	m_slider.setPosition((horizontal ? m_slider.getPosition().x : GetPosition().x),
 		(horizontal ? GetPosition().y : m_slider.getPosition().y));
 	float sizeFactor = (horizontal ? m_owner->GetContentSize().x / m_owner->GetSize().x :
 		m_owner->GetContentSize().y / m_owner->GetSize().y);
 	if (sizeFactor < 1.f) { sizeFactor = 1.f; }
 	float sliderSize = (horizontal ? m_owner->GetSize().x : m_owner->GetSize().y) / sizeFactor;
-	m_slider.setSize((horizontal? sf::Vector2f(m_styles[m_state].m_elementSize.x, bgSolid.getSize().y) :
-		sf::Vector2f(bgSolid.getSize().x , m_styles[m_state].m_elementSize.y)));
+	m_slider.setSize((horizontal ? sf::Vector2f(m_styles[m_state].m_elementSize.x, bgSolid.getSize().y) :
+		sf::Vector2f(bgSolid.getSize().x, m_styles[m_state].m_elementSize.y)));
 	bgSolid.setPosition(GetPosition());
+
+	if (horizontal) {
+		if (m_owner->GetElements().find("ScrollbarVertical") != m_owner->GetElements().end()) {
+			bgSolid.setSize(sf::Vector2f(m_owner->GetSize().x - m_owner->GetElements().at("ScrollbarVertical")->GetSize().x, m_styles[m_state].m_size.y));
+			m_workArea = bgSolid.getSize().x - m_slider.getSize().x;
+		}
+
+	}
+	else if (!horizontal && m_owner->GetElements().find("ScrollbarHorizontal") != m_owner->GetElements().end()) {
+		m_owner->GetElement("ScrollbarHorizontal")->SetSize(sf::Vector2f(m_owner->GetSize().x - m_styles[m_state].m_size.x, m_owner->GetElement("ScrollbarHorizontal")->GetSize().y));
+		m_owner->GetElement("ScrollbarHorizontal")->SetWorkArea(m_owner->GetSize().x - m_styles[m_state].m_size.x);
+	}
+	else {
+		bgSolid.setSize((horizontal ? sf::Vector2f(m_owner->GetSize().x, m_styles[m_state].m_size.y) :
+			sf::Vector2f(m_styles[m_state].m_size.x, m_owner->GetSize().y)));
+		m_workArea = bgSolid.getSize().y - m_slider.getSize().y;
+	}
+
 }
 
 void GUI_Scrollbar::SetPosition(const sf::Vector2f& i_pos) {
@@ -124,3 +132,4 @@ void GUI_Scrollbar::SetPosition(const sf::Vector2f& i_pos) {
 	else { m_position.y = 0; }
 
 }
+
