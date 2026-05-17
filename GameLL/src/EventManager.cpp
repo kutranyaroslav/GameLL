@@ -28,7 +28,28 @@ bool EventManager::RemoveBinding(std::string i_name) {
 	m_bindings.erase(itr);
 	return true;
 }
+// EventManager.cpp
+bool EventManager::AddDynamicBinding(const std::string& i_name, EventType i_type,
+	const std::string& i_interface, const std::string& i_element)
+{
+	if (m_bindings.find(i_name) != m_bindings.end()) { return false; }
 
+	Binding* bind = new Binding(i_name);
+
+	char* w = new char[i_interface.length() + 1];
+	char* e = new char[i_element.length() + 1];
+	strcpy_s(w, i_interface.length() + 1, i_interface.c_str());
+	strcpy_s(e, i_element.length() + 1, i_element.c_str());
+
+	GUI_Event guiEvent;
+	guiEvent.m_interface = w;
+	guiEvent.m_element = e;
+
+	bind->BindEvent(i_type, EventInfo(guiEvent));
+
+	if (!AddBinding(bind)) { delete bind; return false; }
+	return true;
+}
 //handling of main events 
 void EventManager::HandleEvent(sf::Event& i_event) {
 	for (auto& b_itr : m_bindings) {

@@ -7,7 +7,7 @@
 
 
 enum class GUI_ElementState { Neutral, Focused, Clicked};
-enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield };
+enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,Tileset };
 class GUI_Manager;
 
 struct GUI_Style {
@@ -71,6 +71,7 @@ public:
 	void SetWorkArea(float i_area);
 	void SetActive(const bool& const i_acitve);
 	void SetText(const std::string& i_string);
+	void SetBackgroundImage(const std::string& i_texture);
 	//getters
 	std::string& GetName();
 	GUI_Interface* GetOwner();

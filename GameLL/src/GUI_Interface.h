@@ -50,6 +50,9 @@ public:
 	bool GetContentRedraw();
 	bool GetControlRedraw();
 	void Focus();
+	
+	int GetScrollHorizontal();
+	int GetScrollVertical();
 
 	virtual void RequireTexture(const std::string& i_name) override;
 	virtual void RequireFont(const std::string& i_name) override;

@@ -159,6 +159,7 @@
     <ClCompile Include="src\C_SpriteSheet.cpp" />
     <ClCompile Include="src\C_State.cpp" />
     <ClCompile Include="src\dev\ErrorLogManager.cpp" />
+    <ClCompile Include="src\dev\GUI_Tileset.cpp" />
     <ClCompile Include="src\dev\State_Developement.cpp" />
     <ClCompile Include="src\Enemy.cpp" />
     <ClCompile Include="src\Entity.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="src\C_SpriteSheet.h" />
     <ClInclude Include="src\C_State.h" />
     <ClInclude Include="src\dev\ErrorLogManager.h" />
+    <ClInclude Include="src\dev\GUI_Tileset.h" />
     <ClInclude Include="src\dev\State_Developement.h" />
     <ClInclude Include="src\Directions.h" />
     <ClInclude Include="src\ECS_Types.h" />

@@ -70,6 +70,10 @@ void GUI_Element::SetText(const std::string& i_string) {
 	m_visual.m_text.setString(i_string);
 	SetRedraw(true);
 }
+void GUI_Element::SetBackgroundImage(const std::string& i_texture)
+{	
+	m_styles[m_state].m_backgroundImage = i_texture;
+}
 bool GUI_Element::GerRedraw() { return m_needsRedraw; }
 const std::string& GUI_Element::GetText()const { return m_visual.m_text.getString(); }
 const bool GUI_Element::IsControl() { return m_isControl; }

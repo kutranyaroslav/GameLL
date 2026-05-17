@@ -16,14 +16,6 @@ void State_Developement::onCreate()
 	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP1");
 	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
 	//open up the bind file to write the changes 
-	std::ofstream file;
-	try {
-		file.open(Utils::GetWorkingDirectory() + "//nav//binding_config.cfg", std::ios::app);
-	}
-	catch (const cException& e) {
-		m_stateManager->GetSharedContext()->m_errorLogManager->LogException(e);
-		THROW_EXCEPTION(2, "ERROR_FILE_NOT_FOUND");
-	}
 	m_state = StateType::Developement;
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
 	gui->LoadInterface(StateType::Developement, "ListBottomDevMode.interface", "ListBottom");
@@ -48,10 +40,9 @@ void State_Developement::onCreate()
 			posLev_y = eLev_y + i->GetPadding().y + (index0 * (e->GetSize().y + e->GetMargin().y));
 			e->SetPosition(sf::Vector2f(eLev_x, posLev_y));
 			e->SetText(itr->first);
-			if(file.is_open()) {
-				file << "\n" << itr->first << " " << "27:" << i->GetName() << ":" << e->GetName();
-				evMgr->AddCallback(StateType::Developement, itr->first, &State_Developement::React, this);
-			}
+			evMgr->AddDynamicBinding(itr->first, EventType::GUI_Click, i->GetName(), e->GetName());
+			evMgr->AddCallback(StateType::Developement, itr->first, &State_Developement::React, this);
+			m_dynamicCallbacks.push_back(itr->first);
 			index0++;
 		}
 	}
@@ -72,98 +63,56 @@ void State_Developement::onCreate()
 			eL_y = e->GetPosition().y;
 			posL_y = eL_y + interf->GetPadding().y + (i * (e->GetSize().y + e->GetMargin().y));
 			e->SetPosition(sf::Vector2f(eL_x, posL_y));
-			e->SetText("Layer " + std::to_string(i));
-			if (file.is_open()) {
-				file << "\n" << "Layer_" << std::to_string(m_layerIndex) << " " << "27:" << interf->GetName()<< ":" << e->GetName();
-				evMgr->AddCallback(StateType::Developement, "Key_" + std::to_string(m_layerIndex), &State_Developement::React, this);
-				evMgr->AddCallback(StateType::Developement,"Layer_" + std::to_string(m_layerIndex), &State_Developement::React, this);
-			}
+			e->SetText("Layer " + std::to_string(i)); 
+			evMgr->AddDynamicBinding("Layer_" + std::to_string(m_layerIndex), EventType::GUI_Click, interf->GetName(), e->GetName());
+			evMgr->AddCallback(StateType::Developement, "Key_" + std::to_string(m_layerIndex), &State_Developement::React, this);
+			evMgr->AddCallback(StateType::Developement, "Layer_" + std::to_string(m_layerIndex), &State_Developement::React, this);
+			m_dynamicCallbacks.push_back("Layer_" + std::to_string(m_layerIndex));
 			m_layerIndex++;
 		}
 	}
 
 
-
-	//setting default map and getting default tileset 
-	int index = 0;
-	float e_x = 0.f;
-	float e_y = 0.f;
-	float pos_x = 0.f;
-	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
-		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); ++itr) {
-		GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
-		if (i) {
-			i->AddElement(GUI_ElementType::Label, itr->first);
-			GUI_Element* e = i->GetElement(itr->first);
-			gui->LoadStyle("ListBottomLabel.style", e);
-			e->ApplyStyle();
-			i->AdjustContentSize(e);
-			e_x = e->GetPosition().x;
-			e_y = e->GetPosition().y;
-			pos_x = e_x + i->GetPadding().x  + (index * (e->GetSize().x  + e->GetMargin().x));
-			e->SetPosition(sf::Vector2f(pos_x, e_y));
-			e->SetText(itr->first);
-			++index;
-			if (file.is_open()) {
-				file <<"\n" << itr->first << " " << "27:" << i->GetName() << ":"<<e->GetName();
+		//setting default map and getting default tileset 
+		int index = 0;
+		float e_x = 0.f;
+		float e_y = 0.f;
+		float pos_x = 0.f;
+		for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
+			itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); ++itr) {
+			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
+			if (i) {
+				i->AddElement(GUI_ElementType::Label, itr->first);
+				GUI_Element* e = i->GetElement(itr->first);
+				gui->LoadStyle("ListBottomLabel.style", e);
+				e->ApplyStyle();
+				i->AdjustContentSize(e);
+				e_x = e->GetPosition().x;
+				e_y = e->GetPosition().y;
+				pos_x = e_x + i->GetPadding().x + (index * (e->GetSize().x + e->GetMargin().x));
+				e->SetPosition(sf::Vector2f(pos_x, e_y));
+				e->SetText(itr->first);
+				++index;
+				evMgr->AddDynamicBinding(itr->first, EventType::GUI_Click, i->GetName(), e->GetName());
 				evMgr->AddCallback(StateType::Developement, itr->first, &State_Developement::React, this);
 				m_dynamicCallbacks.push_back(itr->first);
+
 			}
 		}
-	}
-	file.close();
-	evMgr->AddCallback(StateType::Developement, "Key_Escape", &State_Developement::React, this);
+		evMgr->AddCallback(StateType::Developement, "Key_Escape", &State_Developement::React, this);
+	
 }
-
 void State_Developement::onDestroy()
 {
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-	for (auto itr = m_dynamicCallbacks.begin(); itr != m_dynamicCallbacks.end(); ++itr){
-		evMgr->RemoveCallback(m_state, *itr);
-	}
-	//open the file to clean up dynamica callbacks which had been adde to the binding_config.cfg 
-	std::ifstream file;
-	try {
-		file.open(Utils::GetWorkingDirectory() + "//nav//binding_config.cfg", std::ios::in | std::ios::out);
-	}
-	catch (const cException& e) {
-		m_stateManager->GetSharedContext()->m_errorLogManager->LogException(e);
-		THROW_EXCEPTION(2, "ERROR_FILE_NOT_FOUND");
-	}
-	std::string line;
-	std::vector<std::string> lines;
 
-	while (std::getline(file, line)) {
-		std::stringstream ss(line);
-		std::string key;
-		ss >> key;
-		bool shouldRemove = false;
-		for (auto itr = m_dynamicCallbacks.begin(); itr != m_dynamicCallbacks.end(); ++itr){
-			if (key == *itr) { shouldRemove = true; break; };
-		}
-		if (!shouldRemove) {
-			lines.push_back(line);
-		}
+	for (auto& name : m_dynamicCallbacks) {
+		evMgr->RemoveBinding(name);
+		evMgr->RemoveCallback(m_state, name);
 	}
-	file.close();
-	//needs to be tested if the file correctly being overwritten with all the bindings except the one dynamic 
-	std::ofstream outFile;
-
-	try {
-		outFile.open(Utils::GetWorkingDirectory() + "//nav//binding_config.cfg", std::ios::trunc);
-	}
-	catch (const cException& e) {
-		m_stateManager->GetSharedContext()->m_errorLogManager->LogException(e);
-		THROW_EXCEPTION(2, "ERROR_FILE_NOT_FOUND");
-	}
-
-	// Write the remaining lines back to the file
-	for (const auto& validLine : lines) {
-		outFile << validLine << std::endl;
-	}
-
-	outFile.close();
-	evMgr->RemoveCallback(StateType::Developement,"Key_Escape");
+	m_dynamicCallbacks.clear();
+	evMgr->RemoveBinding("Key_Escape");
+	evMgr->RemoveCallback(StateType::Developement, "Key_Escape");
 }
 
 
@@ -187,8 +136,16 @@ void State_Developement::Update(const sf::Time& i_time)
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
 	GUI_Interface* iMaps = gui->GetInterface(StateType::Developement, "ListLevels");
 	GUI_Element* eMap = iMaps->GetElement(m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapName());
-	if (iMaps && eMap) {
-		eMap->SetState(GUI_ElementState::Clicked);
+	if (iMaps)
+	{
+		GUI_Element* eMap =
+			iMaps->GetElement(m_stateManager->GetSharedContext()->m_world
+				->GetCurrentMap()
+				->GetMapName());
+		if (eMap)
+		{
+			eMap->SetState(GUI_ElementState::Clicked);
+		}
 	}
 	GUI_Interface* iLayers = gui->GetInterface(StateType::Developement, "ListLayers");
 	//reset all layers to neutral state and set the selected one to clicked state
@@ -215,7 +172,7 @@ void State_Developement::Update(const sf::Time& i_time)
 		eTileset->SetState(GUI_ElementState::Clicked);
 	}
 }
-
+//to do finish the function get rid off this fucking file overwriting and just make it throuhg dynamic binding
 void State_Developement::React(EventDetails* i_details)
 {
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
@@ -223,9 +180,6 @@ void State_Developement::React(EventDetails* i_details)
 	if (m_stateManager->GetSharedContext()->m_world->HasMap(i_details->m_name) &&
 		m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapName() != i_details->m_name) {
 		//clearing the current interface from elements
-		for (auto itr = m_dynamicCallbacks.begin(); itr != m_dynamicCallbacks.end(); ++itr) {
-			evMgr->RemoveCallback(m_state, *itr);
-		}
 		GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
 		std::ifstream file;
 		try {
@@ -267,12 +221,31 @@ void State_Developement::React(EventDetails* i_details)
 			for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
 				itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
 				GUI_Element* e = i->GetElement(itr->first);
-				i->RemoveElement(e->GetName());
+				GUI_Element* e2 = i->GetElement(itr->first + "_Tileset");
+				if (e) {
+					i->RemoveElement(e->GetName());
+				}
+				if (e2) {
+					i->RemoveElement(e2->GetName());
+				}
+					
 			}
 		}
 		outFile.close();
 		//switching the map 
+		auto& dc = m_dynamicCallbacks;
+		dc.erase(
+			std::remove_if(dc.begin(), dc.end(), [&](const std::string& s) {
+				// remove old tileset names (not Layer_ or Key_ entries)
+				for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
+					itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++)
+					if (s == itr->first) return true;
+				return false;
+				}),
+			dc.end()
+		);
 		m_stateManager->GetSharedContext()->m_world->SwitchTo(i_details->m_name);
+
 
 		std::ofstream outFileNew;
 		try {
@@ -315,7 +288,30 @@ void State_Developement::React(EventDetails* i_details)
 	for(auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
 		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
 		if (i_details->m_name == itr->first) {
+			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
+			if (i) {
+				if (m_currentTileset != "" && m_currentTileset != itr->first) {
+					GUI_Element* e = i->GetElement(m_currentTileset + "_Tileset"); 
+					if (e) {
+						i->RemoveElement(e->GetName());
+					}
+
+				}
+			}
 			m_currentTileset = itr->first;
+			float i_y = 0.f; 
+			if (i) {
+				i->AddElement(GUI_ElementType::Tileset, itr->first + "_Tileset");
+				GUI_Element* e = i->GetElement(itr->first + "_Tileset");
+				GUI_Element* e2 = i->GetElement(itr->first);
+				i_y = e2->GetPosition().y + e2->GetSize().y + i->GetPadding().y;
+				gui->LoadStyle("ListBottomTileset.style", e);
+				e->SetBackgroundImage(itr->second.at(TileKey{ 0, 0 })->m_texture);
+				e->SetPosition(sf::Vector2f(0, i_y));
+				e->ApplyStyle();
+				i->AdjustContentSize(e);
+			}
+
 		}
 	}
 	for (int i = 0; i < Sheet::Num_Layers; i++) {
@@ -329,4 +325,43 @@ void State_Developement::React(EventDetails* i_details)
 		m_stateManager->SwitchTo(StateType::MainMenu);
 	}
 
+}
+bool State_Developement::RewriteConfigExcluding(const std::vector<std::string>& keysToRemove)
+{
+	std::string path = Utils::GetWorkingDirectory() + "//nav//binding_config.cfg";
+	// Read
+	std::ifstream in(path);
+	if (!in.is_open()) return false;
+
+	std::vector<std::string> lines;
+	std::string line;
+	while (std::getline(in, line)) {
+		std::stringstream ss(line);
+		std::string key;
+		ss >> key;
+		bool remove = false;
+		for (const auto& k : keysToRemove)
+			if (key == k) { remove = true; break; }
+		if (!remove)
+			lines.push_back(line);
+	}
+	in.close();
+	// Write atomically
+	std::ofstream out(path, std::ios::trunc);
+	if (!out.is_open()) return false;
+	for (const auto& l : lines)
+		out << l << "\n";
+	out.close();
+	return true;
+}
+
+bool State_Developement::AppendToConfig(const std::string& entry)
+{
+	std::ofstream out(
+		Utils::GetWorkingDirectory() + "//nav//binding_config.cfg",
+		std::ios::app
+	);
+	if (!out.is_open()) return false;
+	out << "\n" << entry;
+	return true; // closes automatically via RAII
 }

@@ -115,6 +115,8 @@ public:
 	~EventManager();
 	bool AddBinding(Binding* i_binding);
 	bool RemoveBinding(std::string i_name);
+	// EventManager.h - replace AddGUIBinding with this:
+	bool AddDynamicBinding(const std::string& i_name, EventType i_type, const std::string& i_interface, const std::string& i_element);
 	template <class T>
 	bool AddCallback(StateType i_state, const std::string& i_name, void(T::*i_func) (EventDetails*), T* i_instance){
 		auto itr = m_callbacks.emplace(i_state, CallbackContainer()).first;

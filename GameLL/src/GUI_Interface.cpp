@@ -324,6 +324,16 @@ bool GUI_Interface::IsBeingMoved() { return m_beingMoved; }
 bool GUI_Interface::IsFocused() { return m_focused; }
 void GUI_Interface::Focus() { m_focused = true; }
 
+int GUI_Interface::GetScrollHorizontal()
+{
+	return m_scrollHorizontal;
+}
+
+int GUI_Interface::GetScrollVertical()
+{
+	return m_scrollVertical;
+}
+
 void GUI_Interface::ReleaseTexture(const std::string& i_name) {
 	if (i_name == "") { return; }
 	m_guiManager->GetSharedContext()->m_textureManager->ReleaseResource(i_name);

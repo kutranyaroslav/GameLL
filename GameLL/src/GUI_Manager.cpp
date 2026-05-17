@@ -1,5 +1,6 @@
 #include "GUI_Manager.h"
 
+
 GUI_Manager::GUI_Manager(EventManager* i_eventMgr, SharedContext* i_context):
 m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 {
@@ -7,6 +8,7 @@ m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 	//RegisterElement<GUI_Button>(GUI_ElementType::Button);
 	RegisterElement<GUI_Scrollbar>(GUI_ElementType::Scrollbar);
 	RegisterElement<GUI_Textfield>(GUI_ElementType::Textfield);
+	RegisterElement<GUI_Tileset>(GUI_ElementType::Tileset);
 	//RegisterElement<GUI_Window>(GUI_ElementType::Window);
 	m_elemTypes.emplace("Label", GUI_ElementType::Label);
 	m_elemTypes.emplace("Button", GUI_ElementType::Button);
@@ -170,6 +172,15 @@ GUI_ElementType GUI_Manager::StringToType(const std::string& i_string)
 	else if (i_string == "Scrollbar") {
 		return GUI_ElementType::Scrollbar;
 	}
+	else if (i_string == "Window") {
+		return GUI_ElementType::Window;
+	}
+	else if (i_string == "Button") {
+		return GUI_ElementType::Button;
+	}
+	else if (i_string == "Tileset") {
+		return GUI_ElementType::Tileset;
+	}
 }
 
 bool GUI_Manager::LoadInterface(const StateType& i_state, const std::string& i_interface, const std::string& i_name)
@@ -324,6 +335,9 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 				}
 				else if (key == "BgImage") {
 					keystream >> temporaryStyle.m_backgroundImage;
+					if (i_element->GetType() == GUI_ElementType::Tileset) {
+						i_element->SetSize(sf::Vector2f(m_context->m_textureManager->GetResource(temporaryStyle.m_backgroundImage)->getSize()));
+					}
 				}
 				else if (key == "Margin") {
 					keystream >> temporaryStyle.m_margin.x >> temporaryStyle.m_margin.y;

@@ -11,6 +11,8 @@ public:
 	void Update(const sf::Time& i_time)override;
 	void React(EventDetails* i_details);
 private:
+	bool RewriteConfigExcluding(const std::vector<std::string>& keysToRemove);
+	bool AppendToConfig(const std::string& entry);
 	unsigned int m_layerIndex;
 	std::string m_currentTileset;
 };
