@@ -48,7 +48,9 @@ sf::RectangleShape& GUI_Element::GetSlider()
 void GUI_Element::SetContentSize(sf::Vector2f& i_size) { m_styles.at(m_state).m_size = i_size; }
 void GUI_Element::SetSize(const sf::Vector2f& i_size)
 {
-		m_styles[m_state].m_size = i_size;
+	m_styles[GUI_ElementState::Clicked].m_size = i_size;
+	m_styles[GUI_ElementState::Focused].m_size = i_size;
+	m_styles[GUI_ElementState::Neutral].m_size = i_size;
 }
 void GUI_Element::SetWorkArea(float i_area)
 {
@@ -57,6 +59,10 @@ void GUI_Element::SetWorkArea(float i_area)
 sf::Vector2f& GUI_Element::GetSize()
 {
 	return m_styles.at(m_state).m_size;
+}
+sf::Vector2i GUI_Element::GetBgImageSize()
+{
+	return m_visual.m_backgroundImage.getTextureRect().getSize();
 }
 void GUI_Element::SetActive(const bool& const i_active)
 {
@@ -171,6 +177,8 @@ void GUI_Element::ApplyBgStyle() {
 	m_visual.m_backgroundSolid.setSize(currentStyle.m_size);
 	m_visual.m_backgroundSolid.setFillColor(currentStyle.m_backgroundColor);
 	m_visual.m_backgroundSolid.setPosition(m_position);
+	m_visual.m_backgroundSolid.getFillColor();
+	
 	if (currentStyle.m_backgroundImage != "") {
 		if (currentStyle.m_backgroundImageFullElement) {
 			float intefaceWidth = m_styles[m_state].m_size.x;
@@ -182,6 +190,7 @@ void GUI_Element::ApplyBgStyle() {
 		m_visual.m_backgroundImage.setColor(currentStyle.m_backgroundImageColor);
 		m_visual.m_backgroundImage.setTexture(*textureMgr->GetResource(currentStyle.m_backgroundImage));
 		m_visual.m_backgroundImage.setPosition(m_position);
+		//sets the size to gui_tileset appropriate to the size of the texture made in shitty way may cause the problem in the future
 	}
 }
 
@@ -193,4 +202,25 @@ void GUI_Element::ApplyGlyphStyle() {
 	}
 	m_visual.m_glyph.setPosition(m_position + currentStyle.m_glyphPadding);
 
+}
+
+
+void GUI_Element::SetWorld(World* i_world)
+{
+	m_world = i_world;
+}
+
+World* GUI_Element::GetWorld()
+{
+	return m_world;
+}
+
+void GUI_Element::SetTextureManager(TextureManager* i_textureManager)
+{
+	m_textureManager = i_textureManager;
+}
+
+TextureManager* GUI_Element::GetTextureManager()
+{
+	return m_textureManager;
 }

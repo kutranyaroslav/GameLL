@@ -1,6 +1,7 @@
 #include "GUI_Manager.h"
 
 
+
 GUI_Manager::GUI_Manager(EventManager* i_eventMgr, SharedContext* i_context):
 m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 {
@@ -9,12 +10,15 @@ m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 	RegisterElement<GUI_Scrollbar>(GUI_ElementType::Scrollbar);
 	RegisterElement<GUI_Textfield>(GUI_ElementType::Textfield);
 	RegisterElement<GUI_Tileset>(GUI_ElementType::Tileset);
+	RegisterElement<GUI_Viewport>(GUI_ElementType::Viewport);
 	//RegisterElement<GUI_Window>(GUI_ElementType::Window);
 	m_elemTypes.emplace("Label", GUI_ElementType::Label);
 	m_elemTypes.emplace("Button", GUI_ElementType::Button);
 	m_elemTypes.emplace("Scrollbar", GUI_ElementType::Scrollbar);
 	m_elemTypes.emplace("Textfield", GUI_ElementType::Textfield);
 	m_elemTypes.emplace("Window", GUI_ElementType::Window);
+	m_elemTypes.emplace("Tileset", GUI_ElementType::Tileset);
+	m_elemTypes.emplace("Viewport", GUI_ElementType::Viewport);
 
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left", &GUI_Manager::HandleClick, this);
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left_Release", &GUI_Manager::HandleRelease, this);
@@ -181,6 +185,9 @@ GUI_ElementType GUI_Manager::StringToType(const std::string& i_string)
 	else if (i_string == "Tileset") {
 		return GUI_ElementType::Tileset;
 	}
+	else if (i_string == "Viewport") {
+		return GUI_ElementType::Viewport;
+	}
 }
 
 bool GUI_Manager::LoadInterface(const StateType& i_state, const std::string& i_interface, const std::string& i_name)
@@ -293,7 +300,12 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 					else {
 						numTypeX.pop_back();
 						double percent_x = std::stod(numTypeX) /100.0;
-						temporaryStyle.m_size.x = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x * percent_x;
+						if (!i_element->GetOwner()) {
+							temporaryStyle.m_size.x = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x * percent_x;
+						}
+						else {
+							temporaryStyle.m_size.x = i_element->GetOwner()->GetSize().x * percent_x;
+						}
 					}
 					if(absolute_y){
 						temporaryStyle.m_size.y = std::stoi(numTypeY);
@@ -301,8 +313,14 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 					else {
 						numTypeY.pop_back();
 						double percent_y = std::stod(numTypeY) / 100.0;
-						temporaryStyle.m_size.y = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y * percent_y;
+						if (!i_element->GetOwner()) {
+							temporaryStyle.m_size.y = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y * percent_y;
+						}
+						else {
+							temporaryStyle.m_size.y = i_element->GetOwner()->GetSize().y * percent_y;
+						}
 					}	
+					
 				}
 				else if (key == "ElementSize") {
 					std::string numTypeX, numTypeY;

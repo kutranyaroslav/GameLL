@@ -59,7 +59,6 @@ void State_Game::Update(const sf::Time& i_time) {
 	SharedContext* context = m_stateManager->GetSharedContext();
 	UpdateCamera();
 	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
-	
 
 }
 

@@ -99,7 +99,38 @@ void State_Developement::onCreate()
 
 			}
 		}
-		evMgr->AddCallback(StateType::Developement, "Key_Escape", &State_Developement::React, this);
+
+		//setting up the viewport for the map 
+		//TO DO doesn't work the size you have to add manually what is not good to be honest
+		gui->LoadInterface(StateType::Developement, "ViewportDevMode.interface", "Viewport");
+		GUI_Interface* i = gui->GetInterface(StateType::Developement, "Viewport");
+		if (i) {
+			//setting up the size of the viewport interface 
+			float layersSizeX, mapsSizeX;
+			layersSizeX = gui->GetInterface(StateType::Developement, "ListLayers")->GetSize().x;
+			mapsSizeX = gui->GetInterface(StateType::Developement, "ListLevels")->GetSize().x;
+			float listbottomSizeY;
+			listbottomSizeY = gui->GetInterface(StateType::Developement, "ListBottom")->GetSize().y;
+			if (layersSizeX > mapsSizeX) {
+				i->SetSize(sf::Vector2f(m_stateManager->GetSharedContext()->m_wind->GetWindowSize().x - layersSizeX,
+					m_stateManager->GetSharedContext()->m_wind->GetWindowSize().y - listbottomSizeY));
+				i->ApplyStyle();
+			}
+			else {
+				i->SetSize(sf::Vector2f(m_stateManager->GetSharedContext()->m_wind->GetWindowSize().x - mapsSizeX,
+					m_stateManager->GetSharedContext()->m_wind->GetWindowSize().y - listbottomSizeY));
+				i->ApplyStyle();
+			}
+			i->AddElement(GUI_ElementType::Viewport, "ViewportMap");
+			GUI_Element* e = i->GetElement("ViewportMap");
+			gui->LoadStyle("Viewport.style", e);
+			e->ApplyStyle();
+			e->SetWorld(m_stateManager->GetSharedContext()->m_world);
+			e->SetTextureManager(m_stateManager->GetSharedContext()->m_textureManager);
+			evMgr->AddDynamicBinding(e->GetName() + "Hover", EventType::GUI_Hover, i->GetName(), e->GetName());
+			evMgr->AddCallback(StateType::Developement, e->GetName()+"Hover", &State_Developement::React, this);
+			evMgr->AddCallback(StateType::Developement, "Key_Escape", &State_Developement::React, this);
+		}
 	
 }
 void State_Developement::onDestroy()
@@ -112,6 +143,8 @@ void State_Developement::onDestroy()
 	}
 	m_dynamicCallbacks.clear();
 	evMgr->RemoveBinding("Key_Escape");
+	evMgr->RemoveBinding("ViewportMapHover");
+	evMgr->RemoveCallback(StateType::Developement, "ViewportMap");
 	evMgr->RemoveCallback(StateType::Developement, "Key_Escape");
 }
 
@@ -126,9 +159,6 @@ void State_Developement::Deactivate()
 
 void State_Developement::Draw()
 {
-	for (unsigned int i = 0; i < Sheet::Num_Layers; ++i) {
-		m_stateManager->GetSharedContext()->m_world->Draw(i);
-	}
 }
 
 void State_Developement::Update(const sf::Time& i_time)
@@ -228,7 +258,7 @@ void State_Developement::React(EventDetails* i_details)
 				if (e2) {
 					i->RemoveElement(e2->GetName());
 				}
-					
+
 			}
 		}
 		outFile.close();
@@ -285,13 +315,13 @@ void State_Developement::React(EventDetails* i_details)
 		outFileNew.close();
 
 	}
-	for(auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
+	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
 		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
 		if (i_details->m_name == itr->first) {
 			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
 			if (i) {
 				if (m_currentTileset != "" && m_currentTileset != itr->first) {
-					GUI_Element* e = i->GetElement(m_currentTileset + "_Tileset"); 
+					GUI_Element* e = i->GetElement(m_currentTileset + "_Tileset");
 					if (e) {
 						i->RemoveElement(e->GetName());
 					}
@@ -299,7 +329,7 @@ void State_Developement::React(EventDetails* i_details)
 				}
 			}
 			m_currentTileset = itr->first;
-			float i_y = 0.f; 
+			float i_y = 0.f;
 			if (i) {
 				i->AddElement(GUI_ElementType::Tileset, itr->first + "_Tileset");
 				GUI_Element* e = i->GetElement(itr->first + "_Tileset");
@@ -318,50 +348,22 @@ void State_Developement::React(EventDetails* i_details)
 		if (i_details->m_name == "Layer_" + std::to_string(i) || i_details->m_name == "Key_" + std::to_string(i)) {
 			m_layerIndex = i;
 		}
-		
+
 	}
 
 	if (i_details->m_name == "Key_Escape") {
 		m_stateManager->SwitchTo(StateType::MainMenu);
 	}
-
-}
-bool State_Developement::RewriteConfigExcluding(const std::vector<std::string>& keysToRemove)
-{
-	std::string path = Utils::GetWorkingDirectory() + "//nav//binding_config.cfg";
-	// Read
-	std::ifstream in(path);
-	if (!in.is_open()) return false;
-
-	std::vector<std::string> lines;
-	std::string line;
-	while (std::getline(in, line)) {
-		std::stringstream ss(line);
-		std::string key;
-		ss >> key;
-		bool remove = false;
-		for (const auto& k : keysToRemove)
-			if (key == k) { remove = true; break; }
-		if (!remove)
-			lines.push_back(line);
+	if (i_details->m_name == "ViewportMapHover") {
+		GUI_Interface* v = gui->GetInterface(StateType::Developement, "Viewport"); 
+		GUI_Interface* t = gui->GetInterface(StateType::Developement, "ListBottom");
+		if (v && t ) {
+			auto* tileset = dynamic_cast<GUI_Tileset*>(t->GetElement(m_currentTileset + "_Tileset"));
+			auto* viewport = dynamic_cast<GUI_Viewport*>(v->GetElement("ViewportMap"));
+			if (tileset && viewport){
+				viewport->SetBrush(tileset->GetTilesetTexture(), tileset->GetSelectedTileId());
+				}
+		}
 	}
-	in.close();
-	// Write atomically
-	std::ofstream out(path, std::ios::trunc);
-	if (!out.is_open()) return false;
-	for (const auto& l : lines)
-		out << l << "\n";
-	out.close();
-	return true;
-}
 
-bool State_Developement::AppendToConfig(const std::string& entry)
-{
-	std::ofstream out(
-		Utils::GetWorkingDirectory() + "//nav//binding_config.cfg",
-		std::ios::app
-	);
-	if (!out.is_open()) return false;
-	out << "\n" << entry;
-	return true; // closes automatically via RAII
 }

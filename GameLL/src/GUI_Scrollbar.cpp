@@ -90,6 +90,9 @@ void GUI_Scrollbar::Draw(sf::RenderTarget* i_target) {
 	i_target->draw(m_visual.m_backgroundSolid);
 	i_target->draw(m_slider);
 }
+void GUI_Scrollbar::DrawOverlay(sf::RenderTarget* i_target)
+{
+}
 void GUI_Scrollbar::ApplyStyle() {
 	GUI_Element::ApplyStyle();
 	m_slider.setFillColor(m_styles[m_state].m_elementColor);

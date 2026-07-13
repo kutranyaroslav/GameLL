@@ -1,5 +1,6 @@
 #include "GUI_Interface.h"
 #include "GUI_Manager.h"
+#include "World.h"
 #include <sstream>
 GUI_Interface::GUI_Interface(const std::string& i_name, GUI_Manager* i_guiMgr):
 	GUI_Element(i_name,GUI_ElementType::Window, nullptr), m_parent(nullptr),
@@ -149,17 +150,24 @@ void GUI_Interface::Update(float i_dT) {
 		event.m_element = itr.second->GetName().c_str();
 		event.m_clickCoordinates.x = mousePos.x;
 		event.m_clickCoordinates.y = mousePos.y;
-		if(IsInside(mousePos)&& itr.second->IsInside(mousePos)&&
-			!m_titleBar.getGlobalBounds().contains(mousePos)){
-			if (itr.second->GetState() != GUI_ElementState::Neutral) { continue; } 
-			itr.second->OnHover(mousePos);
-			event.m_type = GUI_EventType::Hover;
+		
+		if (IsInside(mousePos) &&
+			itr.second->IsInside(mousePos) &&
+			!m_titleBar.getGlobalBounds().contains(mousePos))
+		{
+				itr.second->OnHover(mousePos);
+				event.m_type = GUI_EventType::Hover;
+				m_guiManager->AddEvent(event);
 		}
-		else if (itr.second->GetState() == GUI_ElementState::Focused) {
-			itr.second->OnLeave();
-			event.m_type = GUI_EventType::Leave;
+		else
+		{
+			if (itr.second->GetState() == GUI_ElementState::Focused)
+			{
+				itr.second->OnLeave();
+				event.m_type = GUI_EventType::Leave;
+				m_guiManager->AddEvent(event);
+			}
 		}
-		m_guiManager->AddEvent(event);
 	}
 }
 void GUI_Interface::Draw(sf::RenderTarget* i_target) { 
@@ -167,9 +175,15 @@ void GUI_Interface::Draw(sf::RenderTarget* i_target) {
 	i_target->draw(m_content);
 	i_target->draw(m_control);
 	i_target->draw(m_visual.m_text);
+	for (auto& e : m_elements) {
+			e.second->DrawOverlay(i_target);
+	}
 	if (!m_showTitleBar) { return; }
 	i_target->draw(m_titleBar);
 	
+}
+void GUI_Interface::DrawOverlay(sf::RenderTarget* i_target)
+{
 }
 void GUI_Interface::ApplyStyle() {
 	GUI_Element::ApplyStyle();

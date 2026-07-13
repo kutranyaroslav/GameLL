@@ -13,9 +13,21 @@ public:
     void OnLeave()override;
     void Update(float i_dT)override;
     void Draw(sf::RenderTarget* i_target)override;
+    void DrawOverlay(sf::RenderTarget* i_target) override;
+
+    void ApplyBgStyle() override;
 
 	void SetTileset(const std::string& i_tilesetName);
+
+	std::string&  GetTilesetTexture();
+	int GetSelectedTileId() const;
 private:
+    sf::RectangleShape m_hoverTile;
+    sf::RectangleShape m_selectedTile;
+    sf::Color m_clickedTileDefColor; 
+    sf::Color m_hoverTileDefColor;
+    sf::Vector2i m_clickedTilePos{ -1, -1 };
+    sf::Vector2i m_hoverTilePos{ -1,-1 };
     sf::Vector2f m_tilesetSize;
     int m_selectedTileId;
 };

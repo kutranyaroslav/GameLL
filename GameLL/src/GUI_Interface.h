@@ -27,6 +27,7 @@ public:
 	void OnLeave() override;
 	void Update(float i_dT) override;
 	void Draw(sf::RenderTarget* i_target)override;
+	void DrawOverlay(sf::RenderTarget* i_target)override;
 	void ApplyStyle()override;
 
 	void OnTextEntered(const char& i_char);
@@ -44,6 +45,8 @@ public:
 	sf::Vector2f GetContentSize();
 	sf::Vector2f GetPadding();
 	GUI_Manager* GetGuiManager();
+	//made only for the viewport element to get access to the world
+
 	const Elements& GetElements();
 	bool IsBeingMoved();
 	bool IsFocused();

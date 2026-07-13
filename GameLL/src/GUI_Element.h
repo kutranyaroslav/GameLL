@@ -3,11 +3,11 @@
 #include <unordered_map>
 #include "SFML/Graphics.hpp"
 #include "TextureManager.h"
-
+#include "World.h"
 
 
 enum class GUI_ElementState { Neutral, Focused, Clicked};
-enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,Tileset };
+enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,Tileset,Viewport };
 class GUI_Manager;
 
 struct GUI_Style {
@@ -58,6 +58,8 @@ public:
 	virtual void OnLeave() = 0;
 	virtual void Update(float i_dT) = 0;
 	virtual void Draw(sf::RenderTarget* i_target) = 0;
+	//created to optimize redraw of dynamic elements like hovering and so on
+	virtual void DrawOverlay(sf::RenderTarget* i_target) = 0;
 	virtual void UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style);
 	virtual void ApplyStyle();
 	virtual void SetPosition(const sf::Vector2f& i_pos);
@@ -80,6 +82,7 @@ public:
 	sf::Vector2f& GetPosition();
 	sf::Vector2f& GetMargin();
 	sf::Vector2f& GetSize();
+	sf::Vector2i GetBgImageSize();
 	GUI_ElementType& GetType();
 	const bool& GetActive()const;
 	const std::string& GetText()const;
@@ -87,6 +90,12 @@ public:
 	bool IsInside(const sf::Vector2f& i_point);
 	sf::Vector2f GetGlobalPosition();
 	sf::RectangleShape& GetSlider();
+	//only for viewport to get access to the world class
+	void SetWorld(World* i_world);
+	World* GetWorld();
+	void SetTextureManager(TextureManager* i_textureManager);
+	TextureManager* GetTextureManager();
+	virtual void ApplyBgStyle();
 
 	friend std::stringstream& operator>>(std::stringstream& i_stream, GUI_Element& b) {
 		b.ReadIn(i_stream);
@@ -94,7 +103,6 @@ public:
 	}
 protected:
 	virtual void ApplyTextStyle();
-	virtual void ApplyBgStyle();
 	virtual void ApplyGlyphStyle();
 	virtual void RequireTexture(const std::string& i_name);
 	virtual void RequireFont(const std::string& i_name);
@@ -110,6 +118,8 @@ protected:
 	GUI_ElementState m_state;
 	sf::RectangleShape m_slider;
 	GUI_Interface* m_owner;
+	World* m_world;
+	TextureManager* m_textureManager;
 	float m_workArea;
 
 	bool m_needsRedraw;
