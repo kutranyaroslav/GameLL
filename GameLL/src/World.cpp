@@ -107,16 +107,16 @@ void World::Purge() {
 }
 
 
-void World::Update(float i_dT) {
+void World::Update(float i_dT) {	
 	if (m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Game ||
 		m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Developement) {
 		if (m_currentMap) { m_currentMap->Update(i_dT); }
 	}
 }
 
-void World::Draw(unsigned int i_layer) {
+void World::Draw(sf::RenderTarget& i_target,const sf::View& i_view,unsigned int i_layer) {
 	if (m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Game ||
 		m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Developement) {
-		if (m_currentMap) { m_currentMap->Draw(i_layer); }
+		if (m_currentMap) { m_currentMap->Draw(i_target,i_view,i_layer); }
 	}
 }

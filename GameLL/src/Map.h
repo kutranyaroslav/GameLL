@@ -77,7 +77,7 @@ public:
 	void LoadMap(const std::string& i_path);
 	void LoadNext(const std::string& i_name);
 	void Update(float i_dT);
-	void Draw(unsigned int i_layer);
+	void Draw(sf::RenderTarget& i_target,const sf::View& i_view,unsigned int i_layer);
 	
 	//SETTERS AND GETTER
 

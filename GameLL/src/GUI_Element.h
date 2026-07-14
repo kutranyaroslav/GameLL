@@ -93,8 +93,12 @@ public:
 	//only for viewport to get access to the world class
 	void SetWorld(World* i_world);
 	World* GetWorld();
+	void SetWindow(Window* i_wind);
+	Window* GetWindow();
 	void SetTextureManager(TextureManager* i_textureManager);
 	TextureManager* GetTextureManager();
+	void SetZoomLevel();
+	float GetZoomLevel();
 	virtual void ApplyBgStyle();
 
 	friend std::stringstream& operator>>(std::stringstream& i_stream, GUI_Element& b) {
@@ -119,8 +123,13 @@ protected:
 	sf::RectangleShape m_slider;
 	GUI_Interface* m_owner;
 	World* m_world;
+	Window* m_wind;
 	TextureManager* m_textureManager;
+
+	//needed for viewport
+	float m_zoomLevel; 
 	float m_workArea;
+	sf::View m_view;
 
 	bool m_needsRedraw;
 	bool m_active;

@@ -125,8 +125,13 @@ void State_Developement::onCreate()
 			GUI_Element* e = i->GetElement("ViewportMap");
 			gui->LoadStyle("Viewport.style", e);
 			e->ApplyStyle();
+			//needed only for viewport
 			e->SetWorld(m_stateManager->GetSharedContext()->m_world);
 			e->SetTextureManager(m_stateManager->GetSharedContext()->m_textureManager);
+			e->SetWindow(m_stateManager->GetSharedContext()->m_wind);
+			e->SetZoomLevel();
+
+
 			evMgr->AddDynamicBinding(e->GetName() + "Hover", EventType::GUI_Hover, i->GetName(), e->GetName());
 			evMgr->AddCallback(StateType::Developement, e->GetName()+"Hover", &State_Developement::React, this);
 			evMgr->AddCallback(StateType::Developement, "Key_Escape", &State_Developement::React, this);

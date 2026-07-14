@@ -26,7 +26,7 @@ public:
 	TileSet* GetTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 
 	void Update(float i_dT);
-	void Draw(unsigned int i_layer);
+	void Draw(sf::RenderTarget& i_target,const sf::View& i_view,unsigned int i_layer);
 	//cleans the memory
 	void Purge();
 

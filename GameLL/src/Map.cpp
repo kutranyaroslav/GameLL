@@ -76,13 +76,15 @@ void Map::Update(float i_dT) {
 	m_background.setPosition(viewSpace.left, viewSpace.top);
 }
 
-void Map::Draw(unsigned int i_layer) {
+void Map::Draw(sf::RenderTarget& i_target, const sf::View& i_view,unsigned int i_layer) {
 	if (i_layer >= Sheet::Num_Layers) {
 		return;
 	}
-	sf::RenderWindow* i_wind = m_context->m_wind->GetRenderWindow();
-	sf::FloatRect viewSpace = m_context->m_wind->GetViewSpace();
-	sf::Vector2i tileBegin(floor(viewSpace.left / Sheet::Tile_Size), floor(viewSpace.top / Sheet::Tile_Size));
+	sf::Vector2f center = i_view.getCenter();
+	sf::Vector2f size = i_view.getSize();
+	sf::FloatRect viewSpace(center.x - size.x *0.5f, center.y - size.y *0.5f, size.x, size.y);
+
+	sf::Vector2i tileBegin(floor(viewSpace.left/ Sheet::Tile_Size), floor(viewSpace.top / Sheet::Tile_Size));
 	sf::Vector2i tileEnd(ceil((viewSpace.left + viewSpace.width) / Sheet::Tile_Size),
 		ceil((viewSpace.top + viewSpace.height) / Sheet::Tile_Size));
 	unsigned int count = 0;
@@ -96,7 +98,7 @@ void Map::Draw(unsigned int i_layer) {
 			}
 			sf::Sprite& sprite = tile->m_properties->m_sprite;
 			sprite.setPosition(x * Sheet::Tile_Size, y * Sheet::Tile_Size);
-			i_wind->draw(sprite);
+			i_target.draw(sprite);
 			++count;
 		}
 	}

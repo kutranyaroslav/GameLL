@@ -15,15 +15,21 @@ public:
     void DrawOverlay(sf::RenderTarget* i_target) override;
     void ApplyBgStyle()override;
 
+    void UpdateCamera(sf::RenderWindow* i_wind);
     sf::View& GetView();
     void SetViewSize(const sf::Vector2f& i_size);
     void SetViewCenter(const sf::Vector2f& i_pos);
 	void SetBrush(std::string& i_texture, int i_tileId);
+    void SetCameraSpeed(float i_speed);
+
+	float& GetCameraSpeed();
+
+
 
  
 private:
-    sf::View m_view;
     sf::Sprite m_hoverTile;
     sf::Vector2i m_hoverTilePos;
+    float m_cameraSpeed;
 };
 

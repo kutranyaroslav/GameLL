@@ -215,6 +215,16 @@ World* GUI_Element::GetWorld()
 	return m_world;
 }
 
+void GUI_Element::SetWindow(Window* i_wind)
+{
+	m_wind = i_wind;
+}
+
+Window* GUI_Element::GetWindow()
+{
+	return m_wind;
+}
+
 void GUI_Element::SetTextureManager(TextureManager* i_textureManager)
 {
 	m_textureManager = i_textureManager;
@@ -223,4 +233,21 @@ void GUI_Element::SetTextureManager(TextureManager* i_textureManager)
 TextureManager* GUI_Element::GetTextureManager()
 {
 	return m_textureManager;
+}
+
+void GUI_Element::SetZoomLevel()
+{
+	sf::Vector2f size = GetSize();
+	float zoomX = GetWindow()->GetWindowSize().x / size.x;
+	float zoomY = GetWindow()->GetWindowSize().y / size.y;
+	m_zoomLevel = std::max(zoomX, zoomY);
+
+
+	m_view.setSize(size * m_zoomLevel);
+	m_view.setCenter(size.x * 0.5f, size.y * 0.5f);
+}
+
+float GUI_Element::GetZoomLevel()
+{
+	return m_zoomLevel;
 }
