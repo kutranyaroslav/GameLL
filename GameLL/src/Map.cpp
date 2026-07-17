@@ -49,6 +49,10 @@ std::string Map::GetMapName()
 TileSet* Map::GetTileset(const std::string& i_name) {
 	return &m_tilesets.find(i_name)->second;
 }
+TileMap* Map::GetTileMap()
+{
+	return &m_tilemap;
+}
  Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
 	if(i_x < 0 || i_y < 0 || i_x>= m_maxMapSize.x 
 		|| i_y >= m_maxMapSize.y || i_layer < 0 || i_layer >= Sheet::Num_Layers

@@ -16,20 +16,24 @@ public:
     void ApplyBgStyle()override;
 
     void UpdateCamera(sf::RenderWindow* i_wind);
+    void ClearBrush();
     sf::View& GetView();
     void SetViewSize(const sf::Vector2f& i_size);
     void SetViewCenter(const sf::Vector2f& i_pos);
 	void SetBrush(std::string& i_texture, int i_tileId);
     void SetCameraSpeed(float i_speed);
+    void SetHoverTilesPos(const sf::Vector2i& i_pos);
+	void SetClickedTileInfo(TileInfo*i_info);
 
 	float& GetCameraSpeed();
 
-
-
- 
 private:
+	//Change the map based on the clicked tile position and the current brush
+    void ChangeMap();
     sf::Sprite m_hoverTile;
     sf::Vector2i m_hoverTilePos;
+    sf::Vector2i m_clickedTilePos;
+	TileInfo* m_clickedTileInfo;
     float m_cameraSpeed;
 };
 

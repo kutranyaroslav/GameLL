@@ -86,6 +86,7 @@ void State_Developement::onCreate()
 				GUI_Element* e = i->GetElement(itr->first);
 				gui->LoadStyle("ListBottomLabel.style", e);
 				e->ApplyStyle();
+				e->SetWorld(m_stateManager->GetSharedContext()->m_world);
 				i->AdjustContentSize(e);
 				e_x = e->GetPosition().x;
 				e_y = e->GetPosition().y;
@@ -214,6 +215,10 @@ void State_Developement::React(EventDetails* i_details)
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	if (m_stateManager->GetSharedContext()->m_world->HasMap(i_details->m_name) &&
 		m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapName() != i_details->m_name) {
+		//clearing the hover tile of viewport
+		GUI_Interface* iViewport = gui->GetInterface(StateType::Developement, "Viewport");
+
+
 		//clearing the current interface from elements
 		GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
 		std::ifstream file;
@@ -320,8 +325,20 @@ void State_Developement::React(EventDetails* i_details)
 		outFileNew.close();
 
 	}
+	//Clicks on GUI_Tileset buttons 
 	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
 		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
+
+		if (i_details->m_name == itr->first + "_Tileset") {
+			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
+			auto* tileset = dynamic_cast<GUI_Tileset*>(i->GetElement(itr->first + "_Tileset"));
+			GUI_Interface* v = gui->GetInterface(StateType::Developement, "Viewport");
+			auto* viewport = dynamic_cast<GUI_Viewport*>(v->GetElement("ViewportMap"));
+			if (tileset && viewport) {
+				viewport->SetClickedTileInfo(tileset->GetSelectedTileInfo());
+			}
+		}
+
 		if (i_details->m_name == itr->first) {
 			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
 			if (i) {
@@ -344,14 +361,26 @@ void State_Developement::React(EventDetails* i_details)
 				e->SetBackgroundImage(itr->second.at(TileKey{ 0, 0 })->m_texture);
 				e->SetPosition(sf::Vector2f(0, i_y));
 				e->ApplyStyle();
+				//setting up for the viewport
+				e->SetWorld(m_stateManager->GetSharedContext()->m_world);
 				i->AdjustContentSize(e);
+				//setting up the Callbacks for the new tileset_Tileset element
+				EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
+				evMgr->AddDynamicBinding(itr->first + "_Tileset", EventType::GUI_Click, i->GetName(), e->GetName());
+				evMgr->AddCallback(StateType::Developement, itr->first + "_Tileset", &State_Developement::React, this);
 			}
 
 		}
 	}
+
+
+
 	for (int i = 0; i < Sheet::Num_Layers; i++) {
 		if (i_details->m_name == "Layer_" + std::to_string(i) || i_details->m_name == "Key_" + std::to_string(i)) {
 			m_layerIndex = i;
+			GUI_Interface* i = gui->GetInterface(StateType::Developement, "Viewport");
+			GUI_Element* e = i->GetElement("ViewportMap");
+			e->SetLayer(m_layerIndex);
 		}
 
 	}
@@ -360,15 +389,19 @@ void State_Developement::React(EventDetails* i_details)
 		m_stateManager->SwitchTo(StateType::MainMenu);
 	}
 	if (i_details->m_name == "ViewportMapHover") {
-		GUI_Interface* v = gui->GetInterface(StateType::Developement, "Viewport"); 
+		GUI_Interface* v = gui->GetInterface(StateType::Developement, "Viewport");
 		GUI_Interface* t = gui->GetInterface(StateType::Developement, "ListBottom");
-		if (v && t ) {
+		GUI_Interface* m = gui->GetInterface(StateType::Developement, "ListLevels");
+		if (v && t && m) {
 			auto* tileset = dynamic_cast<GUI_Tileset*>(t->GetElement(m_currentTileset + "_Tileset"));
 			auto* viewport = dynamic_cast<GUI_Viewport*>(v->GetElement("ViewportMap"));
-			if (tileset && viewport){
+			if (tileset && viewport) {
 				viewport->SetBrush(tileset->GetTilesetTexture(), tileset->GetSelectedTileId());
-				}
+			}
+			if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->HasTileset(m_currentTileset)) {
+				viewport->ClearBrush();
+			}
 		}
-	}
 
+	}
 }

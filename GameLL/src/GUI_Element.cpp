@@ -251,3 +251,12 @@ float GUI_Element::GetZoomLevel()
 {
 	return m_zoomLevel;
 }
+
+void GUI_Element::SetLayer(const int& i_layer)
+{
+	m_layerIndex = i_layer;
+}
+
+int GUI_Element::GetLayer() {
+	return m_layerIndex;
+}

@@ -35,6 +35,7 @@ void GUI_Tileset::OnClick(const sf::Vector2f& i_mousePos) {
 
 	int tileX = local.x / Sheet::Tile_Size;
 	int tileY = local.y / Sheet::Tile_Size;
+	m_clickedTilePos = { tileX, tileY };
 
 	int tilesPerRow = m_styles[m_state].m_size.x  / Sheet::Tile_Size;
 
@@ -128,4 +129,30 @@ std::string& GUI_Tileset::GetTilesetTexture()
 int GUI_Tileset::GetSelectedTileId() const
 {
 	return m_selectedTileId;
+}
+
+TileInfo* GUI_Tileset::GetSelectedTileInfo()
+{
+	if (m_selectedTileId == -1) { return nullptr; }
+	if (!m_world) { return nullptr; }
+	std::string tilesetName = m_name;
+
+	const std::string suffix = "_Tileset";
+	if (tilesetName.size() >= suffix.size())
+	{
+		tilesetName.erase(tilesetName.size() - suffix.size());
+	}
+
+	TileSet* tileset = m_world->GetCurrentMap()->GetTileset(tilesetName);
+
+	TileKey key{ m_selectedTileId, m_hoverTilePos.y };
+
+	auto itr = tileset->find(key);
+
+	if (itr == tileset->end())
+	{
+		return nullptr;
+	}
+
+	return itr->second;
 }

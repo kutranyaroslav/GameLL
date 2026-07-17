@@ -99,6 +99,8 @@ public:
 	TextureManager* GetTextureManager();
 	void SetZoomLevel();
 	float GetZoomLevel();
+	void SetLayer(const int& i_layer);
+	int GetLayer();
 	virtual void ApplyBgStyle();
 
 	friend std::stringstream& operator>>(std::stringstream& i_stream, GUI_Element& b) {
@@ -129,6 +131,7 @@ protected:
 	//needed for viewport
 	float m_zoomLevel; 
 	float m_workArea;
+	int m_layerIndex;
 	sf::View m_view;
 
 	bool m_needsRedraw;

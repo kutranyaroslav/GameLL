@@ -21,6 +21,8 @@ public:
 
 	std::string&  GetTilesetTexture();
 	int GetSelectedTileId() const;
+    //needed for the viewport to get the info of the selected tile 
+	TileInfo* GetSelectedTileInfo();
 private:
     sf::RectangleShape m_hoverTile;
     sf::RectangleShape m_selectedTile;

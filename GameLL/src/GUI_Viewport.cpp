@@ -15,6 +15,14 @@ void GUI_Viewport::ReadIn(std::stringstream& i_stream)
 void GUI_Viewport::OnClick(const sf::Vector2f& i_mousePos)
 {
 	SetState(GUI_ElementState::Clicked);
+	sf::Vector2f local = i_mousePos - GetGlobalPosition();
+	local.x += m_owner->GetScrollHorizontal();
+	local.y += m_owner->GetScrollVertical();
+	int tileX = local.x / Sheet::Tile_Size; 
+	int tileY = local.y / Sheet::Tile_Size;
+	m_clickedTilePos = { tileX, tileY };
+	ChangeMap();
+
 }
 
 void GUI_Viewport::OnRelease()
@@ -66,6 +74,7 @@ void GUI_Viewport::Update(float i_dT)
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		m_view.move(0, m_cameraSpeed * i_dT);
+
 }
 
 void GUI_Viewport::Draw(sf::RenderTarget* i_target)
@@ -141,6 +150,7 @@ void GUI_Viewport::SetViewCenter(const sf::Vector2f& i_pos) {
 
 void GUI_Viewport::SetBrush(std::string& i_texture, int i_tileId)
 {
+	if (i_tileId < 0) { return; }
 	if (i_texture == "" || m_textureManager == nullptr || i_tileId== 0) { return; }
 	if (!m_textureManager->RequireResource(i_texture)) { return; }
 	m_hoverTile.setTexture(*m_textureManager->GetResource(i_texture));
@@ -153,6 +163,45 @@ void GUI_Viewport::SetBrush(std::string& i_texture, int i_tileId)
 void GUI_Viewport::SetCameraSpeed(float i_speed)
 {
 	m_cameraSpeed = i_speed;
+}
+
+void GUI_Viewport::SetHoverTilesPos(const sf::Vector2i& i_pos)
+{
+	m_hoverTilePos = i_pos;
+}
+void GUI_Viewport::SetClickedTileInfo(TileInfo* i_info)
+{
+	m_clickedTileInfo = i_info;
+}
+void GUI_Viewport::ChangeMap()
+{
+	if (m_world)
+	{
+		Map* m = m_world->GetCurrentMap();
+		if (m) {
+			unsigned int key = m->ConvertCordinates(m_clickedTilePos.x, m_clickedTilePos.y, m_layerIndex);
+			TileMap* tileMap = m->GetTileMap();
+			if (tileMap) {
+				auto itr = tileMap->find(key);
+				if (itr == tileMap->end()) { 
+					//there is no tile yet 
+					
+				}
+				else
+				{
+					//there is a tile 
+					Tile* oldTile = itr->second;
+
+				}
+
+			}
+		}
+	}
+}
+void GUI_Viewport::ClearBrush()
+{
+	m_hoverTilePos = { -1, -1 };
+	m_hoverTile.setTextureRect(sf::IntRect());
 }
 
 float& GUI_Viewport::GetCameraSpeed()
