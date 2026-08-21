@@ -14,8 +14,10 @@ Map::Map(SharedContext* i_context, const std::string& i_mapName, const std::stri
 	}
 }
 Map::~Map() {
+	SaveTiles();
 	PurgeMap();
 	PurgeTileSet();
+
 }
 bool Map::AddTileset(const std::string& i_name, const std::string& i_path, const std::string& i_texture)
 {	
@@ -109,6 +111,74 @@ void Map::Draw(sf::RenderTarget& i_target, const sf::View& i_view,unsigned int i
 	}
 }
 
+bool Map::SaveTiles()
+{
+	//saving of the header lines of the .map file 
+	std::vector<std::string> headerLines;
+
+	std::ifstream file(m_mapFileName);
+
+	std::string line;
+
+	while (std::getline(file, line))
+	{
+		std::stringstream stream(line);
+
+		std::string type;
+		stream >> type;
+
+		if (type == "TILE")
+			break;
+
+		headerLines.push_back(line);
+	}
+
+	file.close();
+
+
+	std::ofstream outFile(m_mapFileName, std::ios::trunc);
+	if (!outFile.is_open())
+		return false;
+	for (const std::string& line : headerLines)
+	{
+		outFile << line << '\n';
+	}
+	//saving of the tiles 
+
+	for (auto const& pair : m_tilemap) {
+		unsigned int key = pair.first;
+		Tile* tile = pair.second;
+		//decoding of the key
+		unsigned int x = key % m_maxMapSize.x;
+
+		unsigned int temp = key / m_maxMapSize.x;
+
+		unsigned int y = temp % m_maxMapSize.y;
+
+		unsigned int layer = temp / m_maxMapSize.y;
+
+		outFile
+			<< "TILE "
+			<< tile->m_properties->m_tilesetName << ' '
+			<< tile->m_properties->m_id << ' '
+			<< tile->m_properties->m_row << ' '
+			<< x << ' '
+			<< y << ' '
+			<< layer << ' '
+			<< tile->m_properties->m_solid;
+		if (tile->m_checkout)
+		{
+			outFile << " CHECKOUT "
+				<< tile->m_checkoutMap;
+		}
+		outFile << '\n';
+
+	}
+	outFile.close();
+	return true;
+
+}
+
 
 
 void Map::PurgeMap() {
@@ -168,6 +238,7 @@ void Map::LoadMap(const std::string& i_path) {
 	if (m_tilesets.empty()) { return; }
 	std::ifstream file; 
 	file.open(Utils::GetWorkingDirectory()+ "Assets//Maps//" + i_path);
+	m_mapFileName = Utils::GetWorkingDirectory() + "Assets//Maps//" + i_path;
 	if (file.is_open()) {
 		std::string line; 
 		while (std::getline(file, line)) {
@@ -196,6 +267,7 @@ void Map::LoadMap(const std::string& i_path) {
 				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y || tileLayer >= Sheet::Num_Layers) { continue; }
 				Tile* tile = new Tile();
 				tile->m_properties = itr3->second;
+				tile->m_properties->m_tilesetName = tilesetname;
 				if (!m_tilemap.emplace(ConvertCordinates(tileCords.x, tileCords.y,tileLayer), tile).second) {
 					delete tile;
 					tile = nullptr;

@@ -5,6 +5,7 @@ class GUI_Viewport :
 {
 public:
     GUI_Viewport(const std::string& i_name, GUI_Interface* i_owner);
+    ~GUI_Viewport();
     void ReadIn(std::stringstream& i_stream)override;
     void OnClick(const sf::Vector2f& i_mousePos)override;
     void OnRelease()override;
@@ -14,6 +15,7 @@ public:
     void Draw(sf::RenderTarget* i_target)override;
     void DrawOverlay(sf::RenderTarget* i_target) override;
     void ApplyBgStyle()override;
+    void CallbackSetup()override;
 
     void UpdateCamera(sf::RenderWindow* i_wind);
     void ClearBrush();
@@ -24,9 +26,9 @@ public:
     void SetCameraSpeed(float i_speed);
     void SetHoverTilesPos(const sf::Vector2i& i_pos);
 	void SetClickedTileInfo(TileInfo*i_info);
-
+    
 	float& GetCameraSpeed();
-
+    void React(EventDetails* i_details);
 private:
 	//Change the map based on the clicked tile position and the current brush
     void ChangeMap();

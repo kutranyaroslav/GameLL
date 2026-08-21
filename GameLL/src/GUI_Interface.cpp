@@ -196,6 +196,10 @@ void GUI_Interface::ApplyStyle() {
 	m_visual.m_glyph.setPosition(m_titleBar.getPosition() + m_styles[m_state].m_glyphPadding);
 }
 
+void GUI_Interface::CallbackSetup()
+{
+}
+
 void GUI_Interface::OnTextEntered(const char& i_char) {
 	for (auto& itr : m_elements) {
 		if (itr.second->GetType() != GUI_ElementType::Textfield) { continue; }

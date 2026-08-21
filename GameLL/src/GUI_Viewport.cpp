@@ -7,6 +7,11 @@ GUI_Viewport::GUI_Viewport(const std::string& i_name, GUI_Interface* i_owner):
 	m_view.reset(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
 }
 
+GUI_Viewport::~GUI_Viewport()
+{
+	m_context->m_eventManager->RemoveCallback(StateType::Developement, "Key_S");
+}
+
 void GUI_Viewport::ReadIn(std::stringstream& i_stream)
 {
 	i_stream >> m_cameraSpeed;
@@ -111,6 +116,16 @@ void GUI_Viewport::ApplyBgStyle()
 
 
 
+}
+
+void GUI_Viewport::CallbackSetup()
+{
+	if (m_context) {
+		if (m_context->m_eventManager)
+		{
+			m_context->m_eventManager->AddCallback(StateType::Developement, "Key_S", &GUI_Viewport::React, this);
+		}
+	}
 }
 
 void GUI_Viewport::UpdateCamera(sf::RenderWindow* window)
@@ -224,5 +239,15 @@ void GUI_Viewport::ClearBrush()
 float& GUI_Viewport::GetCameraSpeed()
 {
 	return m_cameraSpeed;
+}
+
+void GUI_Viewport::React(EventDetails* i_details)
+{
+
+	//logic for saving map 
+	if (!m_world) { return; }
+	if (!m_world->GetCurrentMap()) { return; }
+	m_world->GetCurrentMap()->SaveTiles();
+
 }
 

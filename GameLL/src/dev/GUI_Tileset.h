@@ -16,7 +16,7 @@ public:
     void DrawOverlay(sf::RenderTarget* i_target) override;
 
     void ApplyBgStyle() override;
-
+    void CallbackSetup()override;
 	void SetTileset(const std::string& i_tilesetName);
 
 	std::string&  GetTilesetTexture();

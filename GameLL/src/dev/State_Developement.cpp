@@ -124,13 +124,16 @@ void State_Developement::onCreate()
 			}
 			i->AddElement(GUI_ElementType::Viewport, "ViewportMap");
 			GUI_Element* e = i->GetElement("ViewportMap");
-			gui->LoadStyle("Viewport.style", e);
+			GUI_Viewport* v = dynamic_cast<GUI_Viewport*>(e);
+ 			gui->LoadStyle("Viewport.style", e);
 			e->ApplyStyle();
 			//needed only for viewport
 			e->SetWorld(m_stateManager->GetSharedContext()->m_world);
 			e->SetTextureManager(m_stateManager->GetSharedContext()->m_textureManager);
 			e->SetWindow(m_stateManager->GetSharedContext()->m_wind);
 			e->SetZoomLevel();
+			e->SetContext(m_stateManager->GetSharedContext());
+			v->CallbackSetup();
 
 
 			evMgr->AddDynamicBinding(e->GetName() + "Hover", EventType::GUI_Hover, i->GetName(), e->GetName());

@@ -29,6 +29,7 @@ public:
 	void Draw(sf::RenderTarget* i_target)override;
 	void DrawOverlay(sf::RenderTarget* i_target)override;
 	void ApplyStyle()override;
+	void CallbackSetup()override;
 
 	void OnTextEntered(const char& i_char);
 	void BeginMoving();

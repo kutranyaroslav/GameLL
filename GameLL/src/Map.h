@@ -34,6 +34,7 @@ struct TileInfo {
 	TileId m_id;
 	unsigned int m_row;
 	std::string m_name;
+	std::string m_tilesetName;
 	sf::Vector2f m_friction;
 	bool m_deadly;
 	SharedContext* m_context;
@@ -78,6 +79,7 @@ public:
 	void LoadNext(const std::string& i_name);
 	void Update(float i_dT);
 	void Draw(sf::RenderTarget& i_target,const sf::View& i_view,unsigned int i_layer);
+	bool SaveTiles();
 	
 	//SETTERS AND GETTER
 
@@ -106,6 +108,7 @@ private:
 	std::string m_tilesetName;
 	std::string m_texture;
 	std::string m_mapName;
+	std::string m_mapFileName;
 	std::unordered_map<std::string, TileSet> m_tilesets;
 	TileMap m_tilemap;
 	sf::Sprite m_background;

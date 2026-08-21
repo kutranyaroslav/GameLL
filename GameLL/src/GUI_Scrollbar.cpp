@@ -136,3 +136,7 @@ void GUI_Scrollbar::SetPosition(const sf::Vector2f& i_pos) {
 
 }
 
+void GUI_Scrollbar::CallbackSetup()
+{
+}
+

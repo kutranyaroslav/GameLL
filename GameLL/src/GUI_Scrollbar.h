@@ -20,6 +20,7 @@ public:
 	void UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style)override;
 	void ApplyStyle() override;
 	void SetPosition(const sf::Vector2f& i_pos) override;
+	void CallbackSetup()override;
 private: 
     SliderType m_sliderType;
     sf::Vector2f m_mouseMoveLast;

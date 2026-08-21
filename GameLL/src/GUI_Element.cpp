@@ -169,6 +169,11 @@ void GUI_Element::ApplyTextStyle() {
 	
 }
 
+SharedContext* GUI_Element::GetContext()
+{
+	return m_context;
+}
+
 void GUI_Element::ApplyBgStyle() {
 	TextureManager* textureMgr = m_owner->GetGuiManager()->GetSharedContext()->m_textureManager;
 	
@@ -255,4 +260,9 @@ void GUI_Element::SetLayer(const int& i_layer)
 
 int GUI_Element::GetLayer() {
 	return m_layerIndex;
+}
+
+void GUI_Element::SetContext(SharedContext* i_context)
+{
+	m_context = i_context;
 }

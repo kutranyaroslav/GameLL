@@ -34,3 +34,7 @@ void GUI_Label::Draw(sf::RenderTarget* i_target) {
 void GUI_Label::DrawOverlay(sf::RenderTarget* i_target)
 {
 }
+
+void GUI_Label::CallbackSetup()
+{
+}

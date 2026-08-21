@@ -14,5 +14,6 @@ public:
     void Update(float i_dT)override;
     void Draw(sf::RenderTarget* i_target)override;
     void DrawOverlay(sf::RenderTarget* i_target)override;
+    void CallbackSetup()override;
 };
 

@@ -109,6 +109,10 @@ void GUI_Tileset::ApplyBgStyle()
 	m_styles[GUI_ElementState::Focused].m_size = sf::Vector2f(m_visual.m_backgroundImage.getTextureRect().getSize());
 }
 
+void GUI_Tileset::CallbackSetup()
+{
+}
+
 void GUI_Tileset::SetTileset(const std::string& name)
 {
 	auto* texMgr = m_owner->GetGuiManager()->GetSharedContext()->m_textureManager;
@@ -145,7 +149,7 @@ TileInfo* GUI_Tileset::GetSelectedTileInfo()
 
 	TileSet* tileset = m_world->GetCurrentMap()->GetTileset(tilesetName);
 
-	TileKey key{ m_selectedTileId, m_hoverTilePos.y };
+	TileKey key{ m_clickedTilePos.x, m_clickedTilePos.y };
 
 	auto itr = tileset->find(key);
 
@@ -153,6 +157,7 @@ TileInfo* GUI_Tileset::GetSelectedTileInfo()
 	{
 		return nullptr;
 	}
+	itr->second->m_tilesetName = tilesetName;
 
 	return itr->second;
 }

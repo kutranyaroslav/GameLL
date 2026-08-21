@@ -9,6 +9,9 @@ ENTITY PLAYER 120 120 2
 |TILE|tilesetname|id|row|x|y|layer|solid|
 |TestRoom|
 |TopWall|
-TILE TestTileset 2 2 0 0 2 1
-TILE TestTileset 2 2 1 0 2 1
-TILE TestTileset 2 2 2 0 2 1
+TILE TestTileset 2 2 0 0 2 0
+TILE TestTileset 2 2 1 0 2 0
+TILE TestTileset 2 2 2 0 2 0
+TILE TestTileset2 0 0 18 6 0 1
+TILE TestTileset2 1 0 18 0 0 0
+TILE TestTileset2 1 0 40 0 0 0

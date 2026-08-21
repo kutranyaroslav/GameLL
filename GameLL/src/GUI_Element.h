@@ -58,6 +58,7 @@ public:
 	virtual void OnLeave() = 0;
 	virtual void Update(float i_dT) = 0;
 	virtual void Draw(sf::RenderTarget* i_target) = 0;
+	virtual void CallbackSetup() = 0;
 	//created to optimize redraw of dynamic elements like hovering and so on
 	virtual void DrawOverlay(sf::RenderTarget* i_target) = 0;
 	virtual void UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style);
@@ -101,6 +102,8 @@ public:
 	float GetZoomLevel();
 	void SetLayer(const int& i_layer);
 	int GetLayer();
+	void SetContext(SharedContext* i_context);
+	SharedContext* GetContext();
 	virtual void ApplyBgStyle();
 
 	friend std::stringstream& operator>>(std::stringstream& i_stream, GUI_Element& b) {
@@ -129,6 +132,7 @@ protected:
 	TextureManager* m_textureManager;
 
 	//needed for viewport
+	SharedContext* m_context;
 	float m_zoomLevel; 
 	float m_workArea;
 	int m_layerIndex;
