@@ -200,6 +200,14 @@ void GUI_Viewport::ChangeMap()
 				{
 					//there is a tile 
 					Tile* oldTile = itr->second;
+					delete oldTile; 
+					oldTile == nullptr;
+					tileMap->erase(key);
+					if (m_clickedTileInfo == nullptr) { return;  }
+					Tile* newTile = new Tile();
+					newTile->m_properties = m_clickedTileInfo; 
+					tileMap->emplace(key, newTile);
+					
 
 				}
 
