@@ -62,6 +62,7 @@ TileMap* Map::GetTileMap()
 	}
 	
 	auto itr = m_tilemap.find(ConvertCordinates(i_x, i_y, i_layer));
+	//if (itr->second->m_properties->m_name == "EmptyBlock") { __debugbreak(); }
 	return itr != m_tilemap.end() ? itr->second : nullptr;
 }
 
@@ -150,7 +151,7 @@ bool Map::LoadTiles(const std::string& i_path, const std::string& i_texture, Til
 			///Add texture of tile set by name Tilesheet in textures.cfg 
 			TileInfo* tile = new TileInfo(m_context, i_texture, tileId, tileRow);
 			keystream >> tile->m_name >> tile->m_friction.x >> tile->m_friction.y >>
-				tile->m_deadly;
+				tile->m_deadly >> tile->m_solid;
 			if (!i_outTiles.emplace(key, tile).second) {
 				std::cout << "Dublicate file \n " << std::endl;
 				delete tile;
@@ -195,7 +196,6 @@ void Map::LoadMap(const std::string& i_path) {
 				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y || tileLayer >= Sheet::Num_Layers) { continue; }
 				Tile* tile = new Tile();
 				tile->m_properties = itr3->second;
-				tile->m_solid = tileSolidity;
 				if (!m_tilemap.emplace(ConvertCordinates(tileCords.x, tileCords.y,tileLayer), tile).second) {
 					delete tile;
 					tile = nullptr;

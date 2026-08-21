@@ -237,13 +237,9 @@ TextureManager* GUI_Element::GetTextureManager()
 
 void GUI_Element::SetZoomLevel()
 {
+	m_zoomLevel = 1.f;
 	sf::Vector2f size = GetSize();
-	float zoomX = GetWindow()->GetWindowSize().x / size.x;
-	float zoomY = GetWindow()->GetWindowSize().y / size.y;
-	m_zoomLevel = std::max(zoomX, zoomY);
-
-
-	m_view.setSize(size * m_zoomLevel);
+	m_view.setSize(size);
 	m_view.setCenter(size.x * 0.5f, size.y * 0.5f);
 }
 

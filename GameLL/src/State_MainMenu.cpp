@@ -24,7 +24,7 @@ void State_MainMenu::onDestroy() {
 	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Dev");
 	//potential memory leak cause we create interface but destroy it in gui_manager 
 
-}
+} 
 
 void State_MainMenu::Activate() {
 	//deactivating all the elements before after the state will be changed because otherwise gui elements stay in clicked state

@@ -16,13 +16,13 @@ void GUI_Viewport::OnClick(const sf::Vector2f& i_mousePos)
 {
 	SetState(GUI_ElementState::Clicked);
 	sf::Vector2f local = i_mousePos - GetGlobalPosition();
-	local.x += m_owner->GetScrollHorizontal();
-	local.y += m_owner->GetScrollVertical();
-	int tileX = local.x / Sheet::Tile_Size; 
-	int tileY = local.y / Sheet::Tile_Size;
-	m_clickedTilePos = { tileX, tileY };
-	ChangeMap();
+	sf::Vector2f worldPos;
+	worldPos.x = local.x + (m_view.getCenter().x - m_view.getSize().x * 0.5f);
+	worldPos.y = local.y + (m_view.getCenter().y - m_view.getSize().y * 0.5f);
 
+	m_clickedTilePos.x = static_cast<int>(worldPos.x) / Sheet::Tile_Size;
+	m_clickedTilePos.y = static_cast<int>(worldPos.y) / Sheet::Tile_Size;
+	ChangeMap();
 }
 
 void GUI_Viewport::OnRelease()
@@ -34,22 +34,21 @@ void GUI_Viewport::OnHover(const sf::Vector2f& i_mousePos)
 {
 	SetState(GUI_ElementState::Focused);
 	sf::Vector2f local = i_mousePos - GetGlobalPosition();
-	local.x += m_owner->GetScrollHorizontal(); 
-	local.y += m_owner->GetScrollVertical();
-	//to do tilex and y always cause of m_styles[m_state].m_size.x and m_styles[m_state].m_size.y being 0, so we need to check for that
-	int tileX = local.x / Sheet::Tile_Size;
-	int tileY = local.y / Sheet::Tile_Size;
-	m_hoverTilePos = { tileX, tileY };
-	float x =
-		std::round(GetGlobalPosition().x)
-		+ tileX * Sheet::Tile_Size
-		- std::round(m_owner->GetScrollHorizontal());
+	sf::Vector2f worldPos;
+	worldPos.x = local.x + (m_view.getCenter().x - m_view.getSize().x * 0.5f);
+	worldPos.y = local.y + (m_view.getCenter().y - m_view.getSize().y * 0.5f);
+	int tileX = static_cast<int>(worldPos.x / Sheet::Tile_Size);
+	int tileY = static_cast<int>(worldPos.y / Sheet::Tile_Size);
 
-	float y =
-		std::round(GetGlobalPosition().y)
-		+ tileY * Sheet::Tile_Size
-		- std::round(m_owner->GetScrollVertical());
-	m_hoverTile.setPosition(x, y);
+	m_hoverTilePos = { tileX, tileY };
+	float drawX = std::round(GetGlobalPosition().x) +
+		(tileX * Sheet::Tile_Size -
+			(m_view.getCenter().x - m_view.getSize().x * 0.5f));
+
+	float drawY = std::round(GetGlobalPosition().y) +
+		(tileY * Sheet::Tile_Size -
+			(m_view.getCenter().y - m_view.getSize().y * 0.5f));
+	m_hoverTile.setPosition(drawX, drawY);
 }
 
 void GUI_Viewport::OnLeave()
@@ -85,6 +84,12 @@ void GUI_Viewport::Draw(sf::RenderTarget* i_target)
 void GUI_Viewport::DrawOverlay(sf::RenderTarget* i_target)
 {
 	UpdateCamera(static_cast<sf::RenderWindow*>(i_target));
+	sf::Vector2u windowSize = GetWindow()->GetWindowSize();
+	sf::Vector2f globalPos = GetGlobalPosition();
+	sf::Vector2f size = GetSize();
+	m_view.setViewport(sf::FloatRect(
+		globalPos.x / windowSize.x, globalPos.y / windowSize.y,
+		size.x / windowSize.x, size.y / windowSize.y));
 	sf::View oldView = i_target->getView();
 	i_target->setView(m_view);
 	for (int i = 0; i < Sheet::Num_Layers; i++) {
@@ -151,7 +156,7 @@ void GUI_Viewport::SetViewCenter(const sf::Vector2f& i_pos) {
 void GUI_Viewport::SetBrush(std::string& i_texture, int i_tileId)
 {
 	if (i_tileId < 0) { return; }
-	if (i_texture == "" || m_textureManager == nullptr || i_tileId== 0) { return; }
+	if (i_texture == "" || m_textureManager == nullptr) { return; }
 	if (!m_textureManager->RequireResource(i_texture)) { return; }
 	m_hoverTile.setTexture(*m_textureManager->GetResource(i_texture));
 	int tilesPerRow = m_textureManager->GetResource(i_texture)->getSize().x / Sheet::Tile_Size;
@@ -184,7 +189,11 @@ void GUI_Viewport::ChangeMap()
 			if (tileMap) {
 				auto itr = tileMap->find(key);
 				if (itr == tileMap->end()) { 
-					//there is no tile yet 
+					//there is no tile yet
+					if (m_clickedTileInfo == nullptr) { return; }
+					Tile* newTile = new Tile();
+					newTile->m_properties = m_clickedTileInfo;
+					tileMap->emplace(key, newTile);
 					
 				}
 				else

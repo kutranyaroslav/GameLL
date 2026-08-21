@@ -65,7 +65,7 @@ void State_Game::Update(const sf::Time& i_time) {
 void State_Game::Draw() {
 	for (unsigned int i = 0; i < Sheet::Num_Layers; ++i) {
 		m_stateManager->GetSharedContext()->m_world->Draw(*m_stateManager->GetSharedContext()->m_wind->GetRenderWindow(),
-			m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getDefaultView(), i);
+			m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getView(), i);
 		m_stateManager->GetSharedContext()->m_systemManager->Draw(m_stateManager->GetSharedContext()->m_wind,i);
 	}
 	

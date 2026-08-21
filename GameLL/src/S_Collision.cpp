@@ -72,7 +72,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 					if (!m_world) { continue; }
 					m_world->SwitchTo(t->m_checkoutMap);
 				}
- 				if (!t->m_solid) { continue; }
+ 				if (!t->m_properties->m_solid) { continue; }
 				sf::FloatRect TileAABB(x * TileSize, y * TileSize, TileSize, TileSize);
 				sf::FloatRect intersection;
 				EntityAABB.intersects(TileAABB,intersection);

@@ -13,4 +13,7 @@ TILE TestTileset 2 2 0 0 2 1
 TILE TestTileset 2 2 1 0 2 1
 TILE TestTileset 2 2 2 0 2 1
 TILE TestTileset2 0 0 3 0 2 1
-
+TILE TestTileset 2 2 63 0 2 1
+TILE TestTileset2 0 0 62 0 2 1
+TILE TestTileset 2 2 61 0 2 1
+TILE TestTileset 2 2 60 0 2 1

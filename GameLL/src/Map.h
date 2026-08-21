@@ -38,13 +38,13 @@ struct TileInfo {
 	bool m_deadly;
 	SharedContext* m_context;
 	std::string m_texture;
+	bool m_solid;
 };
 
 struct Tile {
 	TileInfo* m_properties;
 	bool m_checkout;
 	std::string m_checkoutMap;
-	bool m_solid;
 };
 struct TileKey {
 	int id; 
