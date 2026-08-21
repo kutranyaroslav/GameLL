@@ -16,13 +16,15 @@ public:
 	void OnLeave()override;
 	void Update(float i_dT) override;	
 	void Draw(sf::RenderTarget* i_target)override;
+	void DrawOverlay(sf::RenderTarget* i_target)override;
 	void UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style)override;
 	void ApplyStyle() override;
 	void SetPosition(const sf::Vector2f& i_pos) override;
+	void CallbackSetup()override;
 private: 
     SliderType m_sliderType;
-    sf::RectangleShape m_slider;
     sf::Vector2f m_mouseMoveLast;
     int m_percentage;
+	sf::Text debugText;
 };
 

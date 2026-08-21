@@ -3,6 +3,7 @@
 #include "S_Base.h"
 #include "C_Movable.h"
 #include "C_Position.h"
+#include "World.h"
 enum class Axis{x,y};
 class Map;
 class S_Movement: public S_Base
@@ -10,6 +11,8 @@ class S_Movement: public S_Base
 public:
 	S_Movement(SystemManager* i_systemMgr);
 	void SetMap(Map* i_gameMap);
+	//gets access to the world and to the map
+	void SetWorld(World* i_world);
 	void Update(float i_dT) override;
 	void HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) override;
 	void Notify(const Message& i_message) override;
@@ -19,5 +22,6 @@ private:
 	const sf::Vector2f& GetTileFriction(unsigned int i_elevation, unsigned int x, unsigned int y);
 	void MovementStep(float i_dT, C_Movable* i_movable, C_Position* i_pos);
 	Map* m_gameMap;
+	World* m_world;
 };
 

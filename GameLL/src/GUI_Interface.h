@@ -27,7 +27,9 @@ public:
 	void OnLeave() override;
 	void Update(float i_dT) override;
 	void Draw(sf::RenderTarget* i_target)override;
+	void DrawOverlay(sf::RenderTarget* i_target)override;
 	void ApplyStyle()override;
+	void CallbackSetup()override;
 
 	void OnTextEntered(const char& i_char);
 	void BeginMoving();
@@ -37,21 +39,34 @@ public:
 	void RedrawControls();
 	void UpdateScrollHorizontal(unsigned int i_percent);
 	void UpdateScrollVertical(unsigned int i_percent);
-
-	sf::Vector2f& GetGlobalPosition() const;
+	void AdjustContentSize(GUI_Element* i_reference = nullptr);
+	sf::Vector2f GetGlobalPosition();
 
 	GUI_Element* GetElement(const std::string& i_name)const;
 	sf::Vector2f GetContentSize();
 	sf::Vector2f GetPadding();
 	GUI_Manager* GetGuiManager();
+	//made only for the viewport element to get access to the world
+
+	const Elements& GetElements();
 	bool IsBeingMoved();
 	bool IsFocused();
 	bool GetContentRedraw();
 	bool GetControlRedraw();
 	void Focus();
+	
+	int GetScrollHorizontal();
+	int GetScrollVertical();
+
+	virtual void RequireTexture(const std::string& i_name) override;
+	virtual void RequireFont(const std::string& i_name) override;
+	virtual void ReleaseTexture(const std::string& i_name)override;
+	virtual void ReleaseFont(const std::string& i_name)override;
+	virtual void ApplyBgStyle() override;
+	virtual void ApplyTextStyle() override;
+	virtual void ApplyGlyphStyle() override;
 private:
 	void DefocusTextFields();
-	void AdjustContentSize( GUI_Element* i_reference = nullptr);
 	void SetContentSize(const sf::Vector2f& i_vec);
 
 	Elements m_elements;
@@ -78,5 +93,7 @@ private:
 	sf::RenderTexture* m_controlTexture;
 	sf::Sprite m_control;
 	bool m_controlRedraw;
+
+
 };
 

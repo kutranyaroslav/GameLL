@@ -1,6 +1,5 @@
 #include "../StateManager.h"
-
-
+#include "../GUI_Manager.h"	
 class State_Developement : public BaseState {
 public:
 	State_Developement(StateManager* i_stateManager);
@@ -10,6 +9,8 @@ public:
 	void Deactivate() override;
 	void Draw()override;
 	void Update(const sf::Time& i_time)override;
+	void React(EventDetails* i_details);
 private:
-
+	unsigned int m_layerIndex;
+	std::string m_currentTileset;
 };

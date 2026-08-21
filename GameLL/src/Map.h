@@ -1,21 +1,14 @@
 #pragma once
 #include "StateManager.h"
-#include "unordered_map"
 #include "Utilitites.h"
 #include "EntityManagerNew.h"
 #include <fstream>
-
+#include <unordered_map>
 
 
 enum Sheet { Tile_Size = 32, Sheet_Width = 512, Sheet_Height = 256, Num_Layers = 6 };
 using TileId = unsigned int;
 //all the potential info for world manager
-struct MapProps {
-	unsigned int m_id; 
-	std::string m_name; 
-	unsigned int m_width; 
-	unsigned int m_height; 
-};
 
 struct TileInfo {
 	TileInfo(SharedContext* i_context, const std::string& i_texture = "", TileId i_id = 0, unsigned int i_row = 0) :
@@ -41,16 +34,18 @@ struct TileInfo {
 	TileId m_id;
 	unsigned int m_row;
 	std::string m_name;
+	std::string m_tilesetName;
 	sf::Vector2f m_friction;
 	bool m_deadly;
 	SharedContext* m_context;
 	std::string m_texture;
+	bool m_solid;
 };
 
 struct Tile {
 	TileInfo* m_properties;
-	bool m_warp;
-	bool m_solid;
+	bool m_checkout;
+	std::string m_checkoutMap;
 };
 struct TileKey {
 	int id; 
@@ -73,26 +68,48 @@ using TileSet = std::unordered_map<TileKey, TileInfo*>;
 class Map
 {
 public:
-	Map(SharedContext* i_context, BaseState* i_currentState);
+	Map(SharedContext* i_context,const std::string& i_mapName = "", const std::string& i_tilesetName= ""
+		,const std::string& i_tileset = "", const std::string& i_texture= "");
 	~Map();
+	bool AddTileset(const std::string& i_name, const std::string& i_path, const std::string& i_texture);
+	bool RemoveTileset(const std::string& i_name);
+
+	bool HasTileset(const std::string& i_name);
+	void LoadMap(const std::string& i_path);
+	void LoadNext(const std::string& i_name);
+	void Update(float i_dT);
+	void Draw(sf::RenderTarget& i_target,const sf::View& i_view,unsigned int i_layer);
+	bool SaveTiles();
+	
+	//SETTERS AND GETTER
+
+	void SetTileSet(const std::string& i_tileset);
+	void SetTexture(const std::string& i_texture);
+	int GetPlayerId();
 	Tile* GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer);
+	const std::unordered_map<std::string, TileSet>& GetTilesets();
 	TileInfo* GetDefaultTile();
 	float GetGravity()const;
 	unsigned int GetTileSize()const;
 	const sf::Vector2u& GetMapSize() const;
 	const sf::Vector2f& GetPlayerStart()const;
-	void LoadMap(const std::string& i_path);
-	void LoadNext();
-	void Update(float i_dT);
-	void Draw(unsigned int i_layer);
-	int GetPlayerId();
-private:
+	void SetMapName(const std::string& i_name);
+	std::string GetMapName();
+	TileSet* GetTileset(const std::string& i_name);
+	TileMap* GetTileMap();
 	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
-	void LoadTiles(const std::string& i_path, const std::string& i_texture);
+private:
+	
+	bool LoadTiles(const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles);
 	void PurgeMap();
 	void PurgeTileSet();
+	
 
-	TileSet m_tileset;
+	std::string m_tilesetName;
+	std::string m_texture;
+	std::string m_mapName;
+	std::string m_mapFileName;
+	std::unordered_map<std::string, TileSet> m_tilesets;
 	TileMap m_tilemap;
 	sf::Sprite m_background;
 	TileInfo m_defaultTile;
@@ -102,11 +119,10 @@ private:
 	unsigned int m_tileSetCount;
 	int m_playerId; 
 	float m_mapGravity;
-	std::string m_nextMap;
 	bool m_loadNextMap;
+	
+	std::unordered_map<std::string, Tile*> m_checkoutTiles;
 	std::string m_backgroundTexture;
-	BaseState* m_currentState;
 	SharedContext* m_context;
-	EntityManagerNew* m_entityManager;
 
 };

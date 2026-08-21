@@ -30,3 +30,11 @@ void GUI_Textfield::Draw(sf::RenderTarget* i_target) {
 	i_target->draw(m_visual.m_text);
 
 }
+
+void GUI_Textfield::DrawOverlay(sf::RenderTarget* i_target)
+{
+}
+
+void GUI_Textfield::CallbackSetup()
+{
+}

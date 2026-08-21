@@ -8,7 +8,7 @@ Component 1 Player
 |State|Enum0-5 state|
 Component 2 0
 |Movable|velocityMax|m_speed.x|m_speed.y|Enum dir|
-Component 3 160 70 70 0
+Component 3 800 800 800 0
 |Controller|
 Component 4
 |Collidable|m_AABB.width|m_AABB.height|m_offset.x|m_offset.y|Origin|

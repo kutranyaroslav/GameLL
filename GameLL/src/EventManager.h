@@ -11,6 +11,9 @@
 #include "GUI_Events.h"
 #include "Utilitites.h"
 
+struct SharedContext;
+
+
 
 enum class EventType {
 	KeyDown = sf::Event::KeyPressed,
@@ -27,10 +30,8 @@ enum class EventType {
 	TextEntered = sf::Event::TextEntered,
 	Keyboard = sf::Event::Count + 1, Mouse, Joystick, GUI_Click,
 	GUI_Release, GUI_Hover, GUI_Leave
-	
-	
-};
 
+};
 struct EventInfo {
 	EventInfo() { m_code = 0; }
 	EventInfo(int i_code):m_code(i_code) {}
@@ -114,6 +115,8 @@ public:
 	~EventManager();
 	bool AddBinding(Binding* i_binding);
 	bool RemoveBinding(std::string i_name);
+	// EventManager.h - replace AddGUIBinding with this:
+	bool AddDynamicBinding(const std::string& i_name, EventType i_type, const std::string& i_interface, const std::string& i_element);
 	template <class T>
 	bool AddCallback(StateType i_state, const std::string& i_name, void(T::*i_func) (EventDetails*), T* i_instance){
 		auto itr = m_callbacks.emplace(i_state, CallbackContainer()).first;
@@ -136,9 +139,10 @@ public:
 	}
 	void setFocus(bool i_focus);
 	void SetCurrentState(const StateType& i_type);
+	void SetContext(SharedContext* i_contex);
 private:
 	void LoadBindings();
-
+	SharedContext* m_context;
 	Bindings m_bindings;
 	Callbacks m_callbacks;
 	StateType m_currentState;

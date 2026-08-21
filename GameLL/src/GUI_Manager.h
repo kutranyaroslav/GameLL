@@ -7,8 +7,8 @@
 #include "GUI_Label.h"
 #include "GUI_Textfield.h"
 #include "GUI_Scrollbar.h"
-
-
+#include "dev/GUI_Tileset.h"
+#include "GUI_Viewport.h"
 
 class EventManager;
 

@@ -1,6 +1,7 @@
 #include "EventManager.h"
-
-EventManager::EventManager() {
+#include "StateManager.h"
+EventManager::EventManager()
+{
 	m_hasFocus = true;
 	LoadBindings();
 	
@@ -27,7 +28,28 @@ bool EventManager::RemoveBinding(std::string i_name) {
 	m_bindings.erase(itr);
 	return true;
 }
+// EventManager.cpp
+bool EventManager::AddDynamicBinding(const std::string& i_name, EventType i_type,
+	const std::string& i_interface, const std::string& i_element)
+{
+	if (m_bindings.find(i_name) != m_bindings.end()) { return false; }
 
+	Binding* bind = new Binding(i_name);
+
+	char* w = new char[i_interface.length() + 1];
+	char* e = new char[i_element.length() + 1];
+	strcpy_s(w, i_interface.length() + 1, i_interface.c_str());
+	strcpy_s(e, i_element.length() + 1, i_element.c_str());
+
+	GUI_Event guiEvent;
+	guiEvent.m_interface = w;
+	guiEvent.m_element = e;
+
+	bind->BindEvent(i_type, EventInfo(guiEvent));
+
+	if (!AddBinding(bind)) { delete bind; return false; }
+	return true;
+}
 //handling of main events 
 void EventManager::HandleEvent(sf::Event& i_event) {
 	for (auto& b_itr : m_bindings) {
@@ -216,8 +238,11 @@ void EventManager::LoadBindings() {
 				}
 				bind->BindEvent(type, eventInfo);
 			}
-			catch (const std::exception& e) {
-				std::cout << "Error parsing event or code: " << e.what() << " for " << keyval << std::endl;
+			catch (const cException& e) {
+				THROW_EXCEPTION(100048, "Bind failed: - " + bind->m_name);
+				if (m_context){
+					m_context->m_errorLogManager->GetInstance()->LogException(e);
+				}
 				delete bind;
 				bind = nullptr;
 				break;
@@ -234,4 +259,7 @@ void EventManager::setFocus(bool i_focus) {
 }
 void EventManager::SetCurrentState(const StateType& i_type) {
 	m_currentState = i_type;
+}
+void EventManager::SetContext(SharedContext* i_context) {
+	m_context = i_context;
 }

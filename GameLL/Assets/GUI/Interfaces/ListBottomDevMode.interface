@@ -1,0 +1,3 @@
+Interface ListBottom ListBottom.style 10 10 Immovable Title "List"
+Element Scrollbar ScrollbarHorizontal 1780 1080 ListBottomScrollerHorizontal.style Horizontal
+Element Scrollbar ScrollbarVertical 1880 1080 ListBottomScroller.style Vertical

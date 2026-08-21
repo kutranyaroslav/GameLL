@@ -4,13 +4,18 @@
 #include "C_SpriteSheet.h"
 #include "C_State.h"
 #include "C_Movable.h"
+#include "GUI_Manager.h"
+#include "World.h"
 State_Game::State_Game(StateManager* i_stateManager) :
 	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager)
 {}
 
 void State_Game::onCreate() {
+	m_state = StateType::Game;
 	Textbox* textboxTest = m_stateManager->GetSharedContext()->m_textbox;
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
+	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager; 
+	gui->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
 	sf::Vector2u size = m_stateManager->GetSharedContext()->m_wind->GetWindowSize();
 	m_view.setSize(size.x, size.y);
 	m_view.setCenter(size.x / 2, size.y / 2);
@@ -29,12 +34,17 @@ void State_Game::onCreate() {
 	evMgr->AddCallback(StateType::Game, "Player_StopMoveright", &State_Game::Stop, this);
 	evMgr->AddCallback(StateType::Game, "Player_StopMoveup", &State_Game::Stop, this);
 	evMgr->AddCallback(StateType::Game, "Player_StopMovedown", &State_Game::Stop, this);
-	//test integration of maps
-	m_testMap = new Map(m_stateManager->GetSharedContext(), this);
-	m_testMap->LoadMap("/Assets/Maps/MAP1.map");
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetMap(m_testMap);
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetMap(m_testMap); 
-	m_player = m_testMap->GetPlayerId();
+	//test integration of map
+	m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "TestTileset", "Tiles.cfg", "Tilesheet");
+	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP1", "TestTileset2", "Tiles.cfg", "Tilesheet2");
+	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP1");
+	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
+	
+	m_player = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetPlayerId();
+	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetWorld
+		(m_stateManager->GetSharedContext()->m_world);
+	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetWorld(
+	m_stateManager->GetSharedContext()->m_world);
 	
 }
 
@@ -43,28 +53,19 @@ void State_Game::onDestroy() {
 	evMgr->RemoveCallback(StateType::Game, "Key_Escape");
 	evMgr->RemoveCallback(StateType::Game, "Key_P");
 	evMgr->RemoveCallback(StateType::Game, "Key_R");
-	delete m_testMap;
-	m_testMap = nullptr;
 }
 
 void State_Game::Update(const sf::Time& i_time) {
 	SharedContext* context = m_stateManager->GetSharedContext();
-	context->m_textbox->Add("X is " + std::to_string(m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>
-		(m_player, Component::Position)->GetPosition().x) + " Y is " + std::to_string(m_stateManager->GetSharedContext()->m_entityManager
-			->GetComponent<C_Position>(m_player, Component::Position)->GetPosition().y));
-	context->m_textbox->Add("Origin x is " + std::to_string(context->m_entityManager->GetComponent<C_SpriteSheet>(m_player, Component::SpriteSheet)
-		->GetSpriteSheet()->GetSprite()->getOrigin().x) + " y is " + std::to_string(context->m_entityManager->
-			GetComponent<C_SpriteSheet>(m_player, Component::SpriteSheet)->GetSpriteSheet()->GetSprite()->getOrigin().y));
 	UpdateCamera();
-	m_testMap->Update(i_time.asSeconds());
 	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
-	
 
 }
 
 void State_Game::Draw() {
 	for (unsigned int i = 0; i < Sheet::Num_Layers; ++i) {
-		m_testMap->Draw(i);
+		m_stateManager->GetSharedContext()->m_world->Draw(*m_stateManager->GetSharedContext()->m_wind->GetRenderWindow(),
+			m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getView(), i);
 		m_stateManager->GetSharedContext()->m_systemManager->Draw(m_stateManager->GetSharedContext()->m_wind,i);
 	}
 	
@@ -84,8 +85,10 @@ void State_Game::Pause(EventDetails* i_details) {
 
 void State_Game::UpdateCamera() {
 	if (m_player == -1) { return; }
+	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
 	SharedContext* context = m_stateManager->GetSharedContext();
-	C_Position* pos = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>(m_player, Component::Position);
+	C_Position* pos = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>
+		(m_player, Component::Position);
 	m_view.setCenter(pos->GetPosition());
 	context->m_wind->GetRenderWindow()->setView(m_view);
 	sf::FloatRect viewSpace = context->m_wind->GetViewSpace();
@@ -93,8 +96,10 @@ void State_Game::UpdateCamera() {
 		m_view.setCenter(viewSpace.width / 2, m_view.getCenter().y);
 		context->m_wind->GetRenderWindow()->setView(m_view);
 	}
-	else if (viewSpace.left + viewSpace.width > (m_testMap->GetMapSize().x) * Sheet::Tile_Size) {
-		m_view.setCenter(((m_testMap->GetMapSize().x) * Sheet::Tile_Size) - (viewSpace.width / 2), m_view.getCenter().y);
+	else if (viewSpace.left + viewSpace.width > (m_stateManager->GetSharedContext()
+		->m_world->GetCurrentMap()->GetMapSize().x) * Sheet::Tile_Size) {
+		m_view.setCenter(((m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().x) * Sheet::Tile_Size) 
+			- (viewSpace.width / 2), m_view.getCenter().y);
 		context->m_wind->GetRenderWindow()->setView(m_view);
 	}
 
@@ -102,8 +107,10 @@ void State_Game::UpdateCamera() {
 		m_view.setCenter(m_view.getCenter().x, viewSpace.height / 2);
 		context->m_wind->GetRenderWindow()->setView(m_view);
 	}
-	else if (viewSpace.top + viewSpace.height > (m_testMap->GetMapSize().y) * Sheet::Tile_Size) {
-		m_view.setCenter(m_view.getCenter().x, ((m_testMap->GetMapSize().y) * Sheet::Tile_Size) - (viewSpace.height / 2));
+	else if (viewSpace.top + viewSpace.height > (m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().y) 
+		* Sheet::Tile_Size) {
+		m_view.setCenter(m_view.getCenter().x, ((m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().y) 
+			* Sheet::Tile_Size) - (viewSpace.height / 2));
 		context->m_wind->GetRenderWindow()->setView(m_view);
 	}
 }

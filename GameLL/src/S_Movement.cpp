@@ -142,3 +142,7 @@ void S_Movement::SetDirection(const EntityId& i_entity, const Direction& i_dir) 
 	m_systemMgr->GetMessageHandler()->Dispatch(msg);
 }
 void S_Movement::SetMap(Map* i_gameMap) { m_gameMap = i_gameMap; }
+
+void S_Movement::SetWorld(World* i_world) {
+	m_world = i_world;
+}

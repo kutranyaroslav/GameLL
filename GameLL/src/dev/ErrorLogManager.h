@@ -38,6 +38,7 @@ public:
 	void Close();
 	//logs an exception to the log file
 	void LogException(cException e);
+	void LogMessage(const std::string& i_message);
 	//return a time in a string 
 	std::string GetTimeString();
 

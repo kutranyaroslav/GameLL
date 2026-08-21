@@ -40,6 +40,11 @@ void ErrorLogManager::LogException(cException e) {
 	m_logBuffer << GetTimeString() << "\n" << e.what();
 	Flush();
 }
+void ErrorLogManager::LogMessage(const std::string& i_message)
+{
+	m_logBuffer << GetTimeString() << "\n" << i_message;
+	Flush();
+}
 //return time in form hours:mins:secs
 std::string ErrorLogManager::GetTimeString() {
 	std::stringstream TimeStr;

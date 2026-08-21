@@ -29,7 +29,7 @@ private:
 	TextureManager m_textureMgr;
 	Anim_Directional m_anim;
 	SpriteSheet m_spriteSheet;
-	Map* m_testMap;
+	
 	int m_player;
 
 

@@ -6,12 +6,14 @@ State_MainMenu::State_MainMenu(StateManager* i_stateManager) :
 	BaseState(i_stateManager) {}
 
 void State_MainMenu::onCreate() {
+	m_state = StateType::MainMenu;
 	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
 	Window* wind = m_stateManager->GetSharedContext()->m_wind;
 	guiMgr->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-	evMgr->AddCallback(StateType::MainMenu,"MainMenu_Play", &State_MainMenu::Play, this);
-	evMgr->AddCallback(StateType::MainMenu, "MainMenu_Quit",&State_MainMenu::Quit, this);
+	evMgr->AddCallback(StateType::MainMenu,"MainMenu_Play", &State_MainMenu::React, this);
+	evMgr->AddCallback(StateType::MainMenu, "MainMenu_Quit",&State_MainMenu::React, this);
+	evMgr->AddCallback(StateType::MainMenu, "MainMenu_Dev", &State_MainMenu::React, this);
 }
 
 void State_MainMenu::onDestroy() {
@@ -19,11 +21,17 @@ void State_MainMenu::onDestroy() {
 	GUI_Manager* guiMgr = m_stateManager->GetSharedContext()->m_guiManager;
 	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Play");
 	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Quit");
+	evMgr->RemoveCallback(StateType::MainMenu, "MainMenu_Dev");
 	//potential memory leak cause we create interface but destroy it in gui_manager 
 
-}
+} 
 
 void State_MainMenu::Activate() {
+	//deactivating all the elements before after the state will be changed because otherwise gui elements stay in clicked state
+	GUI_Interface* i = m_stateManager->GetSharedContext()->m_guiManager->GetInterface(StateType::MainMenu, "MainMenu");
+	for (auto& e : i->GetElements()) {
+		e.second->SetState(GUI_ElementState::Neutral);
+	}
 	auto play = m_stateManager->GetSharedContext()->m_guiManager->GetInterface(StateType::MainMenu, "MainMenu")
 		->GetElement("Play");
 	if (!play) {
@@ -44,16 +52,17 @@ void State_MainMenu::MouseClick(EventDetails* i_details) {
 
 }
 
-void State_MainMenu::Play(EventDetails* i_details)
-{
-	m_stateManager->SwitchTo(StateType::Game);
+void State_MainMenu::React(EventDetails* i_details) {
+	if (i_details->m_name == "MainMenu_Play") {
+		m_stateManager->SwitchTo(StateType::Game);
+	}
+	else if (i_details->m_name == "MainMenu_Quit") {
+		m_stateManager->GetSharedContext()->m_wind->Close();
+	}
+	else if (i_details->m_name == "MainMenu_Dev") {
+		m_stateManager->SwitchTo(StateType::Developement);
+	}
 }
-
-void State_MainMenu::Quit(EventDetails* i_details)
-{
-	m_stateManager->GetSharedContext()->m_wind->Close();
-}
-
 void State_MainMenu::Update(const sf::Time& i_time){}
 
 void State_MainMenu::Draw() {

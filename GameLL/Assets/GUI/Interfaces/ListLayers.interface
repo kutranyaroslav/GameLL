@@ -1,0 +1,2 @@
+Interface ListLayers ListLayers.style 10 10 Immovable Title "List Layers"
+Element Label Title 112 0 ListLayersTitleLabel.style "Layers:"

@@ -46,6 +46,7 @@ void S_Renderer::Notify(const Message& i_message) {
 void S_Renderer::Render(Window* i_wind, unsigned int i_layer) {
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 	for (auto& entity : m_entities) {
+		
 		C_Position* position = entities->GetComponent<C_Position>(entity, Component::Position);
 		if (position->getElevation() < i_layer) { continue;}
 		if (position->getElevation() > i_layer) { break; }

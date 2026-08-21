@@ -1,10 +1,11 @@
 #pragma once
-#include "Window.h"
 #include "TextureManager.h"
 #include "SystemManager.h"
 #include "EntityManagerNew.h"
 #include "FontManager.h"
 #include "dev/ErrorLogManager.h"
+#include "Window.h"
+class World;
 class GUI_Manager;
 class EntityManager;
 class StateManager;
@@ -39,11 +40,14 @@ public:
 	bool IsTranscendent() const { return m_transcendent; }
 	StateManager* GetStateManager() { return m_stateManager; }
 	sf::View& GetView() { return m_view; }
+	StateType GetState() { return m_state; }
 
 
 protected:
+	StateType m_state;
 	sf::View m_view;
 	StateManager* m_stateManager;
+	std::vector<std::string> m_dynamicCallbacks;
 	bool m_transparent;
 	bool m_transcendent;
 };
@@ -56,8 +60,10 @@ class StateManager;
 
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
-		m_textureManager(nullptr), m_gameMap(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
-		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr) {
+		m_textureManager(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
+		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr),
+	m_world(nullptr)
+	{
 		
 	}
 	
@@ -67,13 +73,13 @@ struct SharedContext {
 	TextureManager* m_textureManager;
 	StateManager* m_stateManager;
 	EntityManagerNew* m_entityManager;
-	Map* m_gameMap;
 	SystemManager* m_systemManager;
 	FontManager* m_fontManager;
 	GUI_Manager* m_guiManager;
 	SoundManager* m_soundManager;
 	AudioManager* m_audioManager;
 	ErrorLogManager* m_errorLogManager;
+	World* m_world;
 	
 };
 
@@ -94,6 +100,7 @@ public:
 	void Remove(const StateType& i_type);
 
 	SharedContext* GetSharedContext();
+	BaseState* GetCurrentState();
 private:
 	void CreateState(const StateType& i_type);
 	void RemoveState(const StateType& i_type);
@@ -104,6 +111,7 @@ private:
 			return new T(this);
 			};
 	}
+	BaseState* m_currentState;
 	SharedContext* m_shared;
 	StateContainer m_states;
 	TypeContainer m_toRemove;

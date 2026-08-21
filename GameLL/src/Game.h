@@ -4,6 +4,7 @@
 #include "SpriteSheet.h"
 #include "SoundManager.h"
 #include "GUI_Manager.h"
+#include "World.h"
 class Game
 {
 public :
@@ -26,6 +27,7 @@ private:
 	GUI_Manager m_guiManager;
 	AudioManager m_audioManager;
 	SoundManager m_soundManager;
+	World m_world;
 	sf::Clock m_clock;
 	sf::Time m_elapsed;
 	unsigned int manualFrame;

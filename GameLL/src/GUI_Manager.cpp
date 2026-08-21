@@ -1,5 +1,7 @@
 #include "GUI_Manager.h"
 
+
+
 GUI_Manager::GUI_Manager(EventManager* i_eventMgr, SharedContext* i_context):
 m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 {
@@ -7,12 +9,16 @@ m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 	//RegisterElement<GUI_Button>(GUI_ElementType::Button);
 	RegisterElement<GUI_Scrollbar>(GUI_ElementType::Scrollbar);
 	RegisterElement<GUI_Textfield>(GUI_ElementType::Textfield);
+	RegisterElement<GUI_Tileset>(GUI_ElementType::Tileset);
+	RegisterElement<GUI_Viewport>(GUI_ElementType::Viewport);
 	//RegisterElement<GUI_Window>(GUI_ElementType::Window);
 	m_elemTypes.emplace("Label", GUI_ElementType::Label);
 	m_elemTypes.emplace("Button", GUI_ElementType::Button);
 	m_elemTypes.emplace("Scrollbar", GUI_ElementType::Scrollbar);
 	m_elemTypes.emplace("Textfield", GUI_ElementType::Textfield);
 	m_elemTypes.emplace("Window", GUI_ElementType::Window);
+	m_elemTypes.emplace("Tileset", GUI_ElementType::Tileset);
+	m_elemTypes.emplace("Viewport", GUI_ElementType::Viewport);
 
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left", &GUI_Manager::HandleClick, this);
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left_Release", &GUI_Manager::HandleRelease, this);
@@ -55,7 +61,11 @@ bool GUI_Manager::RemoveInterface(const StateType& i_state, const std::string& i
 }
 
 void GUI_Manager::Update(float i_dT) {
-	sf::Vector2i mousePos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
+	sf::Vector2i mousePxPos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
+	
+	// convert from pixel space to view/world space
+	sf::Vector2f mousePos = m_context->m_wind->GetRenderWindow()->mapPixelToCoords(mousePxPos);
+	// now use mousePos (Vector2f) everywhere instead of sf::Vector2f(mousePos)
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
 	std::vector<std::pair<std::string ,GUI_Interface*>> ordered(state->second.begin(), state->second.end());
@@ -90,6 +100,8 @@ void GUI_Manager::Draw(sf::RenderWindow* i_wind) {
 }
 
 void GUI_Manager::HandleClick(EventDetails* i_details) {
+	sf::Vector2i rawPixel = sf::Mouse::getPosition(*m_context->m_wind->GetRenderWindow());
+	sf::Vector2i windowPos = m_context->m_wind->GetRenderWindow()->getPosition(); // window's position on desktop
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
 	sf::Vector2i mousePos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
@@ -130,7 +142,6 @@ void GUI_Manager::HandleTextEntered(EventDetails* i_details) {
 
 void GUI_Manager::SetCurrentState(const StateType& i_state) {
 	if (m_currentState == i_state) { return; }
-	HandleRelease(nullptr);
 	m_currentState = i_state;
 }
 
@@ -164,6 +175,18 @@ GUI_ElementType GUI_Manager::StringToType(const std::string& i_string)
 	}
 	else if (i_string == "Scrollbar") {
 		return GUI_ElementType::Scrollbar;
+	}
+	else if (i_string == "Window") {
+		return GUI_ElementType::Window;
+	}
+	else if (i_string == "Button") {
+		return GUI_ElementType::Button;
+	}
+	else if (i_string == "Tileset") {
+		return GUI_ElementType::Tileset;
+	}
+	else if (i_string == "Viewport") {
+		return GUI_ElementType::Viewport;
 	}
 }
 
@@ -266,8 +289,63 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 			else {
 				if (currentState == "") { continue; }
 				if (key == "Size") {
-					keystream >> temporaryStyle.m_size.x >> temporaryStyle.m_size.y;
+					std::string numTypeX, numTypeY;
+					keystream >> numTypeX;
+					keystream >> numTypeY;
+					bool absolute_x = (numTypeX.find('%') == std::string::npos ? true : false);
+					bool absolute_y = (numTypeY.find('%') == std::string::npos ? true : false);
+					if (absolute_x) {
+						temporaryStyle.m_size.x = std::stoi(numTypeX);
+					}
+					else {
+						numTypeX.pop_back();
+						double percent_x = std::stod(numTypeX) /100.0;
+						if (!i_element->GetOwner()) {
+							temporaryStyle.m_size.x = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x * percent_x;
+						}
+						else {
+							temporaryStyle.m_size.x = i_element->GetOwner()->GetSize().x * percent_x;
+						}
+					}
+					if(absolute_y){
+						temporaryStyle.m_size.y = std::stoi(numTypeY);
+					}
+					else {
+						numTypeY.pop_back();
+						double percent_y = std::stod(numTypeY) / 100.0;
+						if (!i_element->GetOwner()) {
+							temporaryStyle.m_size.y = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y * percent_y;
+						}
+						else {
+							temporaryStyle.m_size.y = i_element->GetOwner()->GetSize().y * percent_y;
+						}
+					}	
+					
 				}
+				else if (key == "ElementSize") {
+					std::string numTypeX, numTypeY;
+					keystream >> numTypeX;
+					keystream >> numTypeY;
+					bool absolute_x = (numTypeX.find('%') == std::string::npos ? true : false);
+					bool absolute_y = (numTypeY.find('%') == std::string::npos ? true : false);
+					if (absolute_x) {
+						temporaryStyle.m_elementSize.x = std::stoi(numTypeX);
+					}
+					else {
+						numTypeX.pop_back();
+						double percent_x = std::stod(numTypeX) / 100.0;
+						temporaryStyle.m_elementSize.x = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x * percent_x;
+					}
+					if (absolute_y) {
+						temporaryStyle.m_elementSize.y = std::stoi(numTypeY);
+					}
+					else {
+						numTypeY.pop_back();
+						double percent_y = std::stod(numTypeY) / 100.0;
+						temporaryStyle.m_elementSize.y = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y * percent_y;
+					}
+				}
+
 				else if (key == "BgColor") {
 					int r, g, b, a = 0;
 					keystream >> r >> g >> b >> a;
@@ -275,6 +353,12 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 				}
 				else if (key == "BgImage") {
 					keystream >> temporaryStyle.m_backgroundImage;
+					if (i_element->GetType() == GUI_ElementType::Tileset) {
+						i_element->SetSize(sf::Vector2f(m_context->m_textureManager->GetResource(temporaryStyle.m_backgroundImage)->getSize()));
+					}
+				}
+				else if (key == "Margin") {
+					keystream >> temporaryStyle.m_margin.x >> temporaryStyle.m_margin.y;
 				}
 				else if (key == "BgImageColor") {
 					int r, g, b, a = 0;

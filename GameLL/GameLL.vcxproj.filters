@@ -180,13 +180,19 @@
     <ClCompile Include="src\dev\State_Developement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\World.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\WorldManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\dev\ErrorLogManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dev\GUI_Tileset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GUI_Viewport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -371,13 +377,19 @@
     <ClInclude Include="src\dev\State_Developement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Wolrd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\WorldManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\dev\ErrorLogManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\World.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dev\GUI_Tileset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GUI_Viewport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

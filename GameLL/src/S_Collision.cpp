@@ -1,11 +1,16 @@
 #include "S_Collision.h"
-S_Collision::S_Collision(SystemManager* i_systemMgr) :S_Base(System::Collision, i_systemMgr) {
+S_Collision::S_Collision(SystemManager* i_systemMgr) :S_Base(System::Collision, i_systemMgr), m_world(nullptr) {
 	Bitmask req; 
 	req.turnOnBit((unsigned int)Component::Collidable);
 	req.turnOnBit((unsigned int)Component::Position);
 	m_requiredComponents.push_back(req);
 	req.Clear();
 	m_gameMap = nullptr;
+}
+
+void S_Collision::SetWorld(World* i_world)
+{
+	m_world = i_world; 
 }
 
 Map* S_Collision::GetMap() { return m_gameMap; }
@@ -62,7 +67,12 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 			for (int l = 0; l < Sheet::Num_Layers; l++) {
 				Tile* t = m_gameMap->GetTile(x, y, l);
 				if (!t) { continue; }
- 				if (!t->m_solid) { continue; }
+				//checks for collision with check out points 
+				if (t->m_checkout) {
+					if (!m_world) { continue; }
+					m_world->SwitchTo(t->m_checkoutMap);
+				}
+ 				if (!t->m_properties->m_solid) { continue; }
 				sf::FloatRect TileAABB(x * TileSize, y * TileSize, TileSize, TileSize);
 				sf::FloatRect intersection;
 				EntityAABB.intersects(TileAABB,intersection);
@@ -73,6 +83,8 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 		}
 
 	}
+
+	
 	if (c.empty()) { return; }
 	std::sort(c.begin(), c.end(), [](CollisionElement& i_1, CollisionElement& i_2) {
 		return i_1.m_area > i_2.m_area;
