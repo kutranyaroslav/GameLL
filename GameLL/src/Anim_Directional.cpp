@@ -2,9 +2,19 @@
 #include "Anim_Base.h"
 #include "SpriteSheet.h"
 void Anim_Directional::CropSprite() {
-	sf::IntRect rect(m_spriteSheet->GetSpriteSize().x * m_currentFrame,
-		m_spriteSheet->GetSpriteSize().y * (m_rowFrame + (short)m_spriteSheet->GetSpriteDir()), 
-		m_spriteSheet->GetSpriteSize().x , m_spriteSheet->GetSpriteSize().y);
+	sf::IntRect rect;
+	if (m_name == "Idle") {
+		//if there will be different directions for idle animation than we can just delete 
+		// this part for idle and use the normal one
+		 rect= sf::IntRect(m_spriteSheet->GetSpriteSize().x * m_currentFrame,
+			m_spriteSheet->GetSpriteSize().y * m_rowFrame,
+			m_spriteSheet->GetSpriteSize().x, m_spriteSheet->GetSpriteSize().y);
+	}
+	else {
+		rect= sf::IntRect(m_spriteSheet->GetSpriteSize().x * m_currentFrame,
+			m_spriteSheet->GetSpriteSize().y * (m_rowFrame + (short)m_spriteSheet->GetSpriteDir()),
+			m_spriteSheet->GetSpriteSize().x, m_spriteSheet->GetSpriteSize().y);
+	}
 	m_spriteSheet->CropSprite(rect);
 }
 
@@ -26,9 +36,11 @@ void Anim_Directional::FrameStep() {
 		EndFrameFromDirection = m_endFrameSouth;
 		break;
 	}
-	bool b = SetFrame(m_currentFrame + (m_startFrame <= EndFrameFromDirection ? 1 : -1));
+	
+	
+	bool b = SetFrame(m_currentFrame + (m_startFrame < EndFrameFromDirection ? 1 : -1), EndFrameFromDirection);
 	if (b) { return; }
-	if (m_loop) { SetFrame(m_startFrame); }
+	if (m_loop) { SetFrame(m_startFrame, EndFrameFromDirection); }
 	else { SetFrame(EndFrameFromDirection); Pause(); }
 	
 }

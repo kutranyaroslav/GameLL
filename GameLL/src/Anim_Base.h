@@ -26,7 +26,7 @@ public:
 
 	void SetLooping(const bool& i_loop);
 	void SetSpriteSheet(SpriteSheet* i_spriteSheet);
-	bool SetFrame(const unsigned int& i_frame);
+	bool SetFrame(const unsigned int& i_frame, const unsigned int& i_endFrame = 0);
 	void SetName(const std::string& i_name);
 	std::string GetName();
 	Frame GetCurrentFrame();
