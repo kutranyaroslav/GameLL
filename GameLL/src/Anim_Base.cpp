@@ -13,11 +13,24 @@ void Anim_Base::SetSpriteSheet(SpriteSheet* i_spriteSheet) {
 	m_spriteSheet = i_spriteSheet;
 }
 
-bool Anim_Base::SetFrame(const unsigned int& i_frame) {
-	if ((i_frame >= m_startFrame && i_frame <= m_endFrameEast) || (i_frame >= m_endFrameEast && i_frame <= m_startFrame)) {
-		m_currentFrame = i_frame;
-		m_hasMoved = true;
-		return true;
+bool Anim_Base::SetFrame(const unsigned int& i_frame, const unsigned int& i_endFrame) {
+	//when we change the direction of the sprite we have to change the conditions in if too 
+	
+	if (i_endFrame != 0) {
+		if ((i_frame >= m_startFrame && i_frame <= i_endFrame) || (i_frame >= i_endFrame && i_frame <= m_startFrame)) {
+			//setting the current frame
+			m_currentFrame = i_frame;
+			m_hasMoved = true;
+			return true;
+		}
+	}
+	else {
+		if ((i_frame >= m_startFrame && i_frame <= m_endFrameEast) || (i_frame >= m_endFrameEast && i_frame <= m_startFrame)) {
+			//setting the current frame
+			m_currentFrame = i_frame;
+			m_hasMoved = true;
+			return true;
+		}
 	}
 	return false;
 }
