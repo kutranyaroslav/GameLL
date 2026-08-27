@@ -7,7 +7,8 @@ public:
 	TextureManager():ResourceManager("textures.cfg"){}
 	sf::Texture* Load(const std::string& i_path) {
 		sf::Texture* texture = new sf::Texture();
-		if (!texture->loadFromFile(Utils::GetWorkingDirectory() + i_path)) {
+		std::string path = Utils::GetWorkingDirectory() + i_path;
+		if (!texture->loadFromFile(path)) {
 			delete texture;
 			texture = nullptr;
 			std::cerr << "! Failed to load texture: " << i_path << "\n";

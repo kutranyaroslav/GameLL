@@ -10,6 +10,7 @@ const std::string& C_SoundEmitter::GetSound(const EntitySound& i_sound){
 
 bool C_SoundEmitter::IsSoundFrame(const EntitySound& i_sound, int i_frame) {
 	if ((int)i_sound >= Max_EntitySounds) { return false; }
+	if ((int)i_sound == -1) { return false; }
 	for (int i = 0; i < SoundParameters::Max_SoundFrames; ++i) {
 		if (m_params[(int)i_sound].m_frames[i] == -1) { return false; }
 		if (m_params[(int)i_sound].m_frames[i] == i_frame) { return true; }

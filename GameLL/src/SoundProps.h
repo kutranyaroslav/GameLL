@@ -3,13 +3,20 @@
 #include <array>
 #include "StateManager.h"
 struct SoundProps {
-	SoundProps(const std::string& i_name = "") :m_audioName(i_name), m_volume(100), m_pitch(1.f),
-	m_minDistance(10.f), m_attenuation(10.f){}
-	std::string m_audioName;
-	float m_volume;
-	float m_pitch;
-	float m_minDistance;
-	float m_attenuation;
+	std::vector<std::string> m_audioNames;   
+	const std::string& GetRandomAudioName() const {
+		return m_audioNames[Utils::RandomIndex(m_audioNames.size())];
+	}
+	float GetRandomPitch() const {
+		return m_pitchVariance <= 0.f ? m_pitch
+			: Utils::RandomRange(m_pitch - m_pitchVariance, m_pitch + m_pitchVariance);
+	}
+	float m_volume = 100.f;
+	float m_pitch = 1.f;          
+	float m_pitchVariance = 0.f;  
+	float m_attenuation = 1.f;
+	float m_minDistance = 1.f;
+	
 };
 
 

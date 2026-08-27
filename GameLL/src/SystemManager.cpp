@@ -60,9 +60,11 @@ void SystemManager::Draw(Window* i_wind, unsigned int i_elevation) {
 	system->Render(i_wind,i_elevation);
 
 }
+//here we check entity for suitable components and then add it to the systems
 void SystemManager::EntityModified(const EntityId& i_entity, const Bitmask& i_bits) {
 	for (auto& itr : m_systems) {
 		S_Base* system = itr.second;
+		//if (itr.first == System::Sound) { __debugbreak(); }
 		if (system->FitsRequirements(i_bits)) {
 			if (!system->HasEntity(i_entity)) {
 				system->AddEntity(i_entity);

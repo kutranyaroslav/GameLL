@@ -26,6 +26,9 @@ public:
 	bool IsPlaying(const SoundId& i_sound);
 	SoundProps* GetSoundProperties(const std::string& i_soundName);
 
+	//getters
+	const SoundId& GetSoundId(const std::string& i_soundName);
+
 	static const int Max_Sounds = 150;
 	static const int Sound_Cache = 75;
 private:

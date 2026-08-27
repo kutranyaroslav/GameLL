@@ -16,7 +16,7 @@ EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i
 	AddComponentType<C_State>(Component::State);
 	AddComponentType<C_Movable>(Component::Movable);
 	AddComponentType<C_Controller>(Component::Controller);
-	AddComponentType <C_Collidable>(Component::Collidable);
+	AddComponentType<C_Collidable>(Component::Collidable);
 	AddComponentType<C_SoundEmitter>(Component::SoundEmitter);
 	AddComponentType<C_SoundListener>(Component::SoundListener);
 }
@@ -24,7 +24,7 @@ EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i
 EntityManagerNew::~EntityManagerNew() { 
 	Purge(); 
 }
-
+//this functions adds components to the entity based on the bitmask provided in .entity file
 int EntityManagerNew::AddEntity(const Bitmask& i_mask) {
 	unsigned int entity = m_idCounter;
 	if (!m_entities.emplace(entity, EntityData(0, ComponentContainer())).second) { return -1; }

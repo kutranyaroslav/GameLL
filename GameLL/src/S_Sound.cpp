@@ -12,6 +12,7 @@ S_Sound::S_Sound(SystemManager* i_systemMgr) :
 	m_requiredComponents.push_back(req);
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Direction_Changed, this);
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Frame_Change, this);
+	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::State_Changed, this);
 
 }
 
@@ -61,32 +62,32 @@ void S_Sound::Notify(const Message& i_message) {
 	EntityMessage m = (EntityMessage)i_message.m_type;
 	switch (m)
 	{
-	case EntityMessage::Frame_Change:{
+	case EntityMessage::Frame_Change: {
 		if (!entities->HasComponent(i_message.m_receiver, Component::SoundEmitter)) { return; }
 		EntityState state = entities->GetComponent<C_State>(i_message.m_receiver, Component::State)->GetState();
 		EntitySound sound = EntitySound::None;
 		switch (state)
 		{
-			case EntityState::Idle:
-				break;
-			case EntityState::Walking:
-				sound = EntitySound::Footstep;
-				break;
-			case EntityState::Attacking:
-				sound = EntitySound::Attack;
-				break;
-			case EntityState::Hurt:
-				sound = EntitySound::Hurt;
-				break;
-			case EntityState::Dying:
-				sound = EntitySound::Death;
-				break;
-			case EntityState::Changing_Axis:
-				break;
-			default:
-				break;
+		case EntityState::Idle:
+			break;
+		case EntityState::Walking:
+			sound = EntitySound::Footstep;
+			break;
+		case EntityState::Attacking:
+			sound = EntitySound::Attack;
+			break;
+		case EntityState::Hurt:
+			sound = EntitySound::Hurt;
+			break;
+		case EntityState::Dying:
+			sound = EntitySound::Death;
+			break;
+		case EntityState::Changing_Axis:
+			break;
+		default:
+			break;
 		}
-		EmitSound(i_message.m_receiver, sound, false, isListener, i_message.m_int);
+		EmitSound(i_message.m_receiver, sound,true, isListener, i_message.m_int);
 		break;
 	}
 	case EntityMessage::Direction_Changed: {
@@ -111,6 +112,32 @@ void S_Sound::Notify(const Message& i_message) {
 		}
 		break;
 	}
+	case EntityMessage::State_Changed: {
+		if (i_message.m_int == i_message.m_oldState) { return; break; }
+		EntitySound sound = EntitySound::None;
+		switch (i_message.m_oldState) {
+		case (int)EntityState::Idle:
+			break;
+		case (int)EntityState::Walking:
+			sound = EntitySound::Footstep;
+			break;
+		case (int)EntityState::Attacking:
+			sound = EntitySound::Attack;
+			break;
+		case (int)EntityState::Hurt:
+			sound = EntitySound::Hurt;
+			break;
+		case (int)EntityState::Dying:
+			sound = EntitySound::Death;
+			break;
+		case (int)EntityState::Changing_Axis:
+			break;
+		default:
+			break;
+		}
+		StopSound(i_message.m_receiver, sound);
+		break;
+	}
 	default:
 		break;
 	}
@@ -128,6 +155,7 @@ void S_Sound::EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bo
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 	C_SoundEmitter* c_sound = entities->GetComponent<C_SoundEmitter>(i_entity, Component::SoundEmitter);
 	if (c_sound->GetSoundId() != -1 && i_useId) { return; }
+	//
 	if (i_checkFrame != -1 && !c_sound->IsSoundFrame(i_sound, i_checkFrame)) { return; }
 	C_Position* c_position = entities->GetComponent<C_Position>(i_entity, Component::Position);
 	sf::Vector3f pos = (i_relative ? sf::Vector3f(0, 0, 0) : MakeSoundPosition(c_position->GetPosition(), c_position->getElevation()));
@@ -138,3 +166,16 @@ void S_Sound::EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bo
 		m_soundManager->Play(c_sound->GetSound(i_sound), pos, false, i_relative);
 	}
  }
+
+void S_Sound::StopSound(const EntityId& i_entity, const EntitySound& i_sound)
+{
+	if (i_sound == EntitySound::None) { return; }
+	if (!HasEntity(i_entity)) { return; }
+	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
+	C_SoundEmitter* c_sound = entities->GetComponent<C_SoundEmitter>(i_entity, Component::SoundEmitter);
+	if (!c_sound) { return; }
+
+	m_soundManager->Stop(c_sound->GetSoundId());
+	c_sound->SetSoundId(-1);
+
+}
