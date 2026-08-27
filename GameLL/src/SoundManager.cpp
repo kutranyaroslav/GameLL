@@ -86,7 +86,16 @@ SoundId SoundManager::Play(const std::string& i_sound, const sf::Vector3f& i_pos
 	SoundProps* props = GetSoundProperties(i_sound);
 	if (!props) { return -1; }
 	SoundId id;
-	sf::Sound* sound = CreateSound(id, props->m_audioName);
+	sf::Sound* sound = nullptr;
+	for (auto& itr : m_audio.at(m_currentState)) {
+		if (itr.second.first.m_name == props->m_audioName) {
+			id = itr.first;
+			sound = itr.second.second;
+			break;
+		}
+	}
+	
+	if (!sound) { sound = CreateSound(id, props->m_audioName); }
 	if (!sound) { return -1; }
 	SetUpSound(sound, props, i_loop, i_relative);
 	sound->setPosition(i_pos);
@@ -116,6 +125,7 @@ bool SoundManager::Pause(const SoundId& i_sound) {
 	return true;
 }
 bool SoundManager::Stop(const SoundId& i_sound) {
+	if (i_sound == -1) { return false; }
 	auto container = m_audio.find(m_currentState);
 	if (container == m_audio.end()) { return false; }
 	auto sound = container->second.find(i_sound);
@@ -199,9 +209,17 @@ SoundProps* SoundManager::GetSoundProperties(const std::string& i_soundName) {
 	return &soundprops->second;
 }
 
+const SoundId& SoundManager::GetSoundId(const std::string& i_soundName)
+{
+	for(auto& itr: m_audio[m_currentState]){
+		if (itr.second.first.m_name == i_soundName) { return itr.first; }
+	}
+	return -1;
+}
+
 bool SoundManager::LoadProperties(const std::string& i_name) {
 	std::ifstream file; 
-	file.open(Utils::GetWorkingDirectory() + i_name + ".sound");
+	file.open(Utils::GetWorkingDirectory() +"Assets//SoundsFiles//" + i_name + ".sound");
 	if (!file.is_open()) { return false; }
 	SoundProps props;
 	std::string line;

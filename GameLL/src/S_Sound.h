@@ -21,6 +21,7 @@ private:
 	sf::Vector3f MakeSoundPosition(const sf::Vector2f& i_entityPos, unsigned int i_elevation);
 	void EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bool i_useId, bool i_relative,
 		int i_checkFrame = -1);
+	void StopSound(const EntityId& i_entity, const EntitySound& i_sound);
 	AudioManager* m_audioManager;
 	SoundManager* m_soundManager;
 };

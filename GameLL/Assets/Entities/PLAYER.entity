@@ -1,5 +1,5 @@
 Name Player
-Attributes 63
+Attributes 255
 |Component|ID|Indidividual attributes
 |Position|ID|x|y|elevation|
 Component 0 0 0 1
@@ -15,3 +15,5 @@ Component 4
 Component 5 64 64 5 5 1
 |SoundEmitter|sound|
 Component 6 footstep:1,4
+|SoundListener
+Component 7

@@ -77,8 +77,9 @@ void S_State::ChangeState(const EntityId& i_entity, const EntityState& i_state, 
 		if (!i_force && state->GetState() == EntityState::Dying) {
 			return;
 		}
+		Message msgDelayed((MessageType)EntityMessage::State_Changed);
+		msgDelayed.m_oldState = (int)state->GetState();
 		state->SetState(i_state);
- 		Message msgDelayed((MessageType)EntityMessage::State_Changed);
 		msgDelayed.m_receiver = i_entity;
 		msgDelayed.m_int = (int)i_state;
 		m_systemMgr->GetMessageHandler()->QueueMessage(msgDelayed);

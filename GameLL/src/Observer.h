@@ -13,6 +13,8 @@ struct Message {
 	MessageType m_type;
 	int m_sender;
 	int m_receiver;
+	//used for s_state and s_sound to stop the sounds
+	int m_oldState;
 	union {
 		TwoFloats m_2F;
 		bool m_bool;
@@ -49,7 +51,9 @@ public:
 			}) != m_observers.end();
 	}
 	void BroadCast(const Message& i_msg) {
-		for (auto& itr : m_observers) { itr->Notify(i_msg); }
+		
+		for (auto& itr : m_observers) { 
+			itr->Notify(i_msg); }
 	}
 
 private:
