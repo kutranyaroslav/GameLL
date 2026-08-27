@@ -87,7 +87,7 @@ void S_Sound::Notify(const Message& i_message) {
 		default:
 			break;
 		}
-		EmitSound(i_message.m_receiver, sound, false, isListener, i_message.m_int);
+		EmitSound(i_message.m_receiver, sound,true, isListener, i_message.m_int);
 		break;
 	}
 	case EntityMessage::Direction_Changed: {
@@ -171,15 +171,11 @@ void S_Sound::StopSound(const EntityId& i_entity, const EntitySound& i_sound)
 {
 	if (i_sound == EntitySound::None) { return; }
 	if (!HasEntity(i_entity)) { return; }
-	if(!m_systemMgr->GetEntityManager()->GetComponent<C_SoundEmitter>
-		(i_entity, Component::SoundEmitter)) {return;}
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
-	C_SoundEmitter* c_sound = entities->GetComponent<C_SoundEmitter>
-		(i_entity, Component::SoundEmitter);
-	std::string soundName = c_sound->GetSound(i_sound);
-	std::string audioName = m_soundManager->GetSoundProperties(soundName)->m_audioName;
-	SoundId id = m_soundManager->GetSoundId(audioName);
-	m_soundManager->Stop(id);
+	C_SoundEmitter* c_sound = entities->GetComponent<C_SoundEmitter>(i_entity, Component::SoundEmitter);
+	if (!c_sound) { return; }
 
+	m_soundManager->Stop(c_sound->GetSoundId());
+	c_sound->SetSoundId(-1);
 
 }

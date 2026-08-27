@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <random>
 namespace Utils {
 
 #ifdef RUNNING_WINDOWS 
@@ -39,6 +40,18 @@ namespace Utils {
         i_string.erase(std::remove(i_string.begin(), i_string.end(), '"'), i_string.end());
 
     }
+    inline float RandomRange(float min, float max) {
+        static thread_local std::mt19937 rng{ std::random_device{}() };
+        std::uniform_real_distribution<float> dist(min, max);
+        return dist(rng);
+    }
+    inline size_t RandomIndex(size_t count) {
+        static thread_local std::mt19937 rng{ std::random_device{}() };
+        std::uniform_int_distribution<size_t> dist(0, count - 1);
+        return dist(rng);
+    }
+}
+
 #elif defined RUNNING_LINUX
 #include <unistd.h>
     inline std::string GetWorkingDirectory() {
@@ -49,7 +62,7 @@ namespace Utils {
         return "";
     }
 #endif 
-}
+
 class Utilitites
 {
 public:

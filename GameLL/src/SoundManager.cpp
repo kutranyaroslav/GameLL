@@ -88,18 +88,19 @@ SoundId SoundManager::Play(const std::string& i_sound, const sf::Vector3f& i_pos
 	SoundId id;
 	sf::Sound* sound = nullptr;
 	for (auto& itr : m_audio.at(m_currentState)) {
-		if (itr.second.first.m_name == props->m_audioName) {
-			id = itr.first;
-			sound = itr.second.second;
-			break;
+		for (auto& audio : props->m_audioNames) {
+			if (itr.second.first.m_name == audio) {
+				id = itr.first;
+				sound = itr.second.second;
+			}
 		}
 	}
-	
-	if (!sound) { sound = CreateSound(id, props->m_audioName); }
+	const std::string& audio = props->GetRandomAudioName();
+	if (!sound) { sound = CreateSound(id, audio); }
 	if (!sound) { return -1; }
 	SetUpSound(sound, props, i_loop, i_relative);
 	sound->setPosition(i_pos);
-	SoundInfo info(props->m_audioName);
+	SoundInfo info(audio);
 	m_audio.at(m_currentState).emplace(id,std::make_pair(info, sound));
 	sound->play();
 	return id;
@@ -229,7 +230,9 @@ bool SoundManager::LoadProperties(const std::string& i_name) {
 		std::string key; 
 		keystream >> key;
 		if (key == "Audio") {
-			keystream >> props.m_audioName;
+			std::string name;
+			keystream >> name;
+			props.m_audioNames.push_back(name);
 		}
 		else if (key == "Volume") {
 			keystream >> props.m_volume;
@@ -246,7 +249,7 @@ bool SoundManager::LoadProperties(const std::string& i_name) {
 		
 	}
 	file.close();
-	if (props.m_audioName == "") { return false; }
+	if (props.m_audioNames.empty()) { return false; }
 	m_properties.emplace(i_name, props);
 	return true;
 }
@@ -324,7 +327,7 @@ void SoundManager::SetUpSound(sf::Sound* i_sound, const SoundProps* i_props, boo
 	i_sound->setVolume(i_props->m_volume);
 	i_sound->setAttenuation(i_props->m_attenuation);
 	i_sound->setMinDistance(i_props->m_minDistance);
-	i_sound->setPitch(i_props->m_pitch);
+	i_sound->setPitch(i_props->GetRandomPitch()); 
 	i_sound->setLoop(i_loop);
 	i_sound->setRelativeToListener(i_relative);
 }
