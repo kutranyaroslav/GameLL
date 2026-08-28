@@ -66,6 +66,12 @@ void S_Renderer::Render(Window* i_wind, unsigned int i_layer) {
 		drawable->Draw(i_wind->GetRenderWindow());
 	}
 }
+void S_Renderer::LoadMaterial(const std::string& i_materialName)
+{
+}
+void S_Renderer::LoadMaterials()
+{
+}
 void S_Renderer::SetSheetDirection(const EntityId& i_entity, const Direction& i_dir ) {
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 	if (!entities->HasComponent(i_entity, Component::SpriteSheet)) {

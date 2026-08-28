@@ -9,6 +9,8 @@ public:
 	void HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) override;
 	void Update(float i_dT)override;
 	void Notify(const Message& i_message) override;
+	void LoadMaterial(const std::string& i_materialName) override;
+	void LoadMaterials() override;
 private:
 	void MoveEntity(const EntityId& i_entity, const Direction& i_direction);
 };

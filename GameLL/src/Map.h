@@ -2,6 +2,7 @@
 #include "StateManager.h"
 #include "Utilitites.h"
 #include "EntityManagerNew.h"
+#include "Materials/Materials.h"
 #include <fstream>
 #include <unordered_map>
 
@@ -40,6 +41,7 @@ struct TileInfo {
 	SharedContext* m_context;
 	std::string m_texture;
 	bool m_solid;
+	std::vector<Materials::MaterialType> m_materialTags;
 };
 
 struct Tile {

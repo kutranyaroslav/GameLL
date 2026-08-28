@@ -82,7 +82,8 @@ void SoundManager::Update(float i_dT) {
 
 
 SoundId SoundManager::Play(const std::string& i_sound, const sf::Vector3f& i_pos,
-	bool i_loop, bool i_relative) {
+	bool i_loop, bool i_relative, const std::string& i_overrideSound) {
+	
 	SoundProps* props = GetSoundProperties(i_sound);
 	if (!props) { return -1; }
 	SoundId id;

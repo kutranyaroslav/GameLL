@@ -21,10 +21,11 @@ Game::Game() :
 	m_context.m_soundManager = &m_soundManager;
 	m_context.m_world = &m_world;
 	//TO DO Erase after developement done
+	m_systemManager.SetSharedContext(&m_context);
 	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
 	m_stateManager.SwitchTo(StateType::MainMenu);
-	
+
 }
 Game::~Game(){
 	m_fontManager.ReleaseResource("Main");

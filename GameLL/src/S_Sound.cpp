@@ -1,5 +1,5 @@
 #include "S_Sound.h"
-
+#include "World.h"
 
 S_Sound::S_Sound(SystemManager* i_systemMgr) :
 	S_Base(System::Sound, i_systemMgr), m_audioManager(nullptr), m_soundManager(nullptr) {
@@ -13,7 +13,9 @@ S_Sound::S_Sound(SystemManager* i_systemMgr) :
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Direction_Changed, this);
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Frame_Change, this);
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::State_Changed, this);
-
+	
+	//initialize the materials by default
+	LoadMaterials();
 }
 
 S_Sound::~S_Sound()
@@ -23,6 +25,36 @@ S_Sound::~S_Sound()
 void S_Sound::SetUp(AudioManager* i_audioManager, SoundManager* i_soundManager) {
 	m_audioManager = i_audioManager;
 	m_soundManager = i_soundManager;
+}
+
+void S_Sound::LoadMaterial(const std::string& i_materialName)
+{
+	std::string path = Utils::GetWorkingDirectory() + "//src//Materials//" + i_materialName + ".material";
+	std::ifstream file(path);
+	if (!file.is_open()) { return; }
+	std::string line;
+	Materials::Material material(i_materialName);
+	while (std::getline(file, line)) {
+		std::stringstream ss(line);
+		std::string key;
+		std::string audio;
+		ss >> key;
+		if (key == "Sound") {
+			ss >> audio;
+			material.m_soundNames.push_back(audio);
+		}
+	}
+	m_materials.emplace(i_materialName, material);
+}
+
+void S_Sound::LoadMaterials()
+{
+	std::string path = Utils::GetWorkingDirectory() + "src//Materials/";
+	for (const auto& entry : std::filesystem::directory_iterator(path)) {
+		if (entry.path().extension() == ".material") {
+			LoadMaterial(entry.path().stem().string());
+		}
+	}
 }
 
 void S_Sound::Update(float i_dT) {
@@ -87,9 +119,32 @@ void S_Sound::Notify(const Message& i_message) {
 		default:
 			break;
 		}
-		EmitSound(i_message.m_receiver, sound,true, isListener, i_message.m_int);
-		break;
-	}
+
+		if (sound == EntitySound::Footstep) 
+		{
+			C_Position* pos = entities->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
+			
+			//here we need right logic for elevation checking cause slides are under the player and the continuing the logic with materials 
+			//overriding the sound of the tile with the material of the slide
+			Tile* tile = nullptr;
+			for (int i = pos->getElevation() - 1; i >= 0; --i) {
+				tile = m_systemMgr->GetSharedContext()->m_world->
+					GetCurrentMap()->GetTile(pos->GetPosition().x / Sheet::Tile_Size, pos->GetPosition().y / Sheet::Tile_Size, i);
+
+			}
+			if (tile) {
+				for (auto& itr : tile->m_properties->m_materialTags) {
+					if (m_materials.find(Materials::MaterialToString(itr)) != m_materials.end()) {
+						EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int, Materials::MaterialToString(itr));
+					};
+				}
+			}
+
+
+		}
+			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int);
+			break;
+		}
 	case EntityMessage::Direction_Changed: {
 		if (!isListener) { return; }
 		Direction dir = (Direction)i_message.m_int;
@@ -126,7 +181,7 @@ void S_Sound::Notify(const Message& i_message) {
 			break;
 		case (int)EntityState::Hurt:
 			sound = EntitySound::Hurt;
-			break;
+			break;	
 		case (int)EntityState::Dying:
 			sound = EntitySound::Death;
 			break;
@@ -141,15 +196,16 @@ void S_Sound::Notify(const Message& i_message) {
 	default:
 		break;
 	}
-}
+	}
 
 
-sf::Vector3f S_Sound::MakeSoundPosition(const sf::Vector2f& i_pos, unsigned int i_elevation) {
+
+sf::Vector3f S_Sound::MakeSoundPosition(const sf::Vector2f& i_pos, unsigned int i_elevation){
 	return sf::Vector3f(i_pos.x, i_elevation * Sheet::Tile_Size, i_pos.y);
 }
 
 void S_Sound::EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bool i_useId, bool i_relative
-	, int i_checkFrame) {
+	, int i_checkFrame, const std::string& i_overrideSound) {
 	if (!HasEntity(i_entity)) { return; }
 	if (!m_systemMgr->GetEntityManager()->GetComponent<C_SoundEmitter>(i_entity, Component::SoundEmitter)) { return; }
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
@@ -160,7 +216,14 @@ void S_Sound::EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bo
 	C_Position* c_position = entities->GetComponent<C_Position>(i_entity, Component::Position);
 	sf::Vector3f pos = (i_relative ? sf::Vector3f(0, 0, 0) : MakeSoundPosition(c_position->GetPosition(), c_position->getElevation()));
 	if (i_useId) {
-		c_sound->SetSoundId(m_soundManager->Play(c_sound->GetSound(i_sound),pos));
+		if (i_overrideSound == "") {
+			c_sound->SetSoundId(m_soundManager->Play(c_sound->GetSound(i_sound), pos));
+		}
+		else
+		{
+			c_sound->SetSoundId(m_soundManager->Play(i_overrideSound,pos, false,i_relative));
+		}
+		
 	}
 	else {
 		m_soundManager->Play(c_sound->GetSound(i_sound), pos, false, i_relative);

@@ -25,6 +25,16 @@ void SystemManager::SetEntityManager(EntityManagerNew* i_entityMgr) {
 		m_entityManager = i_entityMgr;
 	}
 }
+void SystemManager::SetSharedContext(SharedContext* i_context)
+{
+	if (!m_context) {
+		m_context = i_context;
+	}
+}
+SharedContext* SystemManager::GetSharedContext()
+{
+	return m_context;
+}
 EntityManagerNew* SystemManager::GetEntityManager() { return m_entityManager; }
 MessageHandler* SystemManager::GetMessageHandler() { return &m_messages; }
 

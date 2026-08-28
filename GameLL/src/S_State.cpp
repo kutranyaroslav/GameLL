@@ -70,6 +70,14 @@ void S_State::Notify(const Message& i_msg) {
 
 }
 
+void S_State::LoadMaterial(const std::string& i_materialName)
+{
+}
+
+void S_State::LoadMaterials()
+{
+}
+
 void S_State::ChangeState(const EntityId& i_entity, const EntityState& i_state, const bool& i_force) {
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 	for (auto& entity : m_entities) {

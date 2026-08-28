@@ -178,6 +178,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainMenu.cpp" />
     <ClCompile Include="src\Map.cpp" />
+    <ClCompile Include="src\Materials\Materials.cpp" />
     <ClCompile Include="src\Observer.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="src\GUI_Viewport.h" />
     <ClInclude Include="src\MainMenu.h" />
     <ClInclude Include="src\Map.h" />
+    <ClInclude Include="src\Materials\Materials.h" />
     <ClInclude Include="src\Observer.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\ResourceManager.h" />

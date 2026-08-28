@@ -13,6 +13,8 @@ public:
 	void HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) override;
 	void Notify(const  Message& i_message);
 	void Render(Window* i_wind, unsigned int i_layer);
+	void LoadMaterial(const std::string& i_materialName) override;
+	void LoadMaterials() override;
 private:
 	void SetSheetDirection(const EntityId& i_entity, const Direction& i_dir);
 	void SortDrawables();

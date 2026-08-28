@@ -15,6 +15,8 @@ public:
 	~SystemManager();
 	void SetEntityManager(EntityManagerNew* i_entityMgr);
 	EntityManagerNew* GetEntityManager();
+	void SetSharedContext(SharedContext* i_context);
+	SharedContext* GetSharedContext();
 	MessageHandler* GetMessageHandler();
 	template<class T>
 	T* GetSystem(const System& i_system){
@@ -32,6 +34,7 @@ public:
 	void PurgeSystems();
 private:
 	SystemContainer m_systems;
+	SharedContext* m_context;
 	EntityManagerNew* m_entityManager;
 	EntityEventContainer m_entityEvents;
 	MessageHandler m_messages;
