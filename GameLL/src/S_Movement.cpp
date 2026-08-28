@@ -118,6 +118,14 @@ void S_Movement::Notify(const Message& i_message) {
 	}
 }
 
+void S_Movement::LoadMaterial(const std::string& i_materialName)
+{
+}
+
+void S_Movement::LoadMaterials()
+{
+}
+
 void S_Movement::StopEntity(const EntityId& i_entity, const Axis& i_axis) {
 	C_Movable* movable = m_systemMgr->GetEntityManager()->GetComponent<C_Movable>(i_entity, Component::Movable);
 	if (i_axis == Axis::x) {

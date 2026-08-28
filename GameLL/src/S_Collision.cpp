@@ -142,3 +142,11 @@ void S_Collision::Notify(const Message& i_message) {
 void S_Collision::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) {
 	return;
 }
+
+void S_Collision::LoadMaterial(const std::string& i_materialName)
+{
+}
+
+void S_Collision::LoadMaterials()
+{
+}

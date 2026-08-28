@@ -34,3 +34,11 @@ void S_Control::Update(float i_dT) {
 void S_Control::Notify (const Message& i_message) {
 	return;
 }
+
+void S_Control::LoadMaterial(const std::string& i_materialName)
+{
+}
+
+void S_Control::LoadMaterials()
+{
+}

@@ -17,10 +17,13 @@ public:
 	void Notify(const Message& i_message)override;
 
 	void SetUp(AudioManager* i_audioManager, SoundManager* i_soundManager);
+	void LoadMaterial(const std::string& i_materialName) override;
+	//we gonna load all the materiald by default from the constructor
+	void LoadMaterials()override;
 private:
 	sf::Vector3f MakeSoundPosition(const sf::Vector2f& i_entityPos, unsigned int i_elevation);
 	void EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bool i_useId, bool i_relative,
-		int i_checkFrame = -1);
+		int i_checkFrame = -1,const std::string& i_overrideSound = "");
 	void StopSound(const EntityId& i_entity, const EntitySound& i_sound);
 	AudioManager* m_audioManager;
 	SoundManager* m_soundManager;

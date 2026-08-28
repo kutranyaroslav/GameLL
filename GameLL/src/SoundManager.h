@@ -12,7 +12,7 @@ public:
 	void RemoveState(const StateType& i_state);
 	void Update(float i_dT);
 	SoundId Play(const std::string& i_sound, const sf::Vector3f& i_pos,
-		bool i_loop = false, bool i_relative = false);
+		bool i_loop = false, bool i_relative = false, const std::string& i_overrideSound = "");
 	bool Play(const SoundId& i_sound);
 	bool Pause(const SoundId& i_sound);
 	bool Stop(const SoundId& i_sound);

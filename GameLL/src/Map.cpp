@@ -2,7 +2,6 @@
 #include "S_Collision.h"
 #include "S_Movement.h"
 
-
 Map::Map(SharedContext* i_context, const std::string& i_mapName, const std::string& i_tilesetName
 	, const std::string& i_tileset, const std::string& i_texture ) :
 	m_context(i_context), m_maxMapSize(32, 32),
@@ -218,10 +217,22 @@ bool Map::LoadTiles(const std::string& i_path, const std::string& i_texture, Til
 			keystream >> tileRow;
 			TileKey key{ tileId, tileRow };
 			if (tileId < 0) { continue; }
+			std::string material = "";
 			///Add texture of tile set by name Tilesheet in textures.cfg 
 			TileInfo* tile = new TileInfo(m_context, i_texture, tileId, tileRow);
 			keystream >> tile->m_name >> tile->m_friction.x >> tile->m_friction.y >>
 				tile->m_deadly >> tile->m_solid;
+			keystream >> material;
+			if (material != "") {
+				int numofMaterialTags = 0; 
+				keystream >> numofMaterialTags;
+				for (int i = 0; i < numofMaterialTags; ++i) {
+					std::string materialTag;
+					keystream >> materialTag;	
+					tile->m_materialTags.push_back(Materials::StringToMaterialType(materialTag));
+				}
+			}
+
 			if (!i_outTiles.emplace(key, tile).second) {
 				std::cout << "Dublicate file \n " << std::endl;
 				delete tile;

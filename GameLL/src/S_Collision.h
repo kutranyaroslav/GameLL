@@ -21,6 +21,8 @@ public:
 	void Update(float i_dT) override;
 	void Notify(const Message& i_message) override;
 	void HandleEvent(const EntityId& i_entity, const EntityEvent& i_event)override;
+	void LoadMaterial(const std::string& i_materialName) override;
+	void LoadMaterials() override;
 private:
 	void CheckOutOfBounds(C_Position* i_pos, C_Collidable* i_collidable);
 	void MapCollisions(const EntityId& i_entity,C_Position* i_pos, C_Collidable* i_collidable);
