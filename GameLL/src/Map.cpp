@@ -54,6 +54,7 @@ TileMap* Map::GetTileMap()
 {
 	return &m_tilemap;
 }
+//all coords given to the function must be divided by tile size
  Tile* Map::GetTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
 	if(i_x < 0 || i_y < 0 || i_x>= m_maxMapSize.x 
 		|| i_y >= m_maxMapSize.y || i_layer < 0 || i_layer >= Sheet::Num_Layers

@@ -126,10 +126,21 @@ void S_Sound::Notify(const Message& i_message) {
 			
 			//here we need right logic for elevation checking cause slides are under the player and the continuing the logic with materials 
 			//overriding the sound of the tile with the material of the slide
-			Tile *tile = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap()->GetTile(pos->GetPosition().x, pos->GetPosition().y, pos->getElevation());
-			if (tile) {
-				__debugbreak();
+			Tile* tile = nullptr;
+			for (int i = pos->getElevation() - 1; i >= 0; --i) {
+				tile = m_systemMgr->GetSharedContext()->m_world->
+					GetCurrentMap()->GetTile(pos->GetPosition().x / Sheet::Tile_Size, pos->GetPosition().y / Sheet::Tile_Size, i);
+
 			}
+			if (tile) {
+				for (auto& itr : tile->m_properties->m_materialTags) {
+					if (m_materials.find(Materials::MaterialToString(itr)) != m_materials.end()) {
+						EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int, Materials::MaterialToString(itr));
+					};
+				}
+			}
+
+
 		}
 			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int);
 			break;
@@ -170,7 +181,7 @@ void S_Sound::Notify(const Message& i_message) {
 			break;
 		case (int)EntityState::Hurt:
 			sound = EntitySound::Hurt;
-			break;
+			break;	
 		case (int)EntityState::Dying:
 			sound = EntitySound::Death;
 			break;
@@ -205,7 +216,14 @@ void S_Sound::EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bo
 	C_Position* c_position = entities->GetComponent<C_Position>(i_entity, Component::Position);
 	sf::Vector3f pos = (i_relative ? sf::Vector3f(0, 0, 0) : MakeSoundPosition(c_position->GetPosition(), c_position->getElevation()));
 	if (i_useId) {
-		c_sound->SetSoundId(m_soundManager->Play(c_sound->GetSound(i_sound),pos));
+		if (i_overrideSound == "") {
+			c_sound->SetSoundId(m_soundManager->Play(c_sound->GetSound(i_sound), pos));
+		}
+		else
+		{
+			c_sound->SetSoundId(m_soundManager->Play(i_overrideSound,pos, false,i_relative));
+		}
+		
 	}
 	else {
 		m_soundManager->Play(c_sound->GetSound(i_sound), pos, false, i_relative);

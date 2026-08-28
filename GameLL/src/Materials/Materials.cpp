@@ -15,4 +15,15 @@ namespace Materials
 
         return MaterialType::None;
     }
+
+    std::string MaterialToString(const MaterialType& i_material) {
+        if (i_material == MaterialType::Wood)
+            return "Wood";
+        else if (i_material == MaterialType::Stone)
+            return "Stone";
+        else if (i_material == MaterialType::Metall)
+            return "Metall";
+
+        return "";
+    }
 }
