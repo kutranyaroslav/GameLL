@@ -39,13 +39,13 @@ public:
 	}
 	bool IsTranscendent() const { return m_transcendent; }
 	StateManager* GetStateManager() { return m_stateManager; }
-	sf::View& GetView() { return m_view; }
 	StateType GetState() { return m_state; }
+	sf::View* GetView() { return m_view; }
 
 
 protected:
 	StateType m_state;
-	sf::View m_view;
+	sf::View* m_view;
 	StateManager* m_stateManager;
 	std::vector<std::string> m_dynamicCallbacks;
 	bool m_transparent;

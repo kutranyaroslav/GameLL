@@ -14,7 +14,9 @@ namespace Materials {
 		Metall,
 	};
 	MaterialType StringToMaterialType(const std::string& i_material);
+
 	std::string MaterialToString(const MaterialType& i_material);
+
 	struct Material {
 		Material(const std::string& i_name = "", MaterialType i_type = MaterialType::None) : m_name(i_name), m_type(i_type) {
 			if (i_name != "") {

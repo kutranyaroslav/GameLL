@@ -135,8 +135,8 @@ void GUI_Interface::OnLeave() {
 
 void GUI_Interface::Update(float i_dT) {
 	sf::Vector2i pixel = sf::Mouse::getPosition(*m_guiManager->GetSharedContext()->m_wind->GetRenderWindow());
-	sf::Vector2f mousePos = m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->mapPixelToCoords(pixel,
-		m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->getDefaultView());
+	sf::Vector2f mousePos = m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->mapPixelToCoords(
+		pixel, m_guiManager->GetSharedContext()->m_wind->GetUIView());
 	for (auto& itr : m_elements) {
 		if (itr.second->m_needsRedraw) {
 			if (itr.second->IsControl()) { m_controlRedraw = true; }
