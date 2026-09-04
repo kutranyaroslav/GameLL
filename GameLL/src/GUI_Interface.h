@@ -40,6 +40,7 @@ public:
 	void UpdateScrollHorizontal(unsigned int i_percent);
 	void UpdateScrollVertical(unsigned int i_percent);
 	void AdjustContentSize(GUI_Element* i_reference = nullptr);
+	void OnResize(const sf::Vector2f& i_scale) override;
 	sf::Vector2f GetGlobalPosition();
 
 	GUI_Element* GetElement(const std::string& i_name)const;
@@ -65,9 +66,12 @@ public:
 	virtual void ApplyBgStyle() override;
 	virtual void ApplyTextStyle() override;
 	virtual void ApplyGlyphStyle() override;
+
 private:
 	void DefocusTextFields();
 	void SetContentSize(const sf::Vector2f& i_vec);
+	//sets up the the layot for the interface of the tileset element
+
 
 	Elements m_elements;
 	sf::Vector2f m_elementPadding;

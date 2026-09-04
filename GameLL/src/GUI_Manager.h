@@ -29,7 +29,6 @@ public:
 	~GUI_Manager();
 
 	bool AddInterface(const StateType& i_state,const std::string& i_name);
-	GUI_Interface* GetInterface(const StateType& i_state, const std::string& i_name);
 	bool RemoveInterface(const StateType& i_state, const std::string& i_name);
 	void Update(float i_dT);
 	void Draw(sf::RenderWindow* i_wind);
@@ -46,9 +45,11 @@ public:
 	void SetCurrentState(const StateType& i_state);
 	void AddEvent(GUI_Event i_event);
 	bool PollEvent(GUI_Event& i_event);
-	SharedContext* GetSharedContext();
 	bool LoadStyle(const std::string& i_file, GUI_Element* i_element);
 	bool LoadInterface(const StateType& i_state, const std::string& i_interface, const std::string& i_name);
+	void OnResize(const sf::Vector2u& i_size);
+	GUI_Interface* GetInterface(const StateType& i_state, const std::string& i_name);
+	SharedContext* GetSharedContext();
 private:
 	GUI_Element* CreateElement(const GUI_ElementType& i_id, GUI_Interface* i_owner);
 	GUI_ElementType StringToType(const std::string& i_string);

@@ -1,6 +1,7 @@
 #include "GUI_Interface.h"
 #include "GUI_Manager.h"
 #include "World.h"
+#include "dev/State_Developement.h"
 #include <sstream>
 GUI_Interface::GUI_Interface(const std::string& i_name, GUI_Manager* i_guiMgr):
 	GUI_Element(i_name,GUI_ElementType::Window, nullptr), m_parent(nullptr),
@@ -134,9 +135,11 @@ void GUI_Interface::OnLeave() {
 }
 
 void GUI_Interface::Update(float i_dT) {
-	sf::Vector2i pixel = sf::Mouse::getPosition(*m_guiManager->GetSharedContext()->m_wind->GetRenderWindow());
-	sf::Vector2f mousePos = m_guiManager->GetSharedContext()->m_wind->GetRenderWindow()->mapPixelToCoords(
-		pixel, m_guiManager->GetSharedContext()->m_wind->GetUIView());
+	Window* wind = m_guiManager->GetSharedContext()->m_wind;
+	sf::Vector2i pixel = sf::Mouse::getPosition(*wind->GetRenderWindow());
+	sf::Vector2f mousePos = wind->GetRenderWindow()->mapPixelToCoords(
+		pixel, *wind->GetUIView());
+	//bednost0
 	for (auto& itr : m_elements) {
 		if (itr.second->m_needsRedraw) {
 			if (itr.second->IsControl()) { m_controlRedraw = true; }
@@ -189,8 +192,8 @@ void GUI_Interface::ApplyStyle() {
 	GUI_Element::ApplyStyle();
 	m_visual.m_backgroundSolid.setPosition(0.f, 0.f);
 	m_visual.m_backgroundImage.setPosition(0.f, 0.f);
-	m_titleBar.setSize(sf::Vector2f(m_styles[m_state].m_size.x, 16.f));
-	m_titleBar.setPosition(m_position.x, m_position.y - m_titleBar.getSize().y);
+	m_titleBar.setSize(sf::Vector2f(m_styles[m_state].m_size.x, 16.f * m_scale));
+	m_titleBar.setPosition(m_position.x, m_position.y  - m_titleBar.getSize().y);
 	m_titleBar.setFillColor(m_styles[m_state].m_elementColor);
 	m_visual.m_text.setPosition(m_titleBar.getPosition() + m_styles[m_state].m_textPadding);
 	m_visual.m_glyph.setPosition(m_titleBar.getPosition() + m_styles[m_state].m_glyphPadding);
@@ -320,7 +323,18 @@ void GUI_Interface::AdjustContentSize( GUI_Element* i_reference) {
 	SetContentSize(farthest);
 }
 
+void GUI_Interface::OnResize(const sf::Vector2f& i_scale)
+{
+	GUI_Element::OnResize(i_scale);
+	for (auto& itr : m_elements) {
+		if (itr.second) {
+			itr.second->OnResize(i_scale);
+		}
+	}
+	SetRedraw(true);
+}
 void GUI_Interface::SetContentSize(const sf::Vector2f& i_vec) { m_contentSize = i_vec; }
+
 
 sf::Vector2f GUI_Interface::GetGlobalPosition() {
 	sf::Vector2f position = m_position;

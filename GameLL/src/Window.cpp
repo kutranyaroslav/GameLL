@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "GUI_Manager.h"	
 namespace {
 	sf::FloatRect GetLetterboxViewport(const sf::View& i_view, const sf::Vector2u& i_windowSize) {
 		float windowRatio = i_windowSize.x / (float)i_windowSize.y;
@@ -49,6 +50,12 @@ void Window::OnResize(const sf::Vector2u& i_size)
 {
 	m_windowSize = i_size;
 	m_uiView.reset(sf::FloatRect(0, 0, (float)i_size.x, (float)i_size.y));
+	//logic of all interfaces scaling 
+
+
+	if (m_context && m_context->m_guiManager) {
+		m_context->m_guiManager->OnResize(i_size);
+	}
 	m_gameView.setViewport(GetLetterboxViewport(m_gameView, i_size));
 }
 void Window::Destroy() {
@@ -112,10 +119,24 @@ sf::FloatRect Window::GetGameViewSpace() {
 	return sf::FloatRect(viewCenter - viewSize / 2.f, viewSize);
 }
 
+sf::Vector2u& Window::GetWindowedSize()
+{
+	return m_windowedSize;
+}
+
 void Window::SetGameViewSize(const sf::Vector2f& i_size)
 {
 	m_gameView.setSize(i_size);
 	OnResize(m_windowSize);
+}
+
+void Window::SetSharedContext(SharedContext* i_context)
+{
+	m_context= i_context;
+}
+
+SharedContext* Window::GetSharedContext() {
+	return m_context;
 }
 
 bool Window::IsFocused()  { return m_isFocused; }

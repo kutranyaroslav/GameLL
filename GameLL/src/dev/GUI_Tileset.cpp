@@ -104,9 +104,14 @@ void GUI_Tileset::DrawOverlay(sf::RenderTarget* i_target)
 void GUI_Tileset::ApplyBgStyle()
 {
 	GUI_Element::ApplyBgStyle();
-	m_styles[GUI_ElementState::Neutral].m_size = sf::Vector2f(m_visual.m_backgroundImage.getTextureRect().getSize());
-	m_styles[GUI_ElementState::Clicked].m_size = sf::Vector2f(m_visual.m_backgroundImage.getTextureRect().getSize());
-	m_styles[GUI_ElementState::Focused].m_size = sf::Vector2f(m_visual.m_backgroundImage.getTextureRect().getSize());
+	m_styles[GUI_ElementState::Neutral].m_size = sf::Vector2f(m_visual.m_backgroundImage.
+		getTextureRect().getSize())
+	* m_scale;
+	m_styles[GUI_ElementState::Clicked].m_size = sf::Vector2f(m_visual.m_backgroundImage.
+		getTextureRect().getSize()) *m_scale;
+	m_styles[GUI_ElementState::Focused].m_size = sf::Vector2f(m_visual.m_backgroundImage.
+		getTextureRect().getSize())
+	* m_scale;
 }
 
 void GUI_Tileset::CallbackSetup()

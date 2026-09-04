@@ -4,8 +4,8 @@ BgColor 40 44 52 255
 BgFullElement
 TextColor 220 220 220 255
 TextSize 22
-TextPadding 18 18
 Position 680 0
+TextPadding 18 18
 TextCenterOrigin
 Margin 12 12
 Font Main
