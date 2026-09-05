@@ -56,6 +56,11 @@ void Window::OnResize(const sf::Vector2u& i_size)
 	if (m_context && m_context->m_guiManager) {
 		m_context->m_guiManager->OnResize(i_size);
 	}
+	// After the GUI, never before: state layout code reads the already-rescaled
+	// element sizes and positions.
+	if (m_context && m_context->m_stateManager) {
+		m_context->m_stateManager->OnResize(i_size);
+	}
 	m_gameView.setViewport(GetLetterboxViewport(m_gameView, i_size));
 }
 void Window::Destroy() {

@@ -82,6 +82,16 @@ BaseState* StateManager::GetCurrentState()
 	return m_currentState;
 }
 
+void StateManager::OnResize(const sf::Vector2u& i_size) {
+	// Every live state is notified, not just the current one: GUI_Manager rescales
+	// the interfaces of all states, so an inactive state would otherwise hold a
+	// stale layout until it was switched to.
+	for (auto itr = m_states.begin(); itr != m_states.end(); ++itr) {
+		if (std::find(m_toRemove.begin(), m_toRemove.end(), itr->first) != m_toRemove.end()) { continue; }
+		if (itr->second) { itr->second->OnResize(i_size); }
+	}
+}
+
 bool StateManager::HasState(const StateType& i_type){
 	for (auto itr = m_states.begin(); itr != m_states.end(); ++itr) {
 		if (itr->first == i_type) {

@@ -20,6 +20,8 @@ public:
 	void SetTileset(const std::string& i_tilesetName);
 
 	std::string&  GetTilesetTexture();
+	// One tile as it appears on screen (texture tile * current GUI scale).
+	float GetScaledTileSize();
 	int GetSelectedTileId() const;
     //needed for the viewport to get the info of the selected tile 
 	TileInfo* GetSelectedTileInfo();

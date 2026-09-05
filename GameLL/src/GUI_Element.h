@@ -11,7 +11,7 @@ enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,T
 class GUI_Manager;
 
 struct GUI_Style {
-	GUI_Style() :m_textSize(12), m_textCenterOrigin(false),m_backgroundImageFullElement(false), m_backgroundImageColor(255, 255, 255, 255) {
+	GUI_Style() :m_textSize(12), m_baseTextSize(12), m_textCenterOrigin(false),m_backgroundImageFullElement(false), m_backgroundImageColor(255, 255, 255, 255) {
 		sf::Color none = sf::Color(0, 0, 0, 0);
 		m_backgroundColor = none;
 		m_elementColor = none;
@@ -20,6 +20,9 @@ struct GUI_Style {
 	//numerable data
 	sf::Vector2f m_size;
 	unsigned int m_textSize;
+	// The authored size from the .style file, i.e. the size at scale 1. m_textSize
+	// is always recomputed from this rather than scaled step by step.
+	unsigned int m_baseTextSize;
 	sf::Vector2f m_textPadding;
 	sf::Vector2f m_glyphPadding;
 	sf::Vector2f m_margin;
@@ -124,6 +127,8 @@ protected:
 	virtual void RequireFont(const std::string& i_name);
 	virtual void ReleaseTexture(const std::string& i_name);
 	virtual void ReleaseFont(const std::string& i_name);
+	// m_baseTextSize scaled to the current m_scale, clamped to at least 1.
+	unsigned int ScaleTextSize(unsigned int i_base) const;
 	void ReleaseResources();
 
 	std::string m_name;
@@ -134,17 +139,19 @@ protected:
 	GUI_ElementState m_state;
 	sf::RectangleShape m_slider;
 	GUI_Interface* m_owner;
-	World* m_world;
-	Window* m_wind;
-	TextureManager* m_textureManager;
+	// Set later via the SetX() methods (only the viewport/tileset need most of
+	// them), so they must start null rather than indeterminate.
+	World* m_world = nullptr;
+	Window* m_wind = nullptr;
+	TextureManager* m_textureManager = nullptr;
 
 
 	float m_scale;
 	//needed for viewport
-	SharedContext* m_context;
-	float m_zoomLevel; 
-	float m_workArea;
-	int m_layerIndex;
+	SharedContext* m_context = nullptr;
+	float m_zoomLevel = 1.f;
+	float m_workArea = 0.f;
+	int m_layerIndex = 0;
 	sf::View m_view;
 
 	bool m_needsRedraw;

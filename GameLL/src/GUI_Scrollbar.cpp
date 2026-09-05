@@ -5,7 +5,11 @@ GUI_Scrollbar::GUI_Scrollbar(const std::string& i_name, GUI_Interface* i_owner) 
 	GUI_Element(i_name, GUI_ElementType::Scrollbar, i_owner) {
 	m_isControl = true;
 	debugText.setPosition(1400, 10);
-	debugText.setFont(*i_owner->GetGuiManager()->GetSharedContext()->m_fontManager->GetResource("Main"));
+	// GetResource returns null for a font that was never loaded.
+	if (i_owner && i_owner->GetGuiManager() && i_owner->GetGuiManager()->GetSharedContext()->m_fontManager) {
+		sf::Font* font = i_owner->GetGuiManager()->GetSharedContext()->m_fontManager->GetResource("Main");
+		if (font) { debugText.setFont(*font); }
+	}
 }
 
 GUI_Scrollbar::~GUI_Scrollbar(){}

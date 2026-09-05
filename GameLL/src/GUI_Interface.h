@@ -55,6 +55,7 @@ public:
 	bool GetContentRedraw();
 	bool GetControlRedraw();
 	void Focus();
+	void Defocus();
 	
 	int GetScrollHorizontal();
 	int GetScrollVertical();

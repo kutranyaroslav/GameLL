@@ -1,5 +1,7 @@
 #include "GUI_Element.h"
 #include "GUI_Manager.h"
+#include <algorithm>
+#include <cmath>
 GUI_Element::GUI_Element(const std::string& i_name, const GUI_ElementType& i_type, GUI_Interface* i_owner)
 	:m_name(i_name), m_type(i_type), m_owner(i_owner), m_state(GUI_ElementState::Neutral),
 	m_needsRedraw(false), m_active(true), m_isControl(false),m_scale(1.0f) {}
@@ -64,11 +66,24 @@ void GUI_Element::SetSize(const sf::Vector2f& i_size)
 	m_styles[GUI_ElementState::Focused].m_size = i_size;
 	m_styles[GUI_ElementState::Neutral].m_size = i_size;
 }
+unsigned int GUI_Element::ScaleTextSize(unsigned int i_base) const
+{
+	const float scale = (m_scale > 0.f ? m_scale : 1.f);
+	const long scaled = std::lround(static_cast<float>(i_base) * scale);
+	// setCharacterSize(0) draws nothing, so a shrink must never erase the text.
+	return (scaled > 1 ? static_cast<unsigned int>(scaled) : 1u);
+}
+
 void GUI_Element::SetTextSize(const unsigned int& i_size)
 {
-	m_styles[GUI_ElementState::Clicked].m_textSize = i_size;
-	m_styles[GUI_ElementState::Focused].m_textSize = i_size;
-	m_styles[GUI_ElementState::Neutral].m_textSize = i_size;
+	// i_size is the authored size, same convention as UpdateStyle.
+	const unsigned int scaled = ScaleTextSize(i_size);
+	m_styles[GUI_ElementState::Clicked].m_baseTextSize = i_size;
+	m_styles[GUI_ElementState::Focused].m_baseTextSize = i_size;
+	m_styles[GUI_ElementState::Neutral].m_baseTextSize = i_size;
+	m_styles[GUI_ElementState::Clicked].m_textSize = scaled;
+	m_styles[GUI_ElementState::Focused].m_textSize = scaled;
+	m_styles[GUI_ElementState::Neutral].m_textSize = scaled;
 }
 void GUI_Element::SetWorkArea(float i_area)
 {
@@ -144,12 +159,21 @@ void GUI_Element::OnResize(const sf::Vector2f& i_scale)
 	m_styles[GUI_ElementState::Clicked].m_size *= delta; 
 	m_styles[GUI_ElementState::Focused].m_size *= delta;
 	m_styles[GUI_ElementState::Neutral].m_size *= delta;
-	m_styles[GUI_ElementState::Clicked].m_textSize *= delta;
-	m_styles[GUI_ElementState::Focused].m_textSize *= delta;
-	m_styles[GUI_ElementState::Neutral].m_textSize *= delta;
+	// m_textSize is an unsigned int, so it is recomputed from the authored size
+	// rather than scaled repeatedly. m_scale was updated above.
+	m_styles[GUI_ElementState::Clicked].m_textSize =
+		ScaleTextSize(m_styles[GUI_ElementState::Clicked].m_baseTextSize);
+	m_styles[GUI_ElementState::Focused].m_textSize =
+		ScaleTextSize(m_styles[GUI_ElementState::Focused].m_baseTextSize);
+	m_styles[GUI_ElementState::Neutral].m_textSize =
+		ScaleTextSize(m_styles[GUI_ElementState::Neutral].m_baseTextSize);
 	m_styles[GUI_ElementState::Clicked].m_margin *= delta;
 	m_styles[GUI_ElementState::Focused].m_margin *= delta;
 	m_styles[GUI_ElementState::Neutral].m_margin *= delta;
+	// GUI_Scrollbar sizes its slider from m_elementSize.
+	m_styles[GUI_ElementState::Clicked].m_elementSize *= delta;
+	m_styles[GUI_ElementState::Focused].m_elementSize *= delta;
+	m_styles[GUI_ElementState::Neutral].m_elementSize *= delta;
 	m_styles[GUI_ElementState::Clicked].m_textPadding *= delta;
 	m_styles[GUI_ElementState::Focused].m_textPadding *= delta;
 	m_styles[GUI_ElementState::Neutral].m_textPadding *= delta;
@@ -174,6 +198,10 @@ void GUI_Element::UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& 
 		RequireFont(i_style.m_textFont);
 	}
 	m_styles[i_state] = i_style;
+	// i_style carries the authored size straight from the .style file: keep it as
+	// the base and derive the live size from it at the current scale.
+	m_styles[i_state].m_baseTextSize = i_style.m_textSize;
+	m_styles[i_state].m_textSize = ScaleTextSize(i_style.m_textSize);
 	if (i_state == m_state) { SetRedraw(true); ApplyStyle(); }
 }
 

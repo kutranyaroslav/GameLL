@@ -1,4 +1,37 @@
 #include "GUI_Manager.h"
+#include <exception>
+#include <string>
+
+namespace {
+	// .style files are hand-edited, so a malformed number must not terminate the
+	// process.
+	bool ParseStyleNumber(const std::string& i_text, double& o_value) {
+		try {
+			size_t consumed = 0;
+			o_value = std::stod(i_text, &consumed);
+			return consumed > 0;
+		}
+		catch (const std::exception&) { return false; }
+	}
+
+	// "120" is absolute pixels, "35%" is that fraction of i_reference. o_value is left
+	// alone when the text does not parse, so the inherited style value stands.
+	bool ResolveStyleLength(const std::string& i_text, float i_reference, float& o_value) {
+		if (i_text.empty()) { return false; }
+		if (i_text.find('%') == std::string::npos) {
+			double absolute = 0.0;
+			if (!ParseStyleNumber(i_text, absolute)) { return false; }
+			o_value = static_cast<float>(absolute);
+			return true;
+		}
+		std::string number = i_text;
+		number.pop_back();
+		double percent = 0.0;
+		if (!ParseStyleNumber(number, percent)) { return false; }
+		o_value = static_cast<float>(i_reference * (percent / 100.0));
+		return true;
+	}
+}
 
 
 
@@ -102,8 +135,6 @@ void GUI_Manager::Draw(sf::RenderWindow* i_wind) {
 }
 
 void GUI_Manager::HandleClick(EventDetails* i_details) {
-	sf::Vector2i rawPixel = sf::Mouse::getPosition(*m_context->m_wind->GetRenderWindow());
-	sf::Vector2i windowPos = m_context->m_wind->GetRenderWindow()->getPosition(); // window's position on desktop
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
 	sf::Vector2i mousePos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
@@ -111,6 +142,9 @@ void GUI_Manager::HandleClick(EventDetails* i_details) {
 	for (auto itr = ordered.rbegin(); itr != ordered.rend(); ++itr) {
 		if (!itr->second->IsInside(sf::Vector2f(mousePos))) { continue; }
 		if (!itr->second->GetActive()) { continue; }
+		// Exactly one interface may hold focus, otherwise HandleTextEntered cannot
+		// tell which one should receive typing.
+		for (auto& other : state->second) { other.second->Defocus(); }
 		itr->second->OnClick(sf::Vector2f(mousePos));
 		itr->second->Focus();
 		if (itr->second->IsBeingMoved()) { itr->second->BeginMoving(); }
@@ -190,6 +224,7 @@ GUI_ElementType GUI_Manager::StringToType(const std::string& i_string)
 	else if (i_string == "Viewport") {
 		return GUI_ElementType::Viewport;
 	}
+	return GUI_ElementType::None;
 }
 
 bool GUI_Manager::LoadInterface(const StateType& i_state, const std::string& i_interface, const std::string& i_name)
@@ -311,58 +346,28 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 					std::string numTypeX, numTypeY;
 					keystream >> numTypeX;
 					keystream >> numTypeY;
-					bool absolute_x = (numTypeX.find('%') == std::string::npos ? true : false);
-					bool absolute_y = (numTypeY.find('%') == std::string::npos ? true : false);
-					if (absolute_x) {
-						temporaryStyle.m_size.x = std::stoi(numTypeX);
+					// A percentage is relative to the owning interface, or to the window
+					// when this element is itself a top-level interface.
+					sf::Vector2f reference(
+						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x),
+						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y));
+					if (i_element->GetOwner()) {
+						reference = i_element->GetOwner()->GetSize();
 					}
-					else {
-						numTypeX.pop_back();
-						double percent_x = std::stod(numTypeX) /100.0;
-						if (!i_element->GetOwner()) {
-							temporaryStyle.m_size.x = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x * percent_x;
-						}
-						else {
-							temporaryStyle.m_size.x = i_element->GetOwner()->GetSize().x * percent_x;
-						}
-					}
-					if(absolute_y){
-						temporaryStyle.m_size.y = std::stoi(numTypeY);
-					}
-					else {
-						numTypeY.pop_back();
-						double percent_y = std::stod(numTypeY) / 100.0;
-						if (!i_element->GetOwner()) {
-							temporaryStyle.m_size.y = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y * percent_y;
-						}
-						else {
-							temporaryStyle.m_size.y = i_element->GetOwner()->GetSize().y * percent_y;
-						}
-					}	
-					
+					ResolveStyleLength(numTypeX, reference.x, temporaryStyle.m_size.x);
+					ResolveStyleLength(numTypeY, reference.y, temporaryStyle.m_size.y);
 				}
 				else if (key == "ElementSize") {
 					std::string numTypeX, numTypeY;
 					keystream >> numTypeX;
 					keystream >> numTypeY;
-					bool absolute_x = (numTypeX.find('%') == std::string::npos ? true : false);
-					bool absolute_y = (numTypeY.find('%') == std::string::npos ? true : false);
-					if (absolute_x) {
-						temporaryStyle.m_elementSize.x = std::stoi(numTypeX);
-					}
-					else {
-						numTypeX.pop_back();
-						double percent_x = std::stod(numTypeX) / 100.0;
-						temporaryStyle.m_elementSize.x = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x * percent_x;
-					}
-					if (absolute_y) {
-						temporaryStyle.m_elementSize.y = std::stoi(numTypeY);
-					}
-					else {
-						numTypeY.pop_back();
-						double percent_y = std::stod(numTypeY) / 100.0;
-						temporaryStyle.m_elementSize.y = this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y * percent_y;
-					}
+					// ElementSize percentages are window-relative.
+					ResolveStyleLength(numTypeX,
+						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x),
+						temporaryStyle.m_elementSize.x);
+					ResolveStyleLength(numTypeY,
+						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y),
+						temporaryStyle.m_elementSize.y);
 				}
 
 				else if (key == "BgColor") {
@@ -428,6 +433,8 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 			}
 			
 		}
+		file.close();
+		return true;
 	}
-
+	return false;
 }
