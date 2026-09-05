@@ -11,8 +11,8 @@ public:
 	void Update(const sf::Time& i_time)override;
 	void React(EventDetails* i_details);
 	void OnResize(EventDetails* i_details);
-private:
 	void SetUpLayoutTilesetBottom();
+private:
 	unsigned int m_layerIndex;
 	int m_testIndex;
 	std::string m_currentTileset;

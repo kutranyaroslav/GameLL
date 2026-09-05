@@ -69,6 +69,7 @@ public:
 	virtual void ApplyStyle();
 	virtual void SetPosition(const sf::Vector2f& i_pos);
 	//setters
+	void SetScale(const float& i_scale);
 	void SetName(const std::string& i_name);
 	void SetOwner(GUI_Interface* i_owner);
 	void SetRedraw(const bool& i_redraw);
@@ -81,6 +82,7 @@ public:
 	void SetText(const std::string& i_string);
 	void SetBackgroundImage(const std::string& i_texture);
 	//getters
+	float GetScale();
 	std::string& GetName();
 	GUI_Interface* GetOwner();
 	bool GerRedraw();

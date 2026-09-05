@@ -331,6 +331,18 @@ void GUI_Interface::OnResize(const sf::Vector2f& i_scale)
 			itr.second->OnResize(i_scale);
 		}
 	}
+	if (m_guiManager) {
+		if (m_guiManager->GetSharedContext()->m_stateManager
+			->HasState(StateType::Developement)) {
+			BaseState* baseState = m_guiManager->GetSharedContext()->m_stateManager
+				->GetState(StateType::Developement);
+			State_Developement* developementState = dynamic_cast<State_Developement*>(baseState);
+			if (developementState) {
+				developementState->SetUpLayoutTilesetBottom();
+			}
+		}
+
+	}
 	SetRedraw(true);
 }
 void GUI_Interface::SetContentSize(const sf::Vector2f& i_vec) { m_contentSize = i_vec; }

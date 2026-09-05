@@ -98,7 +98,7 @@ public:
 	bool HasState(const StateType& i_type);
 	void SwitchTo(const StateType& i_type);
 	void Remove(const StateType& i_type);
-
+	BaseState* GetState(StateType i_type);
 	SharedContext* GetSharedContext();
 	BaseState* GetCurrentState();
 private:

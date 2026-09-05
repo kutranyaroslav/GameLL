@@ -97,6 +97,16 @@ void StateManager::Remove(const StateType& i_type) {
 	m_toRemove.push_back(i_type);
 }
 
+BaseState* StateManager::GetState(StateType i_type)
+{
+	auto itr = std::find_if(m_states.begin(), m_states.end(),
+		[i_type](const std::pair<StateType, BaseState*>& s) { return s.first == i_type; });
+	if (itr != m_states.end()) {
+		return itr->second;
+	}
+	return nullptr;
+}
+
 void StateManager::ProcessRequests() {
 	while (m_toRemove.begin() != m_toRemove.end()) {
 		RemoveState(*m_toRemove.begin());

@@ -6,6 +6,16 @@ GUI_Element::GUI_Element(const std::string& i_name, const GUI_ElementType& i_typ
 
 GUI_Element::~GUI_Element() { ReleaseResources(); }
 
+void GUI_Element::SetScale(const float& i_scale)
+{
+	m_scale = i_scale;
+	SetRedraw(true);
+}
+
+float GUI_Element::GetScale()
+{
+	return m_scale;
+}
 void GUI_Element::SetName(const std::string& i_name) {
 	m_name = i_name;
 }
@@ -27,6 +37,7 @@ void GUI_Element::SetPosition(const sf::Vector2f& i_pos) {
 	const auto& padding = m_owner->GetPadding();
 	if (m_position.x < padding.x) { m_position.x = padding.x; }
 	if (m_position.y < padding.y) { m_position.y = padding.y; }
+	SetRedraw(true);
 
 }
 sf::Vector2f& GUI_Element::GetPosition() { return m_position; }

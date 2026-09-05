@@ -35,12 +35,12 @@ Game::~Game(){
 }
 
 void Game::Update() {
+	m_window.Update();
 	m_context.m_guiManager->Update(m_elapsed.asSeconds());
 	GUI_Event event;
 	while (m_context.m_guiManager->PollEvent(event)) {
 		m_window.GetEventManager()->HandleEvent(event);
 	}
- 	m_window.Update();
 	m_stateManager.Update(m_elapsed);
 	m_soundManager.Update(m_elapsed.asSeconds());
 	m_world.Update(m_elapsed.asSeconds());

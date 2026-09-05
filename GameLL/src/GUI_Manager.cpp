@@ -80,7 +80,7 @@ void GUI_Manager::Update(float i_dT) {
 			if (i->GetState() == GUI_ElementState::Neutral) {
 				i->OnHover(sf::Vector2f(mousePos));
 			}
-			return;
+			continue;
 		}
 		else if (i->GetState() == GUI_ElementState::Focused) {
 			i->OnLeave();
