@@ -89,22 +89,11 @@ void State_Developement::onCreate()
 		gui->LoadInterface(StateType::Developement, "ViewportDevMode.interface", "Viewport");
 		GUI_Interface* i = gui->GetInterface(StateType::Developement, "Viewport");
 		if (i) {
-			//setting up the size of the viewport interface 
-			float layersSizeX, mapsSizeX;
-			layersSizeX = gui->GetInterface(StateType::Developement, "ListLayers")->GetSize().x;
-			mapsSizeX = gui->GetInterface(StateType::Developement, "ListLevels")->GetSize().x;
-			float listbottomSizeY;
-			listbottomSizeY = gui->GetInterface(StateType::Developement, "ListBottom")->GetSize().y;
-			if (layersSizeX > mapsSizeX) {
-				i->SetSize(sf::Vector2f(m_stateManager->GetSharedContext()->m_wind->GetWindowSize().x - layersSizeX,
-					m_stateManager->GetSharedContext()->m_wind->GetWindowSize().y - listbottomSizeY));
-				i->ApplyStyle();
-			}
-			else {
-				i->SetSize(sf::Vector2f(m_stateManager->GetSharedContext()->m_wind->GetWindowSize().x - mapsSizeX,
-					m_stateManager->GetSharedContext()->m_wind->GetWindowSize().y - listbottomSizeY));
-				i->ApplyStyle();
-			}
+			// The viewport's size comes from ViewportInterface.style (85% x 65%,
+			// i.e. the window minus the layers panel and the bottom panel). It used
+			// to be computed here from the window size once, which meant it was
+			// re-scaled on every later resize and drifted away from the window.
+			i->ApplyStyle();
 			i->AddElement(GUI_ElementType::Viewport, "ViewportMap");
 			GUI_Element* e = i->GetElement("ViewportMap");
 			GUI_Viewport* v = dynamic_cast<GUI_Viewport*>(e);
@@ -123,6 +112,12 @@ void State_Developement::onCreate()
 			evMgr->AddCallback(StateType::Developement, e->GetName()+"Hover", &State_Developement::React, this);
 			evMgr->AddCallback(StateType::Developement, "Key_Escape", &State_Developement::React, this);
 		}
+		// Interfaces and elements built above start at scale 1, while the rest of the
+		// GUI is already scaled for the current window, so anything authored in
+		// absolute pixels would stay at its 1920x1080 size until the first resize.
+		// OnResize derives its delta from m_scale, so this is a no-op for interfaces
+		// that are already at the current scale.
+		gui->OnResize(m_stateManager->GetSharedContext()->m_wind->GetWindowSize());
 	
 }
 void State_Developement::onDestroy()

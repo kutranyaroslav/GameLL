@@ -43,6 +43,9 @@ void GUI_Element::SetPosition(const sf::Vector2f& i_pos) {
 
 }
 sf::Vector2f& GUI_Element::GetPosition() { return m_position; }
+void GUI_Element::SetPositionPercent(const sf::Vector2f& i_percent) {
+	m_positionPercent = i_percent;
+}
 sf::Vector2f& GUI_Element::GetMargin() { return m_styles[m_state].m_margin; }
 sf::Vector2f GUI_Element::GetGlobalPosition() {
 	sf::Vector2f position = GetPosition();
@@ -151,14 +154,32 @@ void GUI_Element::RequireFont(const std::string& i_name) {
 }
 
 
+sf::Vector2f GUI_Element::GetStyleReference()
+{
+	return (m_owner ? m_owner->GetSize() : sf::Vector2f(0.f, 0.f));
+}
+
 void GUI_Element::OnResize(const sf::Vector2f& i_scale)
 {	
 	float newScale = std::min(i_scale.x, i_scale.y);
 	float delta = newScale / m_scale;
 	m_scale = newScale;
-	m_styles[GUI_ElementState::Clicked].m_size *= delta; 
-	m_styles[GUI_ElementState::Focused].m_size *= delta;
-	m_styles[GUI_ElementState::Neutral].m_size *= delta;
+	// An axis authored as a percentage is re-resolved against the current
+	// reference; one authored in pixels is scaled. Resolving a percentage once at
+	// load and then scaling it applies the window size twice.
+	const sf::Vector2f reference = GetStyleReference();
+	for (GUI_ElementState state : { GUI_ElementState::Neutral,
+		GUI_ElementState::Focused, GUI_ElementState::Clicked }) {
+		GUI_Style& style = m_styles[state];
+		if (style.m_sizePercent.x >= 0.f && reference.x > 0.f) {
+			style.m_size.x = reference.x * (style.m_sizePercent.x / 100.f);
+		}
+		else { style.m_size.x *= delta; }
+		if (style.m_sizePercent.y >= 0.f && reference.y > 0.f) {
+			style.m_size.y = reference.y * (style.m_sizePercent.y / 100.f);
+		}
+		else { style.m_size.y *= delta; }
+	}
 	// m_textSize is an unsigned int, so it is recomputed from the authored size
 	// rather than scaled repeatedly. m_scale was updated above.
 	m_styles[GUI_ElementState::Clicked].m_textSize =
@@ -180,7 +201,16 @@ void GUI_Element::OnResize(const sf::Vector2f& i_scale)
 	m_styles[GUI_ElementState::Clicked].m_glyphPadding *= delta;
 	m_styles[GUI_ElementState::Focused].m_glyphPadding *= delta;
 	m_styles[GUI_ElementState::Neutral].m_glyphPadding *= delta;
-	m_position *= delta;
+	// Same rule as the size axes: a position authored as a percentage is
+	// re-resolved against the current reference, an absolute one is scaled.
+	if (m_positionPercent.x >= 0.f && reference.x > 0.f) {
+		m_position.x = reference.x * (m_positionPercent.x / 100.f);
+	}
+	else { m_position.x *= delta; }
+	if (m_positionPercent.y >= 0.f && reference.y > 0.f) {
+		m_position.y = reference.y * (m_positionPercent.y / 100.f);
+	}
+	else { m_position.y *= delta; }
 	SetRedraw(true);
 }
 

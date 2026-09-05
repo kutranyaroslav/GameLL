@@ -64,27 +64,24 @@ void GUI_Scrollbar::Update(float i_dT) {
 	sf::Vector2f difference = mousepos - m_mouseMoveLast;
 	m_mouseMoveLast = mousepos;
 	m_slider.move((horizontal ? sf::Vector2f(difference.x, 0.f) : sf::Vector2f(0.f, difference.y)));
-	// check out of borders for slider rectshape
-	if (horizontal && m_slider.getPosition().x < 0) {
-		m_slider.setPosition(sf::Vector2f(0, m_slider.getPosition().y));
+	// Clamp the handle to its track along this bar's own axis. m_workArea is the
+	// travel ApplyStyle worked out, so the track end needs no separate check and
+	// there is no need to consult the perpendicular bar.
+	sf::Vector2f handlePos = m_slider.getPosition();
+	if (horizontal) {
+		if (handlePos.x < 0.f) { handlePos.x = 0.f; }
+		if (handlePos.x > m_workArea) { handlePos.x = m_workArea; }
 	}
-	else if (m_slider.getPosition().y < 0) {
-		m_slider.setPosition(sf::Vector2f(m_slider.getPosition().x, 0));
+	else {
+		if (handlePos.y < 0.f) { handlePos.y = 0.f; }
+		if (handlePos.y > m_workArea) { handlePos.y = m_workArea; }
 	}
-	if (horizontal && (m_slider.getPosition().x + m_slider.getSize().x) > m_owner->GetSize().x) {
-		m_slider.setPosition(m_owner->GetSize().x - m_slider.getSize().x, m_slider.getPosition().y);
-	}
-	else if(m_slider.getPosition().y + m_slider.getSize().y > m_owner->GetSize().y){
-		m_slider.setPosition(m_slider.getPosition().x, m_owner->GetSize().y - m_slider.getSize().y);
-	}
-	else if (horizontal && m_owner->GetElement("ScrollbarVertical") && ((m_slider.getPosition().x + m_slider.getSize().x) >
-		(m_owner->GetElement("ScrollbarVertical")->GetPosition().x) )){
-		m_slider.setPosition(m_owner->GetElement("ScrollbarVertical")->GetPosition().x - m_slider.getSize().x, m_slider.getPosition().y);
-
-	}
-	float workArea = (horizontal ? m_owner->GetSize().x - m_slider.getSize().x
-		: m_owner->GetSize().y - m_slider.getSize().y);
-	int percentage = ((horizontal ? m_slider.getPosition().x : m_slider.getPosition().y) / m_workArea) * 100 ;
+	m_slider.setPosition(handlePos);
+	if (m_workArea <= 0.f) { SetRedraw(true); return; }
+	const float travel = (horizontal ? handlePos.x : handlePos.y);
+	int percentage = static_cast<int>((travel / m_workArea) * 100.f);
+	if (percentage < 0) { percentage = 0; }
+	if (percentage > 100) { percentage = 100; }
 	if (horizontal) { m_owner->UpdateScrollHorizontal(percentage); }
 	else { m_owner->UpdateScrollVertical(percentage); }
 	SetRedraw(true);
@@ -100,37 +97,64 @@ void GUI_Scrollbar::DrawOverlay(sf::RenderTarget* i_target)
 void GUI_Scrollbar::ApplyStyle() {
 	GUI_Element::ApplyStyle();
 	m_slider.setFillColor(m_styles[m_state].m_elementColor);
-	bool horizontal = m_sliderType == SliderType::Horizontal;
+	const bool horizontal = (m_sliderType == SliderType::Horizontal);
 	auto& bgSolid = m_visual.m_backgroundSolid;
-	SetPosition((horizontal ? sf::Vector2f(0, m_owner->GetSize().y - bgSolid.getSize().y): 
-		sf::Vector2f(m_owner->GetSize().x - bgSolid.getSize().x ,0)));
-	m_slider.setPosition((horizontal ? m_slider.getPosition().x : GetPosition().x),
-		(horizontal ? GetPosition().y : m_slider.getPosition().y));
-	float sizeFactor = (horizontal ? m_owner->GetContentSize().x / m_owner->GetSize().x :
-		m_owner->GetContentSize().y / m_owner->GetSize().y);
-	if (sizeFactor < 1.f) { sizeFactor = 1.f; }
-	float sliderSize = (horizontal ? m_owner->GetSize().x : m_owner->GetSize().y) / sizeFactor;
-	m_slider.setSize((horizontal ? sf::Vector2f(m_styles[m_state].m_elementSize.x, bgSolid.getSize().y) :
-		sf::Vector2f(bgSolid.getSize().x, m_styles[m_state].m_elementSize.y)));
+	const sf::Vector2f ownerSize = m_owner->GetSize();
+
+	// Each bar sizes only itself. The thin axis comes from the style; the long axis
+	// spans the owner less whatever the perpendicular bar occupies, so the two do
+	// not overlap in the corner.
+	const float thickness = (horizontal ? m_styles[m_state].m_size.y
+		: m_styles[m_state].m_size.x);
+	GUI_Element* crossBar = m_owner->GetElement(horizontal ? "ScrollbarVertical"
+		: "ScrollbarHorizontal");
+	float crossThickness = 0.f;
+	if (crossBar) {
+		crossThickness = (horizontal ? crossBar->GetSize().x : crossBar->GetSize().y);
+	}
+	float length = (horizontal ? ownerSize.x : ownerSize.y) - crossThickness;
+	if (length < 0.f) { length = 0.f; }
+	const sf::Vector2f barSize = (horizontal ? sf::Vector2f(length, thickness)
+		: sf::Vector2f(thickness, length));
+	bgSolid.setSize(barSize);
+	SetSize(barSize);
+
+	// Anchored to the owner's bottom edge (horizontal) or right edge (vertical).
+	SetPosition(horizontal ? sf::Vector2f(0.f, ownerSize.y - barSize.y)
+		: sf::Vector2f(ownerSize.x - barSize.x, 0.f));
 	bgSolid.setPosition(GetPosition());
 
-	if (horizontal) {
-		if (m_owner->GetElements().find("ScrollbarVertical") != m_owner->GetElements().end()) {
-			bgSolid.setSize(sf::Vector2f(m_owner->GetSize().x - m_owner->GetElements().at("ScrollbarVertical")->GetSize().x, m_styles[m_state].m_size.y));
-			m_workArea = bgSolid.getSize().x - m_slider.getSize().x;
-		}
+	// The handle covers the same fraction of the track as the visible area does of
+	// the content, never smaller than the style's element size so it stays grabbable.
+	const float content = (horizontal ? m_owner->GetContentSize().x
+		: m_owner->GetContentSize().y);
+	const float visible = (horizontal ? ownerSize.x : ownerSize.y);
+	float fraction = 1.f;
+	if (content > visible && content > 0.f) { fraction = visible / content; }
+	const float minHandle = (horizontal ? m_styles[m_state].m_elementSize.x
+		: m_styles[m_state].m_elementSize.y);
+	float handleLength = length * fraction;
+	if (handleLength < minHandle) { handleLength = minHandle; }
+	if (handleLength > length) { handleLength = length; }
+	m_slider.setSize(horizontal ? sf::Vector2f(handleLength, barSize.y)
+		: sf::Vector2f(barSize.x, handleLength));
 
-	}
-	else if (!horizontal && m_owner->GetElements().find("ScrollbarHorizontal") != m_owner->GetElements().end()) {
-		m_owner->GetElement("ScrollbarHorizontal")->SetSize(sf::Vector2f(m_owner->GetSize().x - m_styles[m_state].m_size.x, m_owner->GetElement("ScrollbarHorizontal")->GetSize().y));
-		m_owner->GetElement("ScrollbarHorizontal")->SetWorkArea(m_owner->GetSize().x - m_styles[m_state].m_size.x);
+	// How far the handle can travel. Update() divides by this.
+	m_workArea = length - handleLength;
+
+	// Keep the handle on the bar's axis and inside the track after any resize.
+	sf::Vector2f handlePos = m_slider.getPosition();
+	if (horizontal) {
+		handlePos.y = GetPosition().y;
+		if (handlePos.x < 0.f) { handlePos.x = 0.f; }
+		if (handlePos.x > m_workArea) { handlePos.x = m_workArea; }
 	}
 	else {
-		bgSolid.setSize((horizontal ? sf::Vector2f(m_owner->GetSize().x, m_styles[m_state].m_size.y) :
-			sf::Vector2f(m_styles[m_state].m_size.x, m_owner->GetSize().y)));
-		m_workArea = bgSolid.getSize().y - m_slider.getSize().y;
+		handlePos.x = GetPosition().x;
+		if (handlePos.y < 0.f) { handlePos.y = 0.f; }
+		if (handlePos.y > m_workArea) { handlePos.y = m_workArea; }
 	}
-
+	m_slider.setPosition(handlePos);
 }
 
 void GUI_Scrollbar::SetPosition(const sf::Vector2f& i_pos) {

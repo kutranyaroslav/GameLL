@@ -18,6 +18,9 @@ public:
     void CallbackSetup()override;
 
     void UpdateCamera(sf::RenderWindow* i_wind);
+    // Keeps m_view's viewport rect in step with the element's on-screen rect.
+    void UpdateViewportRect();
+    void OnResize(const sf::Vector2f& i_scale) override;
     void ClearBrush();
     sf::View& GetView();
     void SetViewSize(const sf::Vector2f& i_size);

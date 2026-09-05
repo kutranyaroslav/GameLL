@@ -16,12 +16,16 @@ namespace {
 
 	// "120" is absolute pixels, "35%" is that fraction of i_reference. o_value is left
 	// alone when the text does not parse, so the inherited style value stands.
-	bool ResolveStyleLength(const std::string& i_text, float i_reference, float& o_value) {
+	// o_percent receives the authored percentage, or -1 for an absolute value, so a
+	// later resize can re-resolve it instead of scaling the pixels computed here.
+	bool ResolveStyleLength(const std::string& i_text, float i_reference, float& o_value,
+		float& o_percent) {
 		if (i_text.empty()) { return false; }
 		if (i_text.find('%') == std::string::npos) {
 			double absolute = 0.0;
 			if (!ParseStyleNumber(i_text, absolute)) { return false; }
 			o_value = static_cast<float>(absolute);
+			o_percent = -1.f;
 			return true;
 		}
 		std::string number = i_text;
@@ -29,6 +33,7 @@ namespace {
 		double percent = 0.0;
 		if (!ParseStyleNumber(number, percent)) { return false; }
 		o_value = static_cast<float>(i_reference * (percent / 100.0));
+		o_percent = static_cast<float>(percent);
 		return true;
 	}
 }
@@ -354,20 +359,24 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 					if (i_element->GetOwner()) {
 						reference = i_element->GetOwner()->GetSize();
 					}
-					ResolveStyleLength(numTypeX, reference.x, temporaryStyle.m_size.x);
-					ResolveStyleLength(numTypeY, reference.y, temporaryStyle.m_size.y);
+					ResolveStyleLength(numTypeX, reference.x, temporaryStyle.m_size.x,
+						temporaryStyle.m_sizePercent.x);
+					ResolveStyleLength(numTypeY, reference.y, temporaryStyle.m_size.y,
+						temporaryStyle.m_sizePercent.y);
 				}
 				else if (key == "ElementSize") {
 					std::string numTypeX, numTypeY;
 					keystream >> numTypeX;
 					keystream >> numTypeY;
-					// ElementSize percentages are window-relative.
+					// ElementSize percentages are window-relative. No .style file uses one
+					// today, so the authored percentage is not tracked for re-resolution.
+					float ignoredPercent = -1.f;
 					ResolveStyleLength(numTypeX,
 						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x),
-						temporaryStyle.m_elementSize.x);
+						temporaryStyle.m_elementSize.x, ignoredPercent);
 					ResolveStyleLength(numTypeY,
 						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y),
-						temporaryStyle.m_elementSize.y);
+						temporaryStyle.m_elementSize.y, ignoredPercent);
 				}
 
 				else if (key == "BgColor") {
@@ -423,9 +432,22 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 					keystream >> temporaryStyle.m_glyphPadding.x >> temporaryStyle.m_glyphPadding.y;
 				}
 				else if (key == "Position") {
-					int a, b = 0;
-					keystream >> a >> b;
-					i_element->SetPosition(sf::Vector2f(a, b));
+					std::string posX, posY;
+					keystream >> posX >> posY;
+					// Same reference as Size: the owning interface, or the window for a
+					// top-level interface.
+					sf::Vector2f reference(
+						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().x),
+						static_cast<float>(this->GetSharedContext()->m_wind->GetRenderWindow()->getSize().y));
+					if (i_element->GetOwner()) {
+						reference = i_element->GetOwner()->GetSize();
+					}
+					sf::Vector2f position = i_element->GetPosition();
+					sf::Vector2f percent(-1.f, -1.f);
+					ResolveStyleLength(posX, reference.x, position.x, percent.x);
+					ResolveStyleLength(posY, reference.y, position.y, percent.y);
+					i_element->SetPosition(position);
+					i_element->SetPositionPercent(percent);
 				}
 				else {
 					return false;

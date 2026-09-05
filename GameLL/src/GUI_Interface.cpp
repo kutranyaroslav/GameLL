@@ -325,9 +325,24 @@ void GUI_Interface::AdjustContentSize( GUI_Element* i_reference) {
 	SetContentSize(farthest);
 }
 
+sf::Vector2f GUI_Interface::GetStyleReference()
+{
+	if (m_parent) { return m_parent->GetSize(); }
+	if (m_guiManager && m_guiManager->GetSharedContext()
+		&& m_guiManager->GetSharedContext()->m_wind) {
+		return sf::Vector2f(m_guiManager->GetSharedContext()->m_wind->GetWindowSize());
+	}
+	return sf::Vector2f(0.f, 0.f);
+}
+
 void GUI_Interface::OnResize(const sf::Vector2f& i_scale)
 {
 	GUI_Element::OnResize(i_scale);
+	// OnResize writes m_position directly, but the backdrop/content/control sprites
+	// and the title bar only follow it through SetPosition. Without this they keep
+	// the position they were loaded at and the whole interface draws in the wrong
+	// place -- far enough down, at small window sizes, to leave the screen.
+	SetPosition(m_position);
 	for (auto& itr : m_elements) {
 		if (itr.second) {
 			itr.second->OnResize(i_scale);

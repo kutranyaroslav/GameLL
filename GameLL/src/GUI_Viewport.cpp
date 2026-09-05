@@ -106,18 +106,37 @@ void GUI_Viewport::Draw(sf::RenderTarget* i_target)
 	
 }
 
+void GUI_Viewport::UpdateViewportRect()
+{
+	Window* wind = GetWindow();
+	if (!wind) { return; }
+	const sf::Vector2u windowSize = wind->GetWindowSize();
+	if (windowSize.x == 0 || windowSize.y == 0) { return; }
+	const sf::Vector2f globalPos = GetGlobalPosition();
+	const sf::Vector2f size = GetSize();
+	m_view.setViewport(sf::FloatRect(
+		globalPos.x / windowSize.x, globalPos.y / windowSize.y,
+		size.x / windowSize.x, size.y / windowSize.y));
+}
+
+void GUI_Viewport::OnResize(const sf::Vector2f& i_scale)
+{
+	GUI_Element::OnResize(i_scale);
+	// Update the rect now rather than waiting for the next DrawOverlay: for one
+	// frame after a resize, hit-testing would otherwise use the new element
+	// geometry while the renderer still had the previous rect, so a click in
+	// that frame landed on the wrong tile.
+	UpdateViewportRect();
+}
+
 void GUI_Viewport::DrawOverlay(sf::RenderTarget* i_target)
 {
 	UpdateCamera(static_cast<sf::RenderWindow*>(i_target));
 	Window* wind = GetWindow();
 	if (!wind) { return; }
-	sf::Vector2u windowSize = wind->GetWindowSize();
+	const sf::Vector2u windowSize = wind->GetWindowSize();
 	if (windowSize.x == 0 || windowSize.y == 0) { return; }
-	sf::Vector2f globalPos = GetGlobalPosition();
-	sf::Vector2f size = GetSize();
-	m_view.setViewport(sf::FloatRect(
-		globalPos.x / windowSize.x, globalPos.y / windowSize.y,
-		size.x / windowSize.x, size.y / windowSize.y));
+	UpdateViewportRect();
 	sf::View oldView = i_target->getView();
 	i_target->setView(m_view);
 	for (int i = 0; i < Sheet::Num_Layers; i++) {
@@ -149,6 +168,9 @@ void GUI_Viewport::CallbackSetup()
 			m_context->m_eventManager->AddCallback(StateType::Developement, "Key_S", &GUI_Viewport::React, this);
 		}
 	}
+	// Called once the window and geometry are set, so the viewport rect is right
+	// from the first frame instead of only after the first DrawOverlay.
+	UpdateViewportRect();
 }
 
 void GUI_Viewport::UpdateCamera(sf::RenderWindow* window)
