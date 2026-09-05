@@ -33,14 +33,14 @@ enum class EventType {
 
 };
 struct EventInfo {
-	EventInfo() { m_code = 0; }
-	EventInfo(int i_code):m_code(i_code) {}
-	EventInfo(GUI_Event i_guiEvent): m_guiEvent(i_guiEvent){}
-	union 
-	{
-		int m_code;
-		GUI_Event m_guiEvent;
-	};
+	EventInfo() : m_code(0) {}
+	EventInfo(int i_code) : m_code(i_code) {}
+	EventInfo(GUI_Event i_guiEvent) : m_code(0), m_guiEvent(i_guiEvent) {}
+	// These were a union. GUI_Event owns std::strings now, which a raw union
+	// cannot manage, and a key code and a GUI event never belong to the same
+	// EventType, so holding both costs a few bytes and nothing else.
+	int m_code;
+	GUI_Event m_guiEvent;
 };
 struct EventDetails {
 	EventDetails(const std::string& i_bindName):
@@ -75,15 +75,7 @@ struct Binding {
 	Binding(const std::string& i_name):
 		m_name(i_name), m_details(i_name), c(0)
 	{}
-	~Binding() {
-		for (auto itr = m_events.begin(); itr != m_events.end(); ++itr) {
-			if (itr->first == EventType::GUI_Click || itr->first == EventType::GUI_Release ||
-				itr->first == EventType::GUI_Hover || itr->first == EventType::GUI_Leave) {
-				delete[] itr->second.m_guiEvent.m_interface;
-				delete[] itr->second.m_guiEvent.m_element;
-			}
-		}
-	}
+	// No destructor needed: GUI_Event owns its strings now.
 	bool BindEvent(EventType i_type, EventInfo i_eventInfo = EventInfo())
 	{
 		try
