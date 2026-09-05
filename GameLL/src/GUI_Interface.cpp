@@ -88,7 +88,7 @@ void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
 	else {
 		GUI_Event event;
 		event.m_type = GUI_EventType::Click;
-		event.m_interface = m_name.c_str();
+		event.m_interface = m_name;
 		event.m_element = "";
 		event.m_clickCoordinates.x = i_mousePos.x;
 		event.m_clickCoordinates.y = i_mousePos.y;
@@ -96,7 +96,7 @@ void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
 		for (auto& itr : m_elements) {
 			if (!itr.second->IsInside(i_mousePos)) { continue; }
 			itr.second->OnClick(i_mousePos);
-			event.m_element = itr.second->m_name.c_str();
+			event.m_element = itr.second->m_name;
 			m_guiManager->AddEvent(event);
 		}
 		SetState(GUI_ElementState::Clicked);
@@ -106,13 +106,13 @@ void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
 void GUI_Interface::OnRelease() {
 	GUI_Event event;
 	event.m_type = GUI_EventType::Release;
-	event.m_interface = m_name.c_str();
+	event.m_interface = m_name;
 	event.m_element = "";
 	m_guiManager->AddEvent(event);
 	for (auto& itr : m_elements) {
 		if (itr.second->GetState() != GUI_ElementState::Clicked) { continue; }
 		itr.second->OnRelease();
-		event.m_element = itr.second->GetName().c_str();
+		event.m_element = itr.second->GetName();
 		m_guiManager->AddEvent(event);
 	}
 	SetState(GUI_ElementState::Neutral);
@@ -120,7 +120,7 @@ void GUI_Interface::OnRelease() {
 void GUI_Interface::OnHover(const sf::Vector2f& i_mousePos) {
 	GUI_Event event; 
 	event.m_type = GUI_EventType::Hover;
-	event.m_interface = m_name.c_str();
+	event.m_interface = m_name;
 	event.m_element = ""; 
 	event.m_clickCoordinates.x = i_mousePos.x;
 	event.m_clickCoordinates.y = i_mousePos.y;
@@ -130,7 +130,7 @@ void GUI_Interface::OnHover(const sf::Vector2f& i_mousePos) {
 void GUI_Interface::OnLeave() {
 	GUI_Event event; 
 	event.m_type = GUI_EventType::Leave;
-	event.m_interface = m_name.c_str();
+	event.m_interface = m_name;
 	event.m_element = "";
 	m_guiManager->AddEvent(event);
 	SetState(GUI_ElementState::Neutral);
@@ -151,8 +151,8 @@ void GUI_Interface::Update(float i_dT) {
 		itr.second->Update(i_dT);
 		if (m_beingMoved) { continue; }
 		GUI_Event event;
-		event.m_interface = m_name.c_str();
-		event.m_element = itr.second->GetName().c_str();
+		event.m_interface = m_name;
+		event.m_element = itr.second->GetName();
 		event.m_clickCoordinates.x = mousePos.x;
 		event.m_clickCoordinates.y = mousePos.y;
 		
@@ -466,12 +466,12 @@ bool GUI_Interface::GetControlRedraw() { return m_controlRedraw; }
 void GUI_Interface::DefocusTextFields() {
 	GUI_Event event;
 	event.m_type = GUI_EventType::Release;
-	event.m_interface = m_name.c_str();
+	event.m_interface = m_name;
 	event.m_element = "";
 	for (auto& itr : m_elements) {
 		if (itr.second->GetType() != GUI_ElementType::Textfield) { continue; }
 		itr.second->SetState(GUI_ElementState::Neutral);
-		event.m_element = itr.second->GetName().c_str();
+		event.m_element = itr.second->GetName();
 		m_guiManager->AddEvent(event);
 	}
 }

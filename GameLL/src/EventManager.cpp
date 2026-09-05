@@ -36,14 +36,9 @@ bool EventManager::AddDynamicBinding(const std::string& i_name, EventType i_type
 
 	Binding* bind = new Binding(i_name);
 
-	char* w = new char[i_interface.length() + 1];
-	char* e = new char[i_element.length() + 1];
-	strcpy_s(w, i_interface.length() + 1, i_interface.c_str());
-	strcpy_s(e, i_element.length() + 1, i_element.c_str());
-
 	GUI_Event guiEvent;
-	guiEvent.m_interface = w;
-	guiEvent.m_element = e;
+	guiEvent.m_interface = i_interface;
+	guiEvent.m_element = i_element;
 
 	bind->BindEvent(i_type, EventInfo(guiEvent));
 
@@ -115,8 +110,8 @@ void EventManager::HandleEvent(GUI_Event& i_event)
 				(e_itr.first == EventType::GUI_Leave && i_event.m_type != GUI_EventType::Leave)) {
 				continue;
 			}
-			if (strcmp(e_itr.second.m_guiEvent.m_interface, i_event.m_interface) ||
-				strcmp(e_itr.second.m_guiEvent.m_element, i_event.m_element)) {
+			if (e_itr.second.m_guiEvent.m_interface != i_event.m_interface ||
+				e_itr.second.m_guiEvent.m_element != i_event.m_element) {
 				continue;
 			}
 			b->m_details.m_guiInterface = i_event.m_interface;
@@ -215,12 +210,8 @@ void EventManager::LoadBindings() {
 					end = keyval.length();
 					element = keyval.substr(start, end);
 				}		
-				char* w = new char[window.length() + 1];
-				char* e = new char[element.length() + 1];
-				strcpy_s(w, window.length() + 1, window.c_str() );
-				strcpy_s(e, element.length() + 1, element.c_str());
-				eventInfo.m_guiEvent.m_interface = w;
-				eventInfo.m_guiEvent.m_element = e;
+				eventInfo.m_guiEvent.m_interface = window;
+				eventInfo.m_guiEvent.m_element = element;
 			}
 			else {
 			int code = stoi(keyval.substr(end + delimiter.length(),
