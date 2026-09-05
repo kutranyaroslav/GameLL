@@ -11,7 +11,7 @@ enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,T
 class GUI_Manager;
 
 struct GUI_Style {
-	GUI_Style() :m_textSize(12), m_textCenterOrigin(false),m_backgroundImageFullElement(false), m_backgroundImageColor(255, 255, 255, 255) {
+	GUI_Style() :m_textSize(12), m_baseTextSize(12), m_textCenterOrigin(false),m_backgroundImageFullElement(false), m_backgroundImageColor(255, 255, 255, 255) {
 		sf::Color none = sf::Color(0, 0, 0, 0);
 		m_backgroundColor = none;
 		m_elementColor = none;
@@ -20,6 +20,13 @@ struct GUI_Style {
 	//numerable data
 	sf::Vector2f m_size;
 	unsigned int m_textSize;
+	// The authored size from the .style file, i.e. the size at scale 1. m_textSize
+	// is always recomputed from this rather than scaled step by step.
+	unsigned int m_baseTextSize;
+	// Percentage each m_size axis was authored with, or negative when the axis was
+	// authored in absolute pixels. Percentage axes are re-resolved against the
+	// current reference on every resize instead of scaling a stale pixel value.
+	sf::Vector2f m_sizePercent{ -1.f, -1.f };
 	sf::Vector2f m_textPadding;
 	sf::Vector2f m_glyphPadding;
 	sf::Vector2f m_margin;
@@ -63,11 +70,17 @@ public:
 	virtual void CallbackSetup() = 0;
 
 	virtual void OnResize(const sf::Vector2f& i_scale);
+	// What a percentage size is measured against: the owning interface, or the
+	// render window for a top-level interface.
+	virtual sf::Vector2f GetStyleReference();
 	//created to optimize redraw of dynamic elements like hovering and so on
 	virtual void DrawOverlay(sf::RenderTarget* i_target) = 0;
 	virtual void UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style);
 	virtual void ApplyStyle();
 	virtual void SetPosition(const sf::Vector2f& i_pos);
+	// Percentage each position axis was authored with, or negative for absolute
+	// pixels. Mirrors GUI_Style::m_sizePercent.
+	void SetPositionPercent(const sf::Vector2f& i_percent);
 	//setters
 	void SetScale(const float& i_scale);
 	void SetName(const std::string& i_name);
@@ -124,27 +137,32 @@ protected:
 	virtual void RequireFont(const std::string& i_name);
 	virtual void ReleaseTexture(const std::string& i_name);
 	virtual void ReleaseFont(const std::string& i_name);
+	// m_baseTextSize scaled to the current m_scale, clamped to at least 1.
+	unsigned int ScaleTextSize(unsigned int i_base) const;
 	void ReleaseResources();
 
 	std::string m_name;
 	sf::Vector2f m_position;
+	sf::Vector2f m_positionPercent{ -1.f, -1.f };
 	ElementStyles m_styles;
 	GUI_Visual m_visual;
 	GUI_ElementType m_type;
 	GUI_ElementState m_state;
 	sf::RectangleShape m_slider;
 	GUI_Interface* m_owner;
-	World* m_world;
-	Window* m_wind;
-	TextureManager* m_textureManager;
+	// Set later via the SetX() methods (only the viewport/tileset need most of
+	// them), so they must start null rather than indeterminate.
+	World* m_world = nullptr;
+	Window* m_wind = nullptr;
+	TextureManager* m_textureManager = nullptr;
 
 
 	float m_scale;
 	//needed for viewport
-	SharedContext* m_context;
-	float m_zoomLevel; 
-	float m_workArea;
-	int m_layerIndex;
+	SharedContext* m_context = nullptr;
+	float m_zoomLevel = 1.f;
+	float m_workArea = 0.f;
+	int m_layerIndex = 0;
 	sf::View m_view;
 
 	bool m_needsRedraw;

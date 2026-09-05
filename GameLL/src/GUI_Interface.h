@@ -41,6 +41,7 @@ public:
 	void UpdateScrollVertical(unsigned int i_percent);
 	void AdjustContentSize(GUI_Element* i_reference = nullptr);
 	void OnResize(const sf::Vector2f& i_scale) override;
+	sf::Vector2f GetStyleReference() override;
 	sf::Vector2f GetGlobalPosition();
 
 	GUI_Element* GetElement(const std::string& i_name)const;
@@ -55,6 +56,7 @@ public:
 	bool GetContentRedraw();
 	bool GetControlRedraw();
 	void Focus();
+	void Defocus();
 	
 	int GetScrollHorizontal();
 	int GetScrollVertical();

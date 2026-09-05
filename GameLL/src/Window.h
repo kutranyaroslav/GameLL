@@ -39,7 +39,7 @@ private:
 	void Create();
 	void OnResize(const sf::Vector2u& i_size);
 	EventManager m_eventManager;
-	SharedContext* m_context;
+	SharedContext* m_context = nullptr;
 	Textbox m_textbox;
 	sf::RenderWindow m_window;
 	sf::Vector2u m_windowSize;

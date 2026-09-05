@@ -1,3 +1,4 @@
+#pragma once
 #include "../StateManager.h"
 #include "../GUI_Manager.h"	
 class State_Developement : public BaseState {
@@ -10,7 +11,7 @@ public:
 	void Draw()override;
 	void Update(const sf::Time& i_time)override;
 	void React(EventDetails* i_details);
-	void OnResize(EventDetails* i_details);
+	void OnResize(const sf::Vector2u& i_size) override;
 	void SetUpLayoutTilesetBottom();
 private:
 	unsigned int m_layerIndex;

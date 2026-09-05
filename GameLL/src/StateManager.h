@@ -28,6 +28,9 @@ public:
 	virtual void Deactivate() = 0; 
 	virtual void Update(const sf::Time& i_time) = 0;
 	virtual void Draw() = 0;
+	// Called after the window resized AND the GUI has been rescaled. States that
+	// position elements by hand override this to re-run their layout.
+	virtual void OnResize(const sf::Vector2u& i_size) {}
 
 	void SetTransparent(const bool& i_transparent) {
 		m_transparent = i_transparent;
@@ -62,6 +65,8 @@ struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
 		m_textureManager(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
 		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr),
+		// States call LogException/createFile through this from their catch blocks.
+		m_errorLogManager(ErrorLogManager::GetInstance()),
 	m_world(nullptr)
 	{
 		
@@ -98,6 +103,7 @@ public:
 	bool HasState(const StateType& i_type);
 	void SwitchTo(const StateType& i_type);
 	void Remove(const StateType& i_type);
+	void OnResize(const sf::Vector2u& i_size);
 	BaseState* GetState(StateType i_type);
 	SharedContext* GetSharedContext();
 	BaseState* GetCurrentState();

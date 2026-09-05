@@ -12,7 +12,6 @@ void State_Developement::onCreate()
 	
 	m_view = m_stateManager->GetSharedContext()->m_wind->GetUIView();
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-	//evMgr->AddCallback(StateType::Developement, "Window_Resized", &State_Developement::OnResize, this);
 	m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "TestTileset", "Tiles.cfg", "Tilesheet");
 	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP1", "TestTileset2", "Tiles.cfg", "Tilesheet2");
 	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP1");
@@ -52,13 +51,15 @@ void State_Developement::onCreate()
 			e->ApplyStyle();
 			interf->AdjustContentSize(e);
 			e->SetText("Layer " + std::to_string(i)); 
-			evMgr->AddDynamicBinding("Layer_" + std::to_string(m_layerIndex), EventType::GUI_Click, interf->GetName(), e->GetName());
-			evMgr->AddCallback(StateType::Developement, "Key_" + std::to_string(m_layerIndex), &State_Developement::React, this);
-			evMgr->AddCallback(StateType::Developement, "Layer_" + std::to_string(m_layerIndex), &State_Developement::React, this);
-			m_dynamicCallbacks.push_back("Layer_" + std::to_string(m_layerIndex));
-			m_layerIndex++;
+			evMgr->AddDynamicBinding("Layer_" + std::to_string(i), EventType::GUI_Click, interf->GetName(), e->GetName());
+			evMgr->AddCallback(StateType::Developement, "Key_" + std::to_string(i), &State_Developement::React, this);
+			evMgr->AddCallback(StateType::Developement, "Layer_" + std::to_string(i), &State_Developement::React, this);
+			m_dynamicCallbacks.push_back("Layer_" + std::to_string(i));
 		}
 	}
+	// m_layerIndex is the selected layer, not a loop counter; layer 0 stays
+	// selected until the user picks another.
+	m_layerIndex = 0;
 
 
 		//setting default map and getting default tileset 
@@ -88,22 +89,11 @@ void State_Developement::onCreate()
 		gui->LoadInterface(StateType::Developement, "ViewportDevMode.interface", "Viewport");
 		GUI_Interface* i = gui->GetInterface(StateType::Developement, "Viewport");
 		if (i) {
-			//setting up the size of the viewport interface 
-			float layersSizeX, mapsSizeX;
-			layersSizeX = gui->GetInterface(StateType::Developement, "ListLayers")->GetSize().x;
-			mapsSizeX = gui->GetInterface(StateType::Developement, "ListLevels")->GetSize().x;
-			float listbottomSizeY;
-			listbottomSizeY = gui->GetInterface(StateType::Developement, "ListBottom")->GetSize().y;
-			if (layersSizeX > mapsSizeX) {
-				i->SetSize(sf::Vector2f(m_stateManager->GetSharedContext()->m_wind->GetWindowSize().x - layersSizeX,
-					m_stateManager->GetSharedContext()->m_wind->GetWindowSize().y - listbottomSizeY));
-				i->ApplyStyle();
-			}
-			else {
-				i->SetSize(sf::Vector2f(m_stateManager->GetSharedContext()->m_wind->GetWindowSize().x - mapsSizeX,
-					m_stateManager->GetSharedContext()->m_wind->GetWindowSize().y - listbottomSizeY));
-				i->ApplyStyle();
-			}
+			// The viewport's size comes from ViewportInterface.style (85% x 65%,
+			// i.e. the window minus the layers panel and the bottom panel). It used
+			// to be computed here from the window size once, which meant it was
+			// re-scaled on every later resize and drifted away from the window.
+			i->ApplyStyle();
 			i->AddElement(GUI_ElementType::Viewport, "ViewportMap");
 			GUI_Element* e = i->GetElement("ViewportMap");
 			GUI_Viewport* v = dynamic_cast<GUI_Viewport*>(e);
@@ -122,6 +112,12 @@ void State_Developement::onCreate()
 			evMgr->AddCallback(StateType::Developement, e->GetName()+"Hover", &State_Developement::React, this);
 			evMgr->AddCallback(StateType::Developement, "Key_Escape", &State_Developement::React, this);
 		}
+		// Interfaces and elements built above start at scale 1, while the rest of the
+		// GUI is already scaled for the current window, so anything authored in
+		// absolute pixels would stay at its 1920x1080 size until the first resize.
+		// OnResize derives its delta from m_scale, so this is a no-op for interfaces
+		// that are already at the current scale.
+		gui->OnResize(m_stateManager->GetSharedContext()->m_wind->GetWindowSize());
 	
 }
 void State_Developement::onDestroy()
@@ -154,15 +150,14 @@ void State_Developement::Draw()
 
 void State_Developement::Update(const sf::Time& i_time)
 {
-	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
+	SharedContext* context = m_stateManager->GetSharedContext();
+	if (!context || !context->m_guiManager || !context->m_world) { return; }
+	GUI_Manager* gui = context->m_guiManager;
 	GUI_Interface* iMaps = gui->GetInterface(StateType::Developement, "ListLevels");
-	GUI_Element* eMap = iMaps->GetElement(m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapName());
-	if (iMaps)
+	Map* currentMap = context->m_world->GetCurrentMap();
+	if (iMaps && currentMap)
 	{
-		GUI_Element* eMap =
-			iMaps->GetElement(m_stateManager->GetSharedContext()->m_world
-				->GetCurrentMap()
-				->GetMapName());
+		GUI_Element* eMap = iMaps->GetElement(currentMap->GetMapName());
 		if (eMap)
 		{
 			eMap->SetState(GUI_ElementState::Clicked);
@@ -360,11 +355,13 @@ void State_Developement::React(EventDetails* i_details)
 
 
 
-	for (int i = 0; i < Sheet::Num_Layers; i++) {
-		if (i_details->m_name == "Layer_" + std::to_string(i) || i_details->m_name == "Key_" + std::to_string(i)) {
-			m_layerIndex = i;
-			GUI_Interface* i = gui->GetInterface(StateType::Developement, "Viewport");
-			GUI_Element* e = i->GetElement("ViewportMap");
+	for (int layer = 0; layer < Sheet::Num_Layers; layer++) {
+		if (i_details->m_name == "Layer_" + std::to_string(layer) || i_details->m_name == "Key_" + std::to_string(layer)) {
+			m_layerIndex = layer;
+			GUI_Interface* iViewport = gui->GetInterface(StateType::Developement, "Viewport");
+			if (!iViewport) { continue; }
+			GUI_Element* e = iViewport->GetElement("ViewportMap");
+			if (!e) { continue; }
 			e->SetLayer(m_layerIndex);
 		}
 
@@ -391,75 +388,79 @@ void State_Developement::React(EventDetails* i_details)
 	}
 }
 
-void State_Developement::OnResize(EventDetails* i_details)
+void State_Developement::OnResize(const sf::Vector2u& i_size)
 {
 	SetUpLayoutTilesetBottom();
-
 }
 
 
 void State_Developement::SetUpLayoutTilesetBottom()
 {
+	// Runs on every window resize, and can therefore fire before/while the dev-mode
+	// interfaces are populated - every lookup below has to tolerate a missing
+	// interface, element or map.
+	SharedContext* context = m_stateManager->GetSharedContext();
+	if (!context || !context->m_guiManager || !context->m_world) { return; }
+	GUI_Manager* gui = context->m_guiManager;
+	Map* currentMap = context->m_world->GetCurrentMap();
 
-	//setting default layout for listbottom in dev mod 
-
-	int index = 0;
-	GUI_Interface* i_ListBottom = m_stateManager->GetSharedContext()->m_guiManager->
-		GetInterface(StateType::Developement, "ListBottom");
-	GUI_Element* e_ListBottom = i_ListBottom->GetElement(m_stateManager->GetSharedContext()->
-		m_world->GetCurrentMap()->GetTilesets().begin()->first);
-	sf::Vector2f base = e_ListBottom->GetPosition();
-	float pos_x = 0.f;
-	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
-		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); ++itr) {
-		if (i_ListBottom) {
-			GUI_Element* e = i_ListBottom->GetElement(itr->first);
-			pos_x = base.x + (index * (e->GetSize().x + e->GetMargin().x));
-			e->SetPosition(sf::Vector2f(pos_x, base.y));
-			++index;
-
+	//setting default layout for listbottom in dev mod
+	GUI_Interface* i_ListBottom = gui->GetInterface(StateType::Developement, "ListBottom");
+	if (i_ListBottom && currentMap && !currentMap->GetTilesets().empty()) {
+		GUI_Element* e_ListBottom = i_ListBottom->GetElement(currentMap->GetTilesets().begin()->first);
+		if (e_ListBottom) {
+			sf::Vector2f base = e_ListBottom->GetPosition();
+			int index = 0;
+			float pos_x = 0.f;
+			for (auto itr = currentMap->GetTilesets().begin(); itr != currentMap->GetTilesets().end(); ++itr) {
+				GUI_Element* e = i_ListBottom->GetElement(itr->first);
+				if (!e) { continue; }
+				pos_x = base.x + (index * (e->GetSize().x + e->GetMargin().x));
+				e->SetPosition(sf::Vector2f(pos_x, base.y));
+				++index;
+			}
+			i_ListBottom->AdjustContentSize();
+			i_ListBottom->SetRedraw(true);
 		}
 	}
-	i_ListBottom->AdjustContentSize();
-	i_ListBottom->SetRedraw(true);
 
 	//setting default layout for maps/levels interface in dev mod
-	float index0 = 0;
-	float posLev_y = 0.f;
-	GUI_Interface* i_ListMaps = m_stateManager->GetSharedContext()->m_guiManager->
-		GetInterface(StateType::Developement, "ListLevels");
-	GUI_Element* e_ListMaps = i_ListMaps->GetElement(m_stateManager->GetSharedContext()->
-		m_world->GetMaps().begin()->first);
-	sf::Vector2f baseMaps = e_ListMaps->GetPosition();
-	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetMaps().begin(); itr !=
-		m_stateManager->GetSharedContext()->m_world->GetMaps().end(); itr++) {
-		if (i_ListMaps) {
-			GUI_Element* e = i_ListMaps->GetElement(itr->first);
-			posLev_y = baseMaps.y  + (index0 * (e->GetSize().y + e->GetMargin().y));
-			e->SetPosition(sf::Vector2f(baseMaps.x, posLev_y));
-			index0++;
+	GUI_Interface* i_ListMaps = gui->GetInterface(StateType::Developement, "ListLevels");
+	if (i_ListMaps && !context->m_world->GetMaps().empty()) {
+		GUI_Element* e_ListMaps = i_ListMaps->GetElement(context->m_world->GetMaps().begin()->first);
+		if (e_ListMaps) {
+			sf::Vector2f baseMaps = e_ListMaps->GetPosition();
+			float index0 = 0;
+			float posLev_y = 0.f;
+			for (auto itr = context->m_world->GetMaps().begin(); itr != context->m_world->GetMaps().end(); itr++) {
+				GUI_Element* e = i_ListMaps->GetElement(itr->first);
+				if (!e) { continue; }
+				posLev_y = baseMaps.y + (index0 * (e->GetSize().y + e->GetMargin().y));
+				e->SetPosition(sf::Vector2f(baseMaps.x, posLev_y));
+				index0++;
+			}
+			i_ListMaps->AdjustContentSize();
+			i_ListMaps->SetRedraw(true);
 		}
 	}
-	i_ListMaps->AdjustContentSize();
-	i_ListMaps->SetRedraw(true);
+
 	//setting default layout for layers interface in dev mod
-	GUI_Interface* i_ListLayers = m_stateManager->GetSharedContext()->m_guiManager->
-		GetInterface(StateType::Developement, "ListLayers");
-	GUI_Element* e_ListLayers = i_ListLayers->GetElement("Layer_0");
-	sf::Vector2f baseLayers = e_ListLayers->GetPosition();
-	float posL_y = 0.f;
-	for (int i = 0; i < Sheet::Num_Layers; i++) {
-		if (i_ListLayers) {
-			GUI_Element* e = i_ListLayers->GetElement("Layer_" + std::to_string(i));
-			posL_y = baseLayers.y + (i * (e->GetSize().y + e->GetMargin().y));
-			e->SetPosition(sf::Vector2f(baseLayers.x, posL_y));
-			//if (e->GetScale() != 1.f) { __debugbreak(); }
-			m_layerIndex++;
+	GUI_Interface* i_ListLayers = gui->GetInterface(StateType::Developement, "ListLayers");
+	if (i_ListLayers) {
+		GUI_Element* e_ListLayers = i_ListLayers->GetElement("Layer_0");
+		if (e_ListLayers) {
+			sf::Vector2f baseLayers = e_ListLayers->GetPosition();
+			float posL_y = 0.f;
+			for (int i = 0; i < Sheet::Num_Layers; i++) {
+				GUI_Element* e = i_ListLayers->GetElement("Layer_" + std::to_string(i));
+				if (!e) { continue; }
+				posL_y = baseLayers.y + (i * (e->GetSize().y + e->GetMargin().y));
+				e->SetPosition(sf::Vector2f(baseLayers.x, posL_y));
+			}
+			i_ListLayers->AdjustContentSize();
+			i_ListLayers->SetRedraw(true);
 		}
 	}
-	i_ListLayers->AdjustContentSize();
-	i_ListLayers->SetRedraw(true);
 
 	++m_testIndex;
-
 }

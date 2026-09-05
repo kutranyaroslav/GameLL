@@ -1,7 +1,6 @@
 #include "GUI_Interface.h"
 #include "GUI_Manager.h"
 #include "World.h"
-#include "dev/State_Developement.h"
 #include <sstream>
 GUI_Interface::GUI_Interface(const std::string& i_name, GUI_Manager* i_guiMgr):
 	GUI_Element(i_name,GUI_ElementType::Window, nullptr), m_parent(nullptr),
@@ -45,6 +44,9 @@ bool GUI_Interface::AddElement(const GUI_ElementType& i_type, const std::string&
 	if (!element) { return false; }
 	element->SetOwner(this);
 	element->SetName(i_name);
+	// Adopt the interface's current scale, so an element added after a resize is
+	// laid out like its siblings and OnResize derives the right delta from m_scale.
+	element->SetScale(m_scale);
 	m_elements.emplace(i_name, element);
 	m_contentRedraw = true;
 	m_controlRedraw = true;
@@ -323,25 +325,28 @@ void GUI_Interface::AdjustContentSize( GUI_Element* i_reference) {
 	SetContentSize(farthest);
 }
 
+sf::Vector2f GUI_Interface::GetStyleReference()
+{
+	if (m_parent) { return m_parent->GetSize(); }
+	if (m_guiManager && m_guiManager->GetSharedContext()
+		&& m_guiManager->GetSharedContext()->m_wind) {
+		return sf::Vector2f(m_guiManager->GetSharedContext()->m_wind->GetWindowSize());
+	}
+	return sf::Vector2f(0.f, 0.f);
+}
+
 void GUI_Interface::OnResize(const sf::Vector2f& i_scale)
 {
 	GUI_Element::OnResize(i_scale);
+	// OnResize writes m_position directly, but the backdrop/content/control sprites
+	// and the title bar only follow it through SetPosition. Without this they keep
+	// the position they were loaded at and the whole interface draws in the wrong
+	// place -- far enough down, at small window sizes, to leave the screen.
+	SetPosition(m_position);
 	for (auto& itr : m_elements) {
 		if (itr.second) {
 			itr.second->OnResize(i_scale);
 		}
-	}
-	if (m_guiManager) {
-		if (m_guiManager->GetSharedContext()->m_stateManager
-			->HasState(StateType::Developement)) {
-			BaseState* baseState = m_guiManager->GetSharedContext()->m_stateManager
-				->GetState(StateType::Developement);
-			State_Developement* developementState = dynamic_cast<State_Developement*>(baseState);
-			if (developementState) {
-				developementState->SetUpLayoutTilesetBottom();
-			}
-		}
-
 	}
 	SetRedraw(true);
 }
@@ -367,6 +372,7 @@ const Elements& GUI_Interface::GetElements()
 bool GUI_Interface::IsBeingMoved() { return m_beingMoved; }
 bool GUI_Interface::IsFocused() { return m_focused; }
 void GUI_Interface::Focus() { m_focused = true; }
+void GUI_Interface::Defocus() { m_focused = false; }
 
 int GUI_Interface::GetScrollHorizontal()
 {

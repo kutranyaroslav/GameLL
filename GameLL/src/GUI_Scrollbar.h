@@ -22,9 +22,11 @@ public:
 	void SetPosition(const sf::Vector2f& i_pos) override;
 	void CallbackSetup()override;
 private: 
-    SliderType m_sliderType;
+    // ReadIn() normally sets this, but a scrollbar built without a .interface
+    // entry would otherwise reach UpdateStyle with an indeterminate value.
+    SliderType m_sliderType = SliderType::Vertical;
     sf::Vector2f m_mouseMoveLast;
-    int m_percentage;
+    int m_percentage = 0;
 	sf::Text debugText;
 };
 

@@ -1,5 +1,6 @@
 #include "GUI_Viewport.h"
 #include "GUI_Interface.h"
+#include <cmath>
 GUI_Viewport::GUI_Viewport(const std::string& i_name, GUI_Interface* i_owner):
 	GUI_Element(i_name, GUI_ElementType::Viewport, i_owner), m_hoverTilePos(-1 ,-1 ),
 	m_cameraSpeed(300.f)
@@ -9,7 +10,10 @@ GUI_Viewport::GUI_Viewport(const std::string& i_name, GUI_Interface* i_owner):
 
 GUI_Viewport::~GUI_Viewport()
 {
-	m_context->m_eventManager->RemoveCallback(StateType::Developement, "Key_S");
+	// The element can be destroyed before SetContext() was ever called.
+	if (m_context && m_context->m_eventManager) {
+		m_context->m_eventManager->RemoveCallback(StateType::Developement, "Key_S");
+	}
 }
 
 void GUI_Viewport::ReadIn(std::stringstream& i_stream)
@@ -17,16 +21,29 @@ void GUI_Viewport::ReadIn(std::stringstream& i_stream)
 	i_stream >> m_cameraSpeed;
 }
 
+sf::Vector2f GUI_Viewport::GetWorldPerPixel()
+{
+	// The view keeps the world size it was given at creation while the element
+	// scales with the window, which is what makes map tiles scale with the screen.
+	// Every screen <-> world conversion has to go through this ratio.
+	const sf::Vector2f size = GetSize();
+	const sf::Vector2f viewSize = m_view.getSize();
+	return sf::Vector2f(
+		(size.x > 0.f && viewSize.x > 0.f) ? viewSize.x / size.x : 1.f,
+		(size.y > 0.f && viewSize.y > 0.f) ? viewSize.y / size.y : 1.f);
+}
+
 void GUI_Viewport::OnClick(const sf::Vector2f& i_mousePos)
 {
 	SetState(GUI_ElementState::Clicked);
-	sf::Vector2f local = i_mousePos - GetGlobalPosition();
-	sf::Vector2f worldPos;
-	worldPos.x = local.x + (m_view.getCenter().x - m_view.getSize().x * 0.5f);
-	worldPos.y = local.y + (m_view.getCenter().y - m_view.getSize().y * 0.5f);
+	const sf::Vector2f wpp = GetWorldPerPixel();
+	const sf::Vector2f viewTopLeft = m_view.getCenter() - m_view.getSize() * 0.5f;
+	const sf::Vector2f local = i_mousePos - GetGlobalPosition();
+	const sf::Vector2f worldPos(viewTopLeft.x + local.x * wpp.x,
+		viewTopLeft.y + local.y * wpp.y);
 
-	m_clickedTilePos.x = static_cast<int>(worldPos.x) / Sheet::Tile_Size;
-	m_clickedTilePos.y = static_cast<int>(worldPos.y) / Sheet::Tile_Size;
+	m_clickedTilePos.x = static_cast<int>(std::floor(worldPos.x / Sheet::Tile_Size));
+	m_clickedTilePos.y = static_cast<int>(std::floor(worldPos.y / Sheet::Tile_Size));
 	ChangeMap();
 }
 
@@ -38,22 +55,25 @@ void GUI_Viewport::OnRelease()
 void GUI_Viewport::OnHover(const sf::Vector2f& i_mousePos)
 {
 	SetState(GUI_ElementState::Focused);
-	sf::Vector2f local = i_mousePos - GetGlobalPosition();
-	sf::Vector2f worldPos;
-	worldPos.x = local.x + (m_view.getCenter().x - m_view.getSize().x * 0.5f);
-	worldPos.y = local.y + (m_view.getCenter().y - m_view.getSize().y * 0.5f);
-	int tileX = static_cast<int>(worldPos.x / Sheet::Tile_Size);
-	int tileY = static_cast<int>(worldPos.y / Sheet::Tile_Size);
+	const sf::Vector2f wpp = GetWorldPerPixel();
+	const sf::Vector2f viewTopLeft = m_view.getCenter() - m_view.getSize() * 0.5f;
+	const sf::Vector2f local = i_mousePos - GetGlobalPosition();
+	const sf::Vector2f worldPos(viewTopLeft.x + local.x * wpp.x,
+		viewTopLeft.y + local.y * wpp.y);
+	const int tileX = static_cast<int>(std::floor(worldPos.x / Sheet::Tile_Size));
+	const int tileY = static_cast<int>(std::floor(worldPos.y / Sheet::Tile_Size));
 
 	m_hoverTilePos = { tileX, tileY };
-	float drawX = std::round(GetGlobalPosition().x) +
-		(tileX * Sheet::Tile_Size -
-			(m_view.getCenter().x - m_view.getSize().x * 0.5f));
+	// The brush is drawn straight to the window, not through m_view, so world
+	// offsets are divided back into pixels and the sprite is scaled so that one
+	// texture tile covers exactly one on-screen tile.
+	const float drawX = std::round(GetGlobalPosition().x) +
+		(tileX * static_cast<float>(Sheet::Tile_Size) - viewTopLeft.x) / wpp.x;
 
-	float drawY = std::round(GetGlobalPosition().y) +
-		(tileY * Sheet::Tile_Size -
-			(m_view.getCenter().y - m_view.getSize().y * 0.5f));
+	const float drawY = std::round(GetGlobalPosition().y) +
+		(tileY * static_cast<float>(Sheet::Tile_Size) - viewTopLeft.y) / wpp.y;
 	m_hoverTile.setPosition(drawX, drawY);
+	m_hoverTile.setScale(1.f / wpp.x, 1.f / wpp.y);
 }
 
 void GUI_Viewport::OnLeave()
@@ -86,15 +106,37 @@ void GUI_Viewport::Draw(sf::RenderTarget* i_target)
 	
 }
 
-void GUI_Viewport::DrawOverlay(sf::RenderTarget* i_target)
+void GUI_Viewport::UpdateViewportRect()
 {
-	UpdateCamera(static_cast<sf::RenderWindow*>(i_target));
-	sf::Vector2u windowSize = GetWindow()->GetWindowSize();
-	sf::Vector2f globalPos = GetGlobalPosition();
-	sf::Vector2f size = GetSize();
+	Window* wind = GetWindow();
+	if (!wind) { return; }
+	const sf::Vector2u windowSize = wind->GetWindowSize();
+	if (windowSize.x == 0 || windowSize.y == 0) { return; }
+	const sf::Vector2f globalPos = GetGlobalPosition();
+	const sf::Vector2f size = GetSize();
 	m_view.setViewport(sf::FloatRect(
 		globalPos.x / windowSize.x, globalPos.y / windowSize.y,
 		size.x / windowSize.x, size.y / windowSize.y));
+}
+
+void GUI_Viewport::OnResize(const sf::Vector2f& i_scale)
+{
+	GUI_Element::OnResize(i_scale);
+	// Update the rect now rather than waiting for the next DrawOverlay: for one
+	// frame after a resize, hit-testing would otherwise use the new element
+	// geometry while the renderer still had the previous rect, so a click in
+	// that frame landed on the wrong tile.
+	UpdateViewportRect();
+}
+
+void GUI_Viewport::DrawOverlay(sf::RenderTarget* i_target)
+{
+	UpdateCamera(static_cast<sf::RenderWindow*>(i_target));
+	Window* wind = GetWindow();
+	if (!wind) { return; }
+	const sf::Vector2u windowSize = wind->GetWindowSize();
+	if (windowSize.x == 0 || windowSize.y == 0) { return; }
+	UpdateViewportRect();
 	sf::View oldView = i_target->getView();
 	i_target->setView(m_view);
 	for (int i = 0; i < Sheet::Num_Layers; i++) {
@@ -126,6 +168,9 @@ void GUI_Viewport::CallbackSetup()
 			m_context->m_eventManager->AddCallback(StateType::Developement, "Key_S", &GUI_Viewport::React, this);
 		}
 	}
+	// Called once the window and geometry are set, so the viewport rect is right
+	// from the first frame instead of only after the first DrawOverlay.
+	UpdateViewportRect();
 }
 
 void GUI_Viewport::UpdateCamera(sf::RenderWindow* window)
@@ -135,6 +180,7 @@ void GUI_Viewport::UpdateCamera(sf::RenderWindow* window)
 		m_view.getCenter() - m_view.getSize() / 2.f,
 		m_view.getSize());
 
+	if (!m_world || !m_world->GetCurrentMap()) { return; }
 	sf::Vector2u mapSize = m_world->GetCurrentMap()->GetMapSize();
 
 	float mapWidth = mapSize.x * Sheet::Tile_Size;
@@ -215,8 +261,7 @@ void GUI_Viewport::ChangeMap()
 				{
 					//there is a tile 
 					Tile* oldTile = itr->second;
-					delete oldTile; 
-					oldTile == nullptr;
+					delete oldTile;
 					tileMap->erase(key);
 					if (m_clickedTileInfo == nullptr) { return;  }
 					Tile* newTile = new Tile();
