@@ -39,7 +39,7 @@ GUI_Manager::~GUI_Manager() {
 bool GUI_Manager::AddInterface(const StateType& i_state, const  std::string& i_name) {
 	auto s = m_interfaces.emplace(i_state, GUI_Interfaces()).first;
 	GUI_Interface* temp = new GUI_Interface(i_name, this);
-	if (s->second.emplace(i_name, temp).second) { return true; }
+	if (s->second.emplace(i_name, temp).second) {return true;}
 	delete temp;
 	return false;
 }
@@ -51,6 +51,8 @@ GUI_Interface* GUI_Manager::GetInterface(const StateType& i_state, const std::st
 	return (itr2 != itr->second.end() ? itr2->second : nullptr);
 	
 }
+
+
 bool GUI_Manager::RemoveInterface(const StateType& i_state, const std::string& i_name) {
 	auto s = m_interfaces.find(i_state);
 	if (s == m_interfaces.end()) { return false; }
@@ -78,7 +80,7 @@ void GUI_Manager::Update(float i_dT) {
 			if (i->GetState() == GUI_ElementState::Neutral) {
 				i->OnHover(sf::Vector2f(mousePos));
 			}
-			return;
+			continue;
 		}
 		else if (i->GetState() == GUI_ElementState::Focused) {
 			i->OnLeave();
@@ -252,7 +254,24 @@ bool GUI_Manager::LoadInterface(const StateType& i_state, const std::string& i_i
 	
 }
 
+void GUI_Manager::OnResize(const sf::Vector2u& i_size)
+{
+	float scaleX = (float)i_size.x /  GetSharedContext()->m_wind->GetWindowedSize().x; 
+	float scaleY = (float)i_size.y / GetSharedContext()->m_wind->GetWindowedSize().y;
+	for (auto itr = m_interfaces.begin(); itr != m_interfaces.end(); itr++) {
+		for (auto itr2 = itr->second.begin(); itr2 != itr->second.end(); ++itr2) {
+			std::string interfaceName = itr2->first;
+			GUI_Interface* i_interface = itr2->second; 
+			if (i_interface) {
+				i_interface->OnResize(sf::Vector2f(scaleX,scaleY));
+			}
+		}
+	}
+
+}
+
 bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
+	if (!i_element) { return false; }
 	std::string currentState;
 	GUI_Style parentStyle;
 	GUI_Style temporaryStyle;
@@ -354,7 +373,9 @@ bool GUI_Manager::LoadStyle(const std::string& i_file, GUI_Element* i_element) {
 				else if (key == "BgImage") {
 					keystream >> temporaryStyle.m_backgroundImage;
 					if (i_element->GetType() == GUI_ElementType::Tileset) {
-						i_element->SetSize(sf::Vector2f(m_context->m_textureManager->GetResource(temporaryStyle.m_backgroundImage)->getSize()));
+						i_element->SetSize(sf::Vector2f(m_context->m_textureManager->GetResource
+						(temporaryStyle.m_backgroundImage)->getSize()));
+
 					}
 				}
 				else if (key == "Margin") {

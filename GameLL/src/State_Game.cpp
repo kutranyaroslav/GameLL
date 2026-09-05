@@ -16,11 +16,9 @@ void State_Game::onCreate() {
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager; 
 	gui->LoadInterface(StateType::MainMenu, "MainMenu.interface", "MainMenu");
-	sf::Vector2u size = m_stateManager->GetSharedContext()->m_wind->GetWindowSize();
-	m_view.setSize(size.x, size.y);
-	m_view.setCenter(size.x / 2, size.y / 2);
-	m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->setView(m_view);
-
+	m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->setView(
+	*m_stateManager->GetSharedContext()->m_wind->GetGameView());
+	m_view = m_stateManager->GetSharedContext()->m_wind->GetGameView();
 	sf::Vector2u windowSize = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getSize();
 	evMgr->AddCallback(StateType::Game, "Key_Escape", &State_Game::MainMenu, this);
 	evMgr->AddCallback(StateType::Game, "Key_P", &State_Game::Pause, this);     
@@ -63,6 +61,7 @@ void State_Game::Update(const sf::Time& i_time) {
 }
 
 void State_Game::Draw() {
+	m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->setView(*m_view);
 	for (unsigned int i = 0; i < Sheet::Num_Layers; ++i) {
 		m_stateManager->GetSharedContext()->m_world->Draw(*m_stateManager->GetSharedContext()->m_wind->GetRenderWindow(),
 			m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getView(), i);
@@ -89,29 +88,28 @@ void State_Game::UpdateCamera() {
 	SharedContext* context = m_stateManager->GetSharedContext();
 	C_Position* pos = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>
 		(m_player, Component::Position);
-	m_view.setCenter(pos->GetPosition());
-	context->m_wind->GetRenderWindow()->setView(m_view);
-	sf::FloatRect viewSpace = context->m_wind->GetViewSpace();
+	m_view->setCenter(pos->GetPosition());
+	sf::FloatRect viewSpace = context->m_wind->GetGameViewSpace();
 	if (viewSpace.left <= 0) {
-		m_view.setCenter(viewSpace.width / 2, m_view.getCenter().y);
-		context->m_wind->GetRenderWindow()->setView(m_view);
+		m_view->setCenter(viewSpace.width / 2, m_view->getCenter().y);
+		context->m_wind->GetRenderWindow()->setView(*m_view);
 	}
 	else if (viewSpace.left + viewSpace.width > (m_stateManager->GetSharedContext()
 		->m_world->GetCurrentMap()->GetMapSize().x) * Sheet::Tile_Size) {
-		m_view.setCenter(((m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().x) * Sheet::Tile_Size) 
-			- (viewSpace.width / 2), m_view.getCenter().y);
-		context->m_wind->GetRenderWindow()->setView(m_view);
+		m_view->setCenter(((m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().x) * Sheet::Tile_Size) 
+			- (viewSpace.width / 2), m_view->getCenter().y);
+		context->m_wind->GetRenderWindow()->setView(*m_view);
 	}
 
 	if (viewSpace.top <= 0) {
-		m_view.setCenter(m_view.getCenter().x, viewSpace.height / 2);
-		context->m_wind->GetRenderWindow()->setView(m_view);
+		m_view->setCenter(m_view->getCenter().x, viewSpace.height / 2);
+		context->m_wind->GetRenderWindow()->setView(*m_view);
 	}
 	else if (viewSpace.top + viewSpace.height > (m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().y) 
 		* Sheet::Tile_Size) {
-		m_view.setCenter(m_view.getCenter().x, ((m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().y) 
+		m_view->setCenter(m_view->getCenter().x, ((m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapSize().y) 
 			* Sheet::Tile_Size) - (viewSpace.height / 2));
-		context->m_wind->GetRenderWindow()->setView(m_view);
+		context->m_wind->GetRenderWindow()->setView(*m_view);
 	}
 }
 

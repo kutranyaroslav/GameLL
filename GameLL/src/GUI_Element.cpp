@@ -2,17 +2,28 @@
 #include "GUI_Manager.h"
 GUI_Element::GUI_Element(const std::string& i_name, const GUI_ElementType& i_type, GUI_Interface* i_owner)
 	:m_name(i_name), m_type(i_type), m_owner(i_owner), m_state(GUI_ElementState::Neutral),
-	m_needsRedraw(false), m_active(true), m_isControl(false) {}
+	m_needsRedraw(false), m_active(true), m_isControl(false),m_scale(1.0f) {}
 
 GUI_Element::~GUI_Element() { ReleaseResources(); }
 
+void GUI_Element::SetScale(const float& i_scale)
+{
+	m_scale = i_scale;
+	SetRedraw(true);
+}
+
+float GUI_Element::GetScale()
+{
+	return m_scale;
+}
 void GUI_Element::SetName(const std::string& i_name) {
 	m_name = i_name;
 }
 std::string& GUI_Element::GetName() { return m_name; }
 void GUI_Element::SetOwner(GUI_Interface* i_owner) { m_owner = i_owner; }
 GUI_Interface* GUI_Element::GetOwner() { return m_owner; }
-void GUI_Element::SetRedraw(const bool& i_redraw) { m_needsRedraw = i_redraw; }
+void GUI_Element::SetRedraw(const bool& i_redraw) {
+	m_needsRedraw = i_redraw; }
 void GUI_Element::SetState(const GUI_ElementState& i_state) {
 	if (i_state == m_state) { return; }
 	m_state = i_state;
@@ -26,6 +37,7 @@ void GUI_Element::SetPosition(const sf::Vector2f& i_pos) {
 	const auto& padding = m_owner->GetPadding();
 	if (m_position.x < padding.x) { m_position.x = padding.x; }
 	if (m_position.y < padding.y) { m_position.y = padding.y; }
+	SetRedraw(true);
 
 }
 sf::Vector2f& GUI_Element::GetPosition() { return m_position; }
@@ -51,6 +63,12 @@ void GUI_Element::SetSize(const sf::Vector2f& i_size)
 	m_styles[GUI_ElementState::Clicked].m_size = i_size;
 	m_styles[GUI_ElementState::Focused].m_size = i_size;
 	m_styles[GUI_ElementState::Neutral].m_size = i_size;
+}
+void GUI_Element::SetTextSize(const unsigned int& i_size)
+{
+	m_styles[GUI_ElementState::Clicked].m_textSize = i_size;
+	m_styles[GUI_ElementState::Focused].m_textSize = i_size;
+	m_styles[GUI_ElementState::Neutral].m_textSize = i_size;
 }
 void GUI_Element::SetWorkArea(float i_area)
 {
@@ -118,6 +136,30 @@ void GUI_Element::RequireFont(const std::string& i_name) {
 }
 
 
+void GUI_Element::OnResize(const sf::Vector2f& i_scale)
+{	
+	float newScale = std::min(i_scale.x, i_scale.y);
+	float delta = newScale / m_scale;
+	m_scale = newScale;
+	m_styles[GUI_ElementState::Clicked].m_size *= delta; 
+	m_styles[GUI_ElementState::Focused].m_size *= delta;
+	m_styles[GUI_ElementState::Neutral].m_size *= delta;
+	m_styles[GUI_ElementState::Clicked].m_textSize *= delta;
+	m_styles[GUI_ElementState::Focused].m_textSize *= delta;
+	m_styles[GUI_ElementState::Neutral].m_textSize *= delta;
+	m_styles[GUI_ElementState::Clicked].m_margin *= delta;
+	m_styles[GUI_ElementState::Focused].m_margin *= delta;
+	m_styles[GUI_ElementState::Neutral].m_margin *= delta;
+	m_styles[GUI_ElementState::Clicked].m_textPadding *= delta;
+	m_styles[GUI_ElementState::Focused].m_textPadding *= delta;
+	m_styles[GUI_ElementState::Neutral].m_textPadding *= delta;
+	m_styles[GUI_ElementState::Clicked].m_glyphPadding *= delta;
+	m_styles[GUI_ElementState::Focused].m_glyphPadding *= delta;
+	m_styles[GUI_ElementState::Neutral].m_glyphPadding *= delta;
+	m_position *= delta;
+	SetRedraw(true);
+}
+
 void GUI_Element::UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style) {
 	if (i_style.m_backgroundImage != m_styles[i_state].m_backgroundImage) {
 		ReleaseTexture(m_styles[i_state].m_backgroundImage);
@@ -158,12 +200,13 @@ void GUI_Element::ApplyTextStyle() {
 			sf::FloatRect rectBg = m_visual.m_backgroundSolid.getLocalBounds();
 			m_visual.m_text.setOrigin(rect.left + rect.width/2.f, rect.top + rect.height/2.f);
 			m_visual.m_text.setStyle(sf::Text::Bold);
-			m_visual.m_text.setPosition(m_position.x + m_styles[m_state].m_size.x/2.f, m_position.y + m_styles[m_state].m_size.y/2.f);
+			m_visual.m_text.setPosition((m_position.x + m_styles[m_state].m_size.x/2.f),
+				(m_position.y + m_styles[m_state].m_size.y /2.f));
 			
 		}
 		else {
 			m_visual.m_text.setOrigin(0.f, 0.f);
-			m_visual.m_text.setPosition(m_position + currentStyle.m_textPadding);
+			m_visual.m_text.setPosition((m_position  + currentStyle.m_textPadding));
 		}
 	}
 	
@@ -188,9 +231,12 @@ void GUI_Element::ApplyBgStyle() {
 		if (currentStyle.m_backgroundImageFullElement) {
 			float intefaceWidth = m_styles[m_state].m_size.x;
 			float interfaceHeight = m_styles[m_state].m_size.y;
-			float scaleX = intefaceWidth / textureMgr->GetResource(currentStyle.m_backgroundImage)->getSize().x;
-			float scaleY = interfaceHeight / textureMgr->GetResource(currentStyle.m_backgroundImage)->getSize().y;
+			float scaleX = intefaceWidth / textureMgr->GetResource
+			(currentStyle.m_backgroundImage)->getSize().x;
+			float scaleY = interfaceHeight / textureMgr->GetResource
+			(currentStyle.m_backgroundImage)->getSize().y;
 			m_visual.m_backgroundImage.setScale(scaleX, scaleY);
+			
 		}
 		m_visual.m_backgroundImage.setColor(currentStyle.m_backgroundImageColor);
 		m_visual.m_backgroundImage.setTexture(*textureMgr->GetResource(currentStyle.m_backgroundImage));
@@ -205,7 +251,7 @@ void GUI_Element::ApplyGlyphStyle() {
 	if (currentStyle.m_glyph != "") {
 		m_visual.m_glyph.setTexture(*textureMgr->GetResource(currentStyle.m_glyph));
 	}
-	m_visual.m_glyph.setPosition(m_position + currentStyle.m_glyphPadding);
+	m_visual.m_glyph.setPosition((m_position  + currentStyle.m_glyphPadding));
 
 }
 

@@ -305,7 +305,7 @@ void Map::LoadMap(const std::string& i_path) {
 				}
 				sf::Texture* texture = m_context->m_textureManager->GetResource(m_backgroundTexture);
 				m_background.setTexture(*texture);
-				sf::Vector2f viewSize = m_context->m_stateManager->GetCurrentState()->GetView().getSize();
+				sf::Vector2f viewSize = m_context->m_stateManager->GetCurrentState()->GetView()->getSize();
 				sf::Vector2u TextureSize = texture->getSize();
 				sf::Vector2f scaleFactors;
 				scaleFactors.x = viewSize.x / TextureSize.x;

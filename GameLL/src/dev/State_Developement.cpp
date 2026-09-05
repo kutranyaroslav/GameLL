@@ -3,14 +3,16 @@
 #include "ErrorLogManager.h"
 #include <fstream>
 State_Developement::State_Developement(StateManager* i_stateManager)
-	:BaseState(i_stateManager), m_layerIndex(0), m_currentTileset("")
+	:BaseState(i_stateManager), m_layerIndex(0), m_currentTileset(""), m_testIndex(0)
 {
 }
 
 void State_Developement::onCreate()
 {
-
+	
+	m_view = m_stateManager->GetSharedContext()->m_wind->GetUIView();
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
+	//evMgr->AddCallback(StateType::Developement, "Window_Resized", &State_Developement::OnResize, this);
 	m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "TestTileset", "Tiles.cfg", "Tilesheet");
 	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP1", "TestTileset2", "Tiles.cfg", "Tilesheet2");
 	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP1");
@@ -18,14 +20,12 @@ void State_Developement::onCreate()
 	//open up the bind file to write the changes 
 	m_state = StateType::Developement;
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
+
 	gui->LoadInterface(StateType::Developement, "ListBottomDevMode.interface", "ListBottom");
 	gui->LoadInterface(StateType::Developement, "ListLayers.interface", "ListLayers");
 	gui->LoadInterface(StateType::Developement, "ListLevels.interface", "ListLevels");
 	//setting up levels interface
-	float index0 = 0;
-	float eLev_x = 0.f;
-	float eLev_y = 0.f;
-	float posLev_y = 0.f;
+	
 	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetMaps().begin(); itr !=
 		m_stateManager->GetSharedContext()->m_world->GetMaps().end(); itr++) {
 		GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListLevels");
@@ -35,22 +35,14 @@ void State_Developement::onCreate()
 			gui->LoadStyle("ListLevelsLabel.style", e);
 			e->ApplyStyle();
 			i->AdjustContentSize(e);
-			eLev_x = e->GetPosition().x;
-			eLev_y = e->GetPosition().y;
-			posLev_y = eLev_y + i->GetPadding().y + (index0 * (e->GetSize().y + e->GetMargin().y));
-			e->SetPosition(sf::Vector2f(eLev_x, posLev_y));
 			e->SetText(itr->first);
 			evMgr->AddDynamicBinding(itr->first, EventType::GUI_Click, i->GetName(), e->GetName());
 			evMgr->AddCallback(StateType::Developement, itr->first, &State_Developement::React, this);
 			m_dynamicCallbacks.push_back(itr->first);
-			index0++;
 		}
 	}
 
 	//setting up layers interface
-	float eL_x = 0.f;
-	float eL_y = 0.f;
-	float posL_y = 0.f;
 	for (int i = 0; i < Sheet::Num_Layers; i++) {
 		GUI_Interface* interf = gui->GetInterface(StateType::Developement, "ListLayers");
 		if (interf) {
@@ -59,10 +51,6 @@ void State_Developement::onCreate()
 			gui->LoadStyle("ListLayersLabel.style", e);
 			e->ApplyStyle();
 			interf->AdjustContentSize(e);
-			eL_x = e->GetPosition().x;
-			eL_y = e->GetPosition().y;
-			posL_y = eL_y + interf->GetPadding().y + (i * (e->GetSize().y + e->GetMargin().y));
-			e->SetPosition(sf::Vector2f(eL_x, posL_y));
 			e->SetText("Layer " + std::to_string(i)); 
 			evMgr->AddDynamicBinding("Layer_" + std::to_string(m_layerIndex), EventType::GUI_Click, interf->GetName(), e->GetName());
 			evMgr->AddCallback(StateType::Developement, "Key_" + std::to_string(m_layerIndex), &State_Developement::React, this);
@@ -74,32 +62,26 @@ void State_Developement::onCreate()
 
 
 		//setting default map and getting default tileset 
-		int index = 0;
-		float e_x = 0.f;
-		float e_y = 0.f;
-		float pos_x = 0.f;
+		
 		for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
 			itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); ++itr) {
 			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
 			if (i) {
 				i->AddElement(GUI_ElementType::Label, itr->first);
 				GUI_Element* e = i->GetElement(itr->first);
+				if(!e){continue;}
 				gui->LoadStyle("ListBottomLabel.style", e);
 				e->ApplyStyle();
 				e->SetWorld(m_stateManager->GetSharedContext()->m_world);
 				i->AdjustContentSize(e);
-				e_x = e->GetPosition().x;
-				e_y = e->GetPosition().y;
-				pos_x = e_x + i->GetPadding().x + (index * (e->GetSize().x + e->GetMargin().x));
-				e->SetPosition(sf::Vector2f(pos_x, e_y));
 				e->SetText(itr->first);
-				++index;
 				evMgr->AddDynamicBinding(itr->first, EventType::GUI_Click, i->GetName(), e->GetName());
 				evMgr->AddCallback(StateType::Developement, itr->first, &State_Developement::React, this);
 				m_dynamicCallbacks.push_back(itr->first);
 
 			}
 		}
+		SetUpLayoutTilesetBottom();
 
 		//setting up the viewport for the map 
 		//TO DO doesn't work the size you have to add manually what is not good to be honest
@@ -407,4 +389,77 @@ void State_Developement::React(EventDetails* i_details)
 		}
 
 	}
+}
+
+void State_Developement::OnResize(EventDetails* i_details)
+{
+	SetUpLayoutTilesetBottom();
+
+}
+
+
+void State_Developement::SetUpLayoutTilesetBottom()
+{
+
+	//setting default layout for listbottom in dev mod 
+
+	int index = 0;
+	GUI_Interface* i_ListBottom = m_stateManager->GetSharedContext()->m_guiManager->
+		GetInterface(StateType::Developement, "ListBottom");
+	GUI_Element* e_ListBottom = i_ListBottom->GetElement(m_stateManager->GetSharedContext()->
+		m_world->GetCurrentMap()->GetTilesets().begin()->first);
+	sf::Vector2f base = e_ListBottom->GetPosition();
+	float pos_x = 0.f;
+	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
+		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); ++itr) {
+		if (i_ListBottom) {
+			GUI_Element* e = i_ListBottom->GetElement(itr->first);
+			pos_x = base.x + (index * (e->GetSize().x + e->GetMargin().x));
+			e->SetPosition(sf::Vector2f(pos_x, base.y));
+			++index;
+
+		}
+	}
+	i_ListBottom->AdjustContentSize();
+	i_ListBottom->SetRedraw(true);
+
+	//setting default layout for maps/levels interface in dev mod
+	float index0 = 0;
+	float posLev_y = 0.f;
+	GUI_Interface* i_ListMaps = m_stateManager->GetSharedContext()->m_guiManager->
+		GetInterface(StateType::Developement, "ListLevels");
+	GUI_Element* e_ListMaps = i_ListMaps->GetElement(m_stateManager->GetSharedContext()->
+		m_world->GetMaps().begin()->first);
+	sf::Vector2f baseMaps = e_ListMaps->GetPosition();
+	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetMaps().begin(); itr !=
+		m_stateManager->GetSharedContext()->m_world->GetMaps().end(); itr++) {
+		if (i_ListMaps) {
+			GUI_Element* e = i_ListMaps->GetElement(itr->first);
+			posLev_y = baseMaps.y  + (index0 * (e->GetSize().y + e->GetMargin().y));
+			e->SetPosition(sf::Vector2f(baseMaps.x, posLev_y));
+			index0++;
+		}
+	}
+	i_ListMaps->AdjustContentSize();
+	i_ListMaps->SetRedraw(true);
+	//setting default layout for layers interface in dev mod
+	GUI_Interface* i_ListLayers = m_stateManager->GetSharedContext()->m_guiManager->
+		GetInterface(StateType::Developement, "ListLayers");
+	GUI_Element* e_ListLayers = i_ListLayers->GetElement("Layer_0");
+	sf::Vector2f baseLayers = e_ListLayers->GetPosition();
+	float posL_y = 0.f;
+	for (int i = 0; i < Sheet::Num_Layers; i++) {
+		if (i_ListLayers) {
+			GUI_Element* e = i_ListLayers->GetElement("Layer_" + std::to_string(i));
+			posL_y = baseLayers.y + (i * (e->GetSize().y + e->GetMargin().y));
+			e->SetPosition(sf::Vector2f(baseLayers.x, posL_y));
+			//if (e->GetScale() != 1.f) { __debugbreak(); }
+			m_layerIndex++;
+		}
+	}
+	i_ListLayers->AdjustContentSize();
+	i_ListLayers->SetRedraw(true);
+
+	++m_testIndex;
+
 }

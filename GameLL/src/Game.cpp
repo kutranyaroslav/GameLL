@@ -25,6 +25,8 @@ Game::Game() :
 	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
 	m_stateManager.SwitchTo(StateType::MainMenu);
+	m_window.SetSharedContext(&m_context);
+	m_window.SetGameViewSize(sf::Vector2f(480.f, 270.f));
 
 }
 Game::~Game(){
@@ -33,12 +35,12 @@ Game::~Game(){
 }
 
 void Game::Update() {
+	m_window.Update();
 	m_context.m_guiManager->Update(m_elapsed.asSeconds());
 	GUI_Event event;
 	while (m_context.m_guiManager->PollEvent(event)) {
 		m_window.GetEventManager()->HandleEvent(event);
 	}
- 	m_window.Update();
 	m_stateManager.Update(m_elapsed);
 	m_soundManager.Update(m_elapsed.asSeconds());
 	m_world.Update(m_elapsed.asSeconds());
@@ -49,11 +51,12 @@ Window* Game::getWindow() {
 
 void Game::Render() {
 	m_window.BeginDraw();
+;
 	m_stateManager.Draw();
-	sf::View currentView = m_window.GetRenderWindow()->getView();
-	m_window.GetRenderWindow()->setView(m_window.GetRenderWindow()->getDefaultView());
+
+	m_window.GetRenderWindow()->setView(*m_window.GetUIView());
 	m_context.m_guiManager->Draw(m_window.GetRenderWindow());
-	m_window.GetRenderWindow()->setView(currentView);
+
 	m_window.EndDraw();
 }
 void Game::LateUpdate() {

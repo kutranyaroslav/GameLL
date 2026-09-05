@@ -44,7 +44,7 @@ void StateManager::Draw() {
 		}
 
 		for (; itr != m_states.end(); ++itr) {
-			m_shared->m_wind->GetRenderWindow()->setView(itr->second->GetView());
+			m_shared->m_wind->GetRenderWindow()->setView(*itr->second->GetView());
 			itr->second->Draw();
 		}
 	}
@@ -97,6 +97,16 @@ void StateManager::Remove(const StateType& i_type) {
 	m_toRemove.push_back(i_type);
 }
 
+BaseState* StateManager::GetState(StateType i_type)
+{
+	auto itr = std::find_if(m_states.begin(), m_states.end(),
+		[i_type](const std::pair<StateType, BaseState*>& s) { return s.first == i_type; });
+	if (itr != m_states.end()) {
+		return itr->second;
+	}
+	return nullptr;
+}
+
 void StateManager::ProcessRequests() {
 	while (m_toRemove.begin() != m_toRemove.end()) {
 		RemoveState(*m_toRemove.begin());
@@ -117,7 +127,6 @@ void StateManager::SwitchTo(const StateType& i_type) {
 			m_states.erase(itr);
 			m_states.emplace_back(tmp_type, tmp_state);
 			tmp_state->Activate();
-			m_shared->m_wind->GetRenderWindow()->setView(tmp_state->m_view);
 			m_shared->m_soundManager->ChangeState(i_type); // fix bug 1
 			return;
 		}
@@ -125,7 +134,6 @@ void StateManager::SwitchTo(const StateType& i_type) {
 
 	if (!m_states.empty()) { m_states.back().second->Deactivate(); }
 	CreateState(i_type);
-	m_shared->m_wind->GetRenderWindow()->setView(m_states.back().second->m_view);
 	m_shared->m_soundManager->ChangeState(i_type);
 	m_states.back().second->Activate();
 }
@@ -135,7 +143,6 @@ void StateManager::CreateState(const StateType& i_type) {
 	auto newState = m_stateFactory.find(i_type);
 	if (newState == m_stateFactory.end()) { return; }
 	BaseState* state = newState->second();
-	state->m_view = m_shared->m_wind->GetRenderWindow()->getDefaultView();
 	m_states.emplace_back(i_type, state);
 	m_currentState = m_states.back().second;
 	state->onCreate();

@@ -17,22 +17,24 @@ struct GUI_Style {
 		m_elementColor = none;
 		m_textColor = none;
 	}
+	//numerable data
 	sf::Vector2f m_size;
+	unsigned int m_textSize;
+	sf::Vector2f m_textPadding;
+	sf::Vector2f m_glyphPadding;
+	sf::Vector2f m_margin;
 	// for slider
 	sf::Vector2f m_elementSize; 
+
 	sf::Color m_backgroundColor;
 	sf::Color m_elementColor;
 	std::string m_backgroundImage;
 	sf::Color m_backgroundImageColor;
 	sf::Color m_textColor;
 	std::string m_textFont;
-	sf::Vector2f m_textPadding;
-	unsigned int m_textSize;
 	bool m_textCenterOrigin;
 	bool m_backgroundImageFullElement;
 	std::string m_glyph;
-	sf::Vector2f m_glyphPadding;
-	sf::Vector2f m_margin;
 };
 struct GUI_Visual {
 	sf::RectangleShape m_backgroundSolid;
@@ -59,23 +61,28 @@ public:
 	virtual void Update(float i_dT) = 0;
 	virtual void Draw(sf::RenderTarget* i_target) = 0;
 	virtual void CallbackSetup() = 0;
+
+	virtual void OnResize(const sf::Vector2f& i_scale);
 	//created to optimize redraw of dynamic elements like hovering and so on
 	virtual void DrawOverlay(sf::RenderTarget* i_target) = 0;
 	virtual void UpdateStyle(const GUI_ElementState& i_state, const GUI_Style& i_style);
 	virtual void ApplyStyle();
 	virtual void SetPosition(const sf::Vector2f& i_pos);
 	//setters
+	void SetScale(const float& i_scale);
 	void SetName(const std::string& i_name);
 	void SetOwner(GUI_Interface* i_owner);
 	void SetRedraw(const bool& i_redraw);
 	void SetState(const GUI_ElementState& i_state);
 	void SetContentSize(sf::Vector2f& i_size);
 	void SetSize(const sf::Vector2f& i_size);
+	void SetTextSize(const unsigned int& i_size);
 	void SetWorkArea(float i_area);
 	void SetActive(const bool& const i_acitve);
 	void SetText(const std::string& i_string);
 	void SetBackgroundImage(const std::string& i_texture);
 	//getters
+	float GetScale();
 	std::string& GetName();
 	GUI_Interface* GetOwner();
 	bool GerRedraw();
@@ -131,6 +138,8 @@ protected:
 	Window* m_wind;
 	TextureManager* m_textureManager;
 
+
+	float m_scale;
 	//needed for viewport
 	SharedContext* m_context;
 	float m_zoomLevel; 
