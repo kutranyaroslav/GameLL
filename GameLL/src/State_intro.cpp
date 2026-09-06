@@ -1,5 +1,10 @@
 #include "State_intro.h"
 
+namespace {
+	// An id from textures.cfg, not a path.
+	const char* INTRO_TEXTURE = "Bg1";
+}
+
 
 State_intro::State_intro(StateManager* i_stateManager):
 	BaseState(i_stateManager)
@@ -8,10 +13,17 @@ void State_intro::onCreate(){
 	m_state = StateType::Intro;
 	m_timePassed = 0.0f;
 	sf::Vector2u windowSize = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getSize();
-	m_introTexture.loadFromFile("D:/Programming/SFML_5/SFML_5/assets/Kunoichi/Hurt.png");
-	
-	m_introSprite.setTexture(m_introTexture);
-	m_introSprite.setOrigin(m_introTexture.getSize().x/2 , m_introTexture.getSize().y/2);
+	// The splash is scene content, so it goes through the post processing chain
+	// like the world does. It used to be loaded from an absolute path on one
+	// developer machine, pointing at an Assets/Kunoichi folder that is not in
+	// the repo, so the sprite was always empty.
+	m_view = m_stateManager->GetSharedContext()->m_wind->GetUIView();
+	TextureManager* textures = m_stateManager->GetSharedContext()->m_textureManager;
+	if (textures && textures->RequireResource(INTRO_TEXTURE)) {
+		m_introSprite.setTexture(*textures->GetResource(INTRO_TEXTURE));
+		const sf::Vector2u size = textures->GetResource(INTRO_TEXTURE)->getSize();
+		m_introSprite.setOrigin(size.x / 2.f, size.y / 2.f);
+	}
 	m_introSprite.setPosition(windowSize.x / 2.0f, 0);
 	
 	m_font.loadFromFile( Utils::GetWorkingDirectory() + "Assets/Fonts/Arima-VariableFont_wght.ttf");
@@ -31,6 +43,8 @@ void State_intro::onCreate(){
 void State_intro::onDestroy() {
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	evMgr->RemoveCallback(StateType::Intro, "Intro_Continue");
+	TextureManager* textures = m_stateManager->GetSharedContext()->m_textureManager;
+	if (textures) { textures->ReleaseResource(INTRO_TEXTURE); }
 }
 void State_intro::Update(const sf::Time& i_time) {
 	if (m_timePassed < 5.0f) {
@@ -40,10 +54,12 @@ void State_intro::Update(const sf::Time& i_time) {
 }
 
 void State_intro::Draw() {
-	sf::RenderWindow* window = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow();
-	window->draw(m_introSprite);
+	// See State_Paused::Draw: the scene target is what reaches the window.
+	sf::RenderTexture* scene = m_stateManager->GetSharedContext()->m_wind->GetSceneTexture();
+	scene->setView(scene->getDefaultView());
+	scene->draw(m_introSprite);
 	if (m_timePassed > 5) {
-		window->draw(m_text);
+		scene->draw(m_text);
 	}
 }
 void State_intro::Continue(EventDetails* i_details) {

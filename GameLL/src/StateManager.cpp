@@ -30,26 +30,33 @@ StateManager::~StateManager() {
 	}
 }
 
+// The lowest state that still has to be drawn: the last one that paints its
+// own background, since everything above it is transparent and draws on top.
+StateContainer::iterator StateManager::FirstVisibleState() {
+	auto itr = m_states.end();
+	if (m_states.empty()) { return itr; }
+	while (itr != m_states.begin()) {
+		--itr;
+		if (!itr->second->IsTransparent()) { break; }
+	}
+	return itr;
+}
+
 void StateManager::Draw() {
 	if (m_states.empty()) { return; }
-	if (m_states.back().second->IsTransparent() && m_states.size() > 1 ) {
-		auto itr = m_states.end();
-		while (itr != m_states.begin()) {
-			if (itr != m_states.end()) {
-				if (itr->second->IsTransparent()) {
-					break;
-				}
-			}
-			--itr;
+	for (auto itr = FirstVisibleState(); itr != m_states.end(); ++itr) {
+		// A state that never set up a view keeps whatever the target has.
+		if (itr->second->GetView()) {
+			m_shared->m_wind->GetSceneTexture()->setView(*itr->second->GetView());
 		}
-
-		for (; itr != m_states.end(); ++itr) {
-			m_shared->m_wind->GetRenderWindow()->setView(*itr->second->GetView());
-			itr->second->Draw();
-		}
+		itr->second->Draw();
 	}
-	else {
-		m_states.back().second->Draw();
+}
+
+void StateManager::DrawOverlay() {
+	if (m_states.empty()) { return; }
+	for (auto itr = FirstVisibleState(); itr != m_states.end(); ++itr) {
+		itr->second->DrawOverlay();
 	}
 }
 

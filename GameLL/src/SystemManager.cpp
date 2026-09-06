@@ -8,6 +8,8 @@
 #include "S_State.h"
 #include "S_Collision.h"
 #include "S_Sound.h"
+#include "S_Lighting.h"
+#include "S_Particles.h"
 SystemManager::SystemManager() :m_entityManager(nullptr){
 	m_systems[System::Control] = new S_Control(this);
 	m_systems[System::Movement] = new S_Movement(this);
@@ -16,6 +18,8 @@ SystemManager::SystemManager() :m_entityManager(nullptr){
 	m_systems[System::Collision] = new S_Collision(this);
 	m_systems[System::SheetAnimation] = new S_SheetAnimation(this);
 	m_systems[System::Sound] = new S_Sound(this);
+	m_systems[System::Lighting] = new S_Lighting(this);
+	m_systems[System::Particles] = new S_Particles(this);
 
 }
 SystemManager::~SystemManager() { PurgeSystems(); }
@@ -69,6 +73,19 @@ void SystemManager::Draw(Window* i_wind, unsigned int i_elevation) {
 	S_Renderer* system = (S_Renderer*)itr->second;
 	system->Render(i_wind,i_elevation);
 
+}
+// Separate from Draw: the light map is built once per frame, not once per
+// elevation layer.
+void SystemManager::DrawLighting(Window* i_wind) {
+	auto itr = m_systems.find(System::Lighting);
+	if (itr == m_systems.end()) { return; }
+	((S_Lighting*)itr->second)->Render(i_wind);
+}
+// Like DrawLighting: once per frame, not once per elevation layer.
+void SystemManager::DrawParticles(Window* i_wind) {
+	auto itr = m_systems.find(System::Particles);
+	if (itr == m_systems.end()) { return; }
+	((S_Particles*)itr->second)->Render(i_wind);
 }
 //here we check entity for suitable components and then add it to the systems
 void SystemManager::EntityModified(const EntityId& i_entity, const Bitmask& i_bits) {

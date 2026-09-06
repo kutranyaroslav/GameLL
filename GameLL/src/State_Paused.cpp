@@ -6,10 +6,16 @@ State_Paused::State_Paused(StateManager* i_stateManager):
 void State_Paused::onCreate() {
 	m_state = StateType::Paused;
 	SetTransparent(true);
-	m_font.loadFromFile("D:/Programming/SFML_5/SFML_5/ARIAL.TTF");
-	
+	// The overlay is screen space, so it uses the UI view rather than the
+	// game view State_Game leaves on the target.
+	m_view = m_stateManager->GetSharedContext()->m_wind->GetUIView();
+	// This font used to be loaded from an absolute path on one developer
+	// machine, so everywhere else m_text ended up with no usable font.
+	FontManager* fonts = m_stateManager->GetSharedContext()->m_fontManager;
 	m_text.setCharacterSize(30);
-	m_text.setFont(m_font);
+	if (fonts && fonts->RequireResource("Main")) {
+		m_text.setFont(*fonts->GetResource("Main"));
+	}
 	m_text.setString(sf::String("PAUSED"));
 	m_text.setStyle(sf::Text::Bold);
 	sf::Vector2u windowSize = m_stateManager->GetSharedContext()->m_wind->GetWindowSize();
@@ -35,12 +41,24 @@ void State_Paused::onCreate() {
 void State_Paused::onDestroy() {
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	evMgr->RemoveCallback(StateType::Paused, "Key_P");
+	FontManager* fonts = m_stateManager->GetSharedContext()->m_fontManager;
+	if (fonts) { fonts->ReleaseResource("Main"); }
 }
 
-void State_Paused::Draw() {
-	sf::RenderWindow* wind = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow();
-	wind->draw(m_text);
-	wind->draw(m_rect);
+// Nothing of the pause screen belongs to the scene: the world underneath is
+// drawn by State_Game.
+void State_Paused::Draw() {}
+
+// The dim and the label are screen space furniture, so they go on after the
+// scene has been post processed. Inside it the lighting multiply would have
+// darkened the label wherever the player happened to be standing, and the
+// grain would have crawled over both.
+void State_Paused::DrawOverlay() {
+	Window* wind = m_stateManager->GetSharedContext()->m_wind;
+	sf::RenderWindow* window = wind->GetRenderWindow();
+	window->setView(*wind->GetUIView());
+	window->draw(m_rect);
+	window->draw(m_text);
 }
 
 void State_Paused::Unpause(EventDetails* i_details) {
