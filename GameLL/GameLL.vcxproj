@@ -141,6 +141,7 @@
     <ClCompile Include="src\S_Collision.cpp" />
     <ClCompile Include="src\S_Control.cpp" />
     <ClCompile Include="src\S_Lighting.cpp" />
+    <ClCompile Include="src\S_Particles.cpp" />
     <ClCompile Include="src\S_Movement.cpp" />
     <ClCompile Include="src\S_Renderer.cpp" />
     <ClCompile Include="src\S_SheetAnimation.cpp" />
@@ -214,7 +215,9 @@
     <ClInclude Include="src\S_Control.h" />
     <ClInclude Include="src\S_Movement.h" />
     <ClInclude Include="src\C_LightSource.h" />
+    <ClInclude Include="src\C_Particles.h" />
     <ClInclude Include="src\S_Lighting.h" />
+    <ClInclude Include="src\S_Particles.h" />
     <ClInclude Include="src\S_Renderer.h" />
     <ClInclude Include="src\S_SheetAnimation.h" />
     <ClInclude Include="src\S_Sound.h" />
