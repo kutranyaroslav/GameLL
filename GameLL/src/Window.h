@@ -26,6 +26,11 @@ public:
 	void SetSharedContext(SharedContext* i_context);
 	void SetVignetteStrength(float i_v) { m_vignetteStrength = i_v; }
 	void SetGrainStrength(float i_v) { m_grainStrength = i_v; }
+	void SetAberrationStrength(float i_v) { m_aberrationStrength = i_v; }
+	void SetScanlineStrength(float i_v) { m_scanlineStrength = i_v; }
+	void SetColorGrade(const sf::Glsl::Vec3& i_lift, const sf::Glsl::Vec3& i_gamma, const sf::Glsl::Vec3& i_gain) {
+		m_lift = i_lift; m_gamma = i_gamma; m_gain = i_gain;
+	}
 
 	SharedContext* GetSharedContext();
 	sf::Vector2u GetWindowSize(); 
@@ -62,8 +67,14 @@ private:
 	sf::Shader m_compositeShader;
 	bool m_compositeReady = false;
 	sf::Clock m_fxClock;
-	float m_vignetteStrength = 0.7f;
-	float m_grainStrength = 0.05f;
+	float m_vignetteStrength = 0.6f;
+	float m_grainStrength = 0.10f;
+
+	float m_aberrationStrength = 0.009f;
+	float m_scanlineStrength = 0.5f;
+	sf::Glsl::Vec3 m_lift{ 0.f, 0.f, 0.f };
+	sf::Glsl::Vec3 m_gamma{ 1.f, 1.f, 1.f };
+	sf::Glsl::Vec3 m_gain{ 1.f, 1.f, 1.f };
 
 };
 
