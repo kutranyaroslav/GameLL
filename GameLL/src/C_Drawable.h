@@ -8,6 +8,6 @@ public:
 	virtual ~C_Drawable() {};
 	virtual void UpdatePosition(const sf::Vector2f& i_vec) = 0;
 	virtual const sf::Vector2f GetSize() = 0;
-	virtual void Draw(sf::RenderWindow* i_wind) = 0;
+	virtual void Draw(sf::RenderTarget* i_wind) = 0;
 };
 

@@ -20,6 +20,7 @@ Game::Game() :
 	m_context.m_fontManager = &m_fontManager;
 	m_context.m_soundManager = &m_soundManager;
 	m_context.m_world = &m_world;
+	m_context.m_shaderManager = &m_shaderManager;
 	//TO DO Erase after developement done
 	m_systemManager.SetSharedContext(&m_context);
 	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
@@ -53,7 +54,7 @@ void Game::Render() {
 	m_window.BeginDraw();
 ;
 	m_stateManager.Draw();
-
+	m_window.DisplayScene();
 	m_window.GetRenderWindow()->setView(*m_window.GetUIView());
 	m_context.m_guiManager->Draw(m_window.GetRenderWindow());
 

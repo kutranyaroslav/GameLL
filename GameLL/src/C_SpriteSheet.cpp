@@ -18,7 +18,7 @@ const sf::Vector2f C_SpriteSheet::GetSize() {
 	return (sf::Vector2f)m_spriteSheet->GetSpriteSize();
 }
 
-void C_SpriteSheet::Draw(sf::RenderWindow* i_wind) {
+void C_SpriteSheet::Draw(sf::RenderTarget* i_wind) {
 	if (!m_spriteSheet) { return; }
 	m_spriteSheet->Draw(i_wind);
 }

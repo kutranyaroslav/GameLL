@@ -10,7 +10,7 @@ public:
 	virtual void ReadIn(std::stringstream& i_stream)override;
 	virtual const sf::Vector2f GetSize() override;
 	virtual void UpdatePosition(const sf::Vector2f& i_vec) override;
-	virtual void Draw(sf::RenderWindow* i_wind) override;
+	virtual void Draw(sf::RenderTarget* i_wind) override;
 	void Create(TextureManager* i_textureMgr, const std::string& i_name = "");
 	SpriteSheet* GetSpriteSheet();
 private:

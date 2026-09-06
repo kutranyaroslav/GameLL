@@ -60,10 +60,10 @@ void S_Renderer::Render(Window* i_wind, unsigned int i_layer) {
 		drawableBounds.top = position->GetPosition().y - (drawable->GetSize().y/2);
 		drawableBounds.width = drawable->GetSize().x;
 		drawableBounds.height = drawable->GetSize().y;
-		if (!i_wind->GetViewSpace().intersects(drawableBounds)) {
+		if (!i_wind->GetSceneViewSpace().intersects(drawableBounds)) {
 			continue;
 		}
-		drawable->Draw(i_wind->GetRenderWindow());
+		drawable->Draw(i_wind->GetSceneTexture());
 	}
 }
 void S_Renderer::LoadMaterial(const std::string& i_materialName)

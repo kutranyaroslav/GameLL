@@ -133,7 +133,7 @@ void SpriteSheet::Update(const sf::Time& i_dT) {
 	}
 }
 
-void SpriteSheet::Draw(sf::RenderWindow* i_wind) {
+void SpriteSheet::Draw(sf::RenderTarget* i_wind) {
 	i_wind->draw(m_sprite);
 }
 Anim_Base* SpriteSheet::GetCurrentAnim() {

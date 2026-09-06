@@ -126,7 +126,9 @@
     <ClCompile Include="src\Materials\Materials.cpp" />
     <ClCompile Include="src\Observer.cpp" />
     <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\PostProcessor.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
+    <ClCompile Include="src\ShaderManager.cpp" />
     <ClCompile Include="src\SoundManager.cpp" />
     <ClCompile Include="src\SpriteSheet.cpp" />
     <ClCompile Include="src\StateManager.cpp" />
@@ -151,6 +153,7 @@
     <ClCompile Include="src\WorldManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="src\Anim_Base.h" />
     <ClInclude Include="src\Anim_Directional.h" />
     <ClInclude Include="src\AudioManager.h" />
@@ -193,7 +196,9 @@
     <ClInclude Include="src\Materials\Materials.h" />
     <ClInclude Include="src\Observer.h" />
     <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\PostProcessor.h" />
     <ClInclude Include="src\ResourceManager.h" />
+    <ClInclude Include="src\ShaderManager.h" />
     <ClInclude Include="src\SoundManager.h" />
     <ClInclude Include="src\SoundProps.h" />
     <ClInclude Include="src\SpriteSheet.h" />

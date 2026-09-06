@@ -3,6 +3,7 @@
 #include "SystemManager.h"
 #include "EntityManagerNew.h"
 #include "FontManager.h"
+#include "ShaderManager.h"
 #include "dev/ErrorLogManager.h"
 #include "Window.h"
 class World;
@@ -71,9 +72,9 @@ struct SharedContext {
 	{
 		
 	}
-	
 	Window* m_wind;
 	EventManager* m_eventManager;
+	ShaderManager* m_shaderManager;
 	Textbox* m_textbox;
 	TextureManager* m_textureManager;
 	StateManager* m_stateManager;
