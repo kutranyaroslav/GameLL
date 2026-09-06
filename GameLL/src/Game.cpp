@@ -53,7 +53,7 @@ void Game::Render() {
 	m_window.BeginDraw();
 ;
 	m_stateManager.Draw();
-
+	m_window.DisplayScene();
 	m_window.GetRenderWindow()->setView(*m_window.GetUIView());
 	m_context.m_guiManager->Draw(m_window.GetRenderWindow());
 

@@ -15,7 +15,7 @@ public:
 	void ReleaseSheet();
 	void CropSprite(const sf::IntRect& i_rect);
 	void Update(const sf::Time& i_dT);
-	void Draw(sf::RenderWindow* i_wind);
+	void Draw(sf::RenderTarget* i_wind);
 	void SetSpriteSize(const sf::Vector2i& i_size);
 	void SetSpritePos(const sf::Vector2f& i_pos);
 	void SetSpriteDir(const Direction& i_dir);

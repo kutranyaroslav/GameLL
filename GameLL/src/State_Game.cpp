@@ -61,11 +61,12 @@ void State_Game::Update(const sf::Time& i_time) {
 }
 
 void State_Game::Draw() {
-	m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->setView(*m_view);
+	SharedContext* ctx = m_stateManager->GetSharedContext();
+	sf::RenderTexture* scene = ctx->m_wind->GetSceneTexture();
+	scene->setView(*m_view);
 	for (unsigned int i = 0; i < Sheet::Num_Layers; ++i) {
-		m_stateManager->GetSharedContext()->m_world->Draw(*m_stateManager->GetSharedContext()->m_wind->GetRenderWindow(),
-			m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getView(), i);
-		m_stateManager->GetSharedContext()->m_systemManager->Draw(m_stateManager->GetSharedContext()->m_wind,i);
+		ctx->m_world->Draw(*scene, scene->getView(), i); // Map::Draw уже берёт RenderTarget&, тут менять не надо
+		ctx->m_systemManager->Draw(ctx->m_wind, i);
 	}
 	
 }

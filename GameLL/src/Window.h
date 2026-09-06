@@ -16,6 +16,7 @@ public:
 
 	void BeginDraw();
 	void EndDraw();
+	void DisplayScene();
 	void Update();
 	void ToggleFullScreen(EventDetails* i_details);
 	void Close(EventDetails* i_details = nullptr);
@@ -23,6 +24,7 @@ public:
 
 	void SetGameViewSize(const sf::Vector2f& i_size);
 	void SetSharedContext(SharedContext* i_context);
+
 	SharedContext* GetSharedContext();
 	sf::Vector2u GetWindowSize(); 
 	EventManager* GetEventManager();
@@ -33,6 +35,8 @@ public:
 	sf::Vector2u& GetWindowedSize();
 	sf::View* GetUIView()    { return &m_uiView; }
 	sf::View* GetGameView()  { return &m_gameView; }
+	sf::RenderTexture* GetSceneTexture() { return &m_sceneTexture; }	
+	sf::FloatRect GetSceneViewSpace();
 private:
 	void Setup(const std::string& i_title, const sf::Vector2u& i_size);
 	void Destroy();
@@ -50,5 +54,7 @@ private:
 	sf::Vector2u m_windowedSize; 
 	sf::View m_uiView;
 	sf::View m_gameView;
+	//Scenes 
+	sf::RenderTexture m_sceneTexture;
 };
 

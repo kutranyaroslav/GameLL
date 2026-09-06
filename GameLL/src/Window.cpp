@@ -28,6 +28,15 @@ Window::Window(const std::string& i_title, const sf::Vector2u& i_size) {
 
 Window::~Window() { Destroy(); }
 
+sf::FloatRect Window::GetSceneViewSpace()
+{
+	sf::Vector2f viewCenter = m_sceneTexture.getView().getCenter();
+	sf::Vector2f viewSize = m_sceneTexture.getView().getSize();
+	sf::Vector2f viewSizeHalf(viewSize.x / 2, viewSize.y / 2);
+	sf::FloatRect viewSpace(viewCenter - viewSizeHalf, viewSize);
+	return viewSpace;
+}
+
 void Window::Setup(const std::string& i_title, const sf::Vector2u& i_size) {
 	m_windowTitle = i_title;
 	m_windowedSize = i_size;   // remember the *preferred windowed* size separately
@@ -49,6 +58,7 @@ void Window::Create() {
 void Window::OnResize(const sf::Vector2u& i_size)
 {
 	m_windowSize = i_size;
+	m_sceneTexture.create(i_size.x, i_size.y);
 	m_uiView.reset(sf::FloatRect(0, 0, (float)i_size.x, (float)i_size.y));
 	//logic of all interfaces scaling 
 
@@ -93,8 +103,19 @@ void Window::ToggleFullScreen(EventDetails* i_details) {
 	Destroy();
 	Create();
 }
-void Window::BeginDraw() { m_window.clear(sf::Color::Black); }
+void Window::BeginDraw() { 
+	m_window.clear(sf::Color::Black);
+	m_sceneTexture.clear(sf::Color::Black);
+}
 void Window::EndDraw() { m_window.display(); }
+void Window::DisplayScene()
+{
+	m_sceneTexture.display();
+	sf::Sprite full(m_sceneTexture.getTexture());
+	//potentially maybe will a bug related to view
+	m_window.setView(m_window.getDefaultView());
+	m_window.draw(full);
+}
 bool Window::IsDone() { return m_isDone; }
 bool Window::IsFullScreen() { return m_isFullScreen; }
 sf::Vector2u Window::GetWindowSize() { return m_windowSize; }
