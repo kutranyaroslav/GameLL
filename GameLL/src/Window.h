@@ -24,6 +24,8 @@ public:
 
 	void SetGameViewSize(const sf::Vector2f& i_size);
 	void SetSharedContext(SharedContext* i_context);
+	void SetVignetteStrength(float i_v) { m_vignetteStrength = i_v; }
+	void SetGrainStrength(float i_v) { m_grainStrength = i_v; }
 
 	SharedContext* GetSharedContext();
 	sf::Vector2u GetWindowSize(); 
@@ -56,5 +58,12 @@ private:
 	sf::View m_gameView;
 	//Scenes 
 	sf::RenderTexture m_sceneTexture;
+
+	sf::Shader m_compositeShader;
+	bool m_compositeReady = false;
+	sf::Clock m_fxClock;
+	float m_vignetteStrength = 0.7f;
+	float m_grainStrength = 0.05f;
+
 };
 

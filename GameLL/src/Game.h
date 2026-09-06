@@ -4,6 +4,7 @@
 #include "SpriteSheet.h"
 #include "SoundManager.h"
 #include "GUI_Manager.h"
+#include "ShaderManager.h"
 #include "World.h"
 class Game
 {
@@ -27,6 +28,7 @@ private:
 	GUI_Manager m_guiManager;
 	AudioManager m_audioManager;
 	SoundManager m_soundManager;
+	ShaderManager m_shaderManager;
 	World m_world;
 	sf::Clock m_clock;
 	sf::Time m_elapsed;

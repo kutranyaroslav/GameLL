@@ -53,6 +53,13 @@ void Window::Create() {
 	sf::VideoMode mode = m_isFullScreen ? sf::VideoMode::getDesktopMode() :
 		sf::VideoMode(m_windowedSize.x, m_windowedSize.y, 32);
 	m_window.create(mode, m_windowTitle, style);
+
+	m_compositeReady = false;
+	if (sf::Shader::isAvailable()) {
+		m_compositeReady = m_compositeShader.loadFromFile(
+			Utils::GetWorkingDirectory() + "Assets/Shaders/composite.frag",
+			sf::Shader::Fragment);
+	}
 	OnResize(m_window.getSize());
 }
 void Window::OnResize(const sf::Vector2u& i_size)
@@ -114,7 +121,19 @@ void Window::DisplayScene()
 	sf::Sprite full(m_sceneTexture.getTexture());
 	//potentially maybe will a bug related to view
 	m_window.setView(m_window.getDefaultView());
-	m_window.draw(full);
+
+	if (m_compositeReady) {
+		m_compositeShader.setUniform("texture", sf::Shader::CurrentTexture);
+		m_compositeShader.setUniform("resolution",
+			sf::Glsl::Vec2((float)m_windowSize.x, (float)m_windowSize.y));
+		m_compositeShader.setUniform("time", m_fxClock.getElapsedTime().asSeconds());
+		m_compositeShader.setUniform("vignetteStrength", m_vignetteStrength);
+		m_compositeShader.setUniform("grainStrength", m_grainStrength);
+		m_window.draw(full, &m_compositeShader);
+	}
+	else {
+		m_window.draw(full);
+	}
 }
 bool Window::IsDone() { return m_isDone; }
 bool Window::IsFullScreen() { return m_isFullScreen; }
