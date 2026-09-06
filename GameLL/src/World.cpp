@@ -43,7 +43,10 @@ bool World::LoadMap(const std::string& i_name) {
 	auto itr = m_maps.find(i_name);
 	if (itr == m_maps.end()) { return false; }
 	if (!itr->second) { return false; }
-	itr->second->LoadMap(i_name + ".map");
+	// LoadNext purges the previous map first. LoadMap on its own appends to
+	// whatever is already loaded, so entering a state that loads a map that is
+	// already in memory added every ENTITY a second time.
+	itr->second->LoadNext(i_name + ".map");
 	m_currentMap = itr->second;
 	return true;
 
@@ -55,8 +58,14 @@ bool World::SwitchTo(const std::string& i_name, const std::string& i_tileset, co
 	if (m_maps.find(i_name) == m_maps.end()){ return false;}
 	if (!HasMap(i_name)) { return false; }
 	if (GetCurrentMap()->GetMapName() == i_name) { return false; }
-	m_currentMap = GetMap(i_name);
-	GetCurrentMap()->LoadNext(i_name + ".map");
+	// A map with no tilesets cannot load anything: Map::LoadMap returns
+	// immediately on an empty tileset list. Bail out before committing, because
+	// LoadNext purges the current map first and would otherwise leave the editor
+	// with no tiles, no entities and nothing to paint with.
+	Map* target = GetMap(i_name);
+	if (!target || target->GetTilesets().empty()) { return false; }
+	m_currentMap = target;
+	target->LoadNext(i_name + ".map");
 	return true;
 }
 

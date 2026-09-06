@@ -143,7 +143,7 @@ void EventManager::Update() {
 					}
 					++(bind->c);
 				}
-
+				break;
 			case EventType::Joystick:
 				//up to expansion
 				break;
