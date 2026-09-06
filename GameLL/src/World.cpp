@@ -123,9 +123,10 @@ void World::Update(float i_dT) {
 	}
 }
 
+// No state check here: the only callers are State_Game::Draw and the editor
+// viewport, which already know they want the map. Testing the *current* state
+// meant the map stopped drawing the moment anything was pushed on top of the
+// game, so pausing emptied the room.
 void World::Draw(sf::RenderTarget& i_target,const sf::View& i_view,unsigned int i_layer) {
-	if (m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Game ||
-		m_context->m_stateManager->GetCurrentState()->GetState() == StateType::Developement) {
-		if (m_currentMap) { m_currentMap->Draw(i_target,i_view,i_layer); }
-	}
+	if (m_currentMap) { m_currentMap->Draw(i_target,i_view,i_layer); }
 }

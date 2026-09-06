@@ -68,7 +68,20 @@ void Window::LoadShaders() {
 void Window::OnResize(const sf::Vector2u& i_size)
 {
 	m_windowSize = i_size;
-	m_sceneTexture.create(i_size.x, i_size.y);
+	// Resize events arrive continuously while the window is dragged and
+	// create() reallocates the GPU target every time, so only do it when the
+	// size actually changed.
+	if (i_size.x > 0 && i_size.y > 0 &&
+		(m_sceneTexture.getSize().x != i_size.x || m_sceneTexture.getSize().y != i_size.y)) {
+		if (m_sceneTexture.create(i_size.x, i_size.y)) {
+			// the art is pixel art: never interpolate when the scene is blitted
+			m_sceneTexture.setSmooth(false);
+		}
+		// The light map is smoothed: it is a soft gradient, not art.
+		if (m_lightmapTexture.create(i_size.x, i_size.y)) {
+			m_lightmapTexture.setSmooth(true);
+		}
+	}
 	m_postProcessor.OnResize(i_size.x, i_size.y); // NEW — та же точка, что и у m_sceneTexture
 	m_uiView.reset(sf::FloatRect(0, 0, (float)i_size.x, (float)i_size.y));
 	//logic of all interfaces scaling 
@@ -117,15 +130,38 @@ void Window::ToggleFullScreen(EventDetails* i_details) {
 void Window::BeginDraw() { 
 	m_window.clear(sf::Color::Black);
 	m_sceneTexture.clear(sf::Color::Black);
+	// White, not the ambient colour: a state that never builds a light map
+	// leaves the scene at full brightness instead of pitch black.
+	m_lightmapTexture.clear(sf::Color::White);
 }
 void Window::EndDraw() { m_window.display(); }
+// Multiplies the light map into the scene in place. No shader: the map already
+// carries the ambient level, so a multiply blend darkens everything the lights
+// did not reach, and it still works on a driver with no GLSL at all.
+void Window::ApplyLightmap() {
+	if (!m_lightingEnabled) { return; }
+	if (m_lightmapTexture.getSize() != m_sceneTexture.getSize()) { return; }
+	m_lightmapTexture.display();
+	m_sceneTexture.setView(m_sceneTexture.getDefaultView());
+	m_sceneTexture.draw(sf::Sprite(m_lightmapTexture.getTexture()), sf::BlendMultiply);
+	m_sceneTexture.display();
+}
+
 void Window::DisplayScene()
 {
 	m_sceneTexture.display();
-	m_postProcessor.ApplyBloom(m_sceneTexture, m_bloomThreshold, m_bloomIntensity); // NEW
+	ApplyLightmap();
+	// After the light map, so the bright pass sees the lit image: a lit
+	// surface glows, one left in the dark does not.
+	m_postProcessor.ApplyBloom(m_sceneTexture, m_bloomThreshold, m_bloomIntensity);
 	sf::Sprite full(m_sceneTexture.getTexture());
-	//potentially maybe will a bug related to view
-	m_window.setView(m_window.getDefaultView());
+	// Not getDefaultView(): SFML keeps that at the size the window was
+	// created with, so after a resize the scene was drawn at the wrong scale
+	// and left the rest of the window uncovered. At a 984x611 client on a
+	// window created at 1920x1080 it reached about half of each axis.
+	// m_uiView is reset to the live window size on every resize, which is
+	// what a full screen pass needs.
+	m_window.setView(m_uiView);
 
 	if (m_compositeShader) {
 		m_compositeShader->setUniform("texture", sf::Shader::CurrentTexture);

@@ -1,5 +1,5 @@
 Name Player
-Attributes 255
+Attributes 1023
 |Component|ID|Indidividual attributes
 |Position|ID|x|y|elevation|
 Component 0 0 0 1
@@ -17,3 +17,7 @@ Component 5 64 64 5 5 1
 Component 6 footstep:1,4
 |SoundListener
 Component 7
+|LightSource|radius|r|g|b|intensity|
+Component 8 120 255 226 170 1.0
+|Particles|rate|lifetime|speed|spreadDegrees|size|r|g|b|
+Component 9 18 1.6 34 70 3 255 170 90
