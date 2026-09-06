@@ -49,7 +49,7 @@ public:
 
 protected:
 	StateType m_state;
-	sf::View* m_view;
+	sf::View* m_view = nullptr;
 	StateManager* m_stateManager;
 	std::vector<std::string> m_dynamicCallbacks;
 	bool m_transparent;
@@ -64,7 +64,7 @@ class StateManager;
 
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
-		m_textureManager(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), 
+		m_textureManager(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), m_shaderManager(nullptr),
 		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr),
 		// States call LogException/createFile through this from their catch blocks.
 		m_errorLogManager(ErrorLogManager::GetInstance()),

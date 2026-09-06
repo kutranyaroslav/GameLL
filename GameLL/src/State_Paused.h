@@ -13,7 +13,6 @@ public:
 	void Draw() override;
 	void Unpause(EventDetails* i_details);
 private:
-	sf::Font m_font;
 	sf::Text m_text;
 	sf::RectangleShape m_rect;
 };

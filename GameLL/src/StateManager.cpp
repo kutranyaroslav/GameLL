@@ -33,18 +33,21 @@ StateManager::~StateManager() {
 void StateManager::Draw() {
 	if (m_states.empty()) { return; }
 	if (m_states.back().second->IsTransparent() && m_states.size() > 1 ) {
+		// Walk down to the last state that paints its own background; every
+		// state above it is transparent and draws on top. The previous loop
+		// stopped at the first transparent state it found, which was the top
+		// one itself, so the state under a pause overlay was never drawn.
 		auto itr = m_states.end();
 		while (itr != m_states.begin()) {
-			if (itr != m_states.end()) {
-				if (itr->second->IsTransparent()) {
-					break;
-				}
-			}
 			--itr;
+			if (!itr->second->IsTransparent()) { break; }
 		}
 
 		for (; itr != m_states.end(); ++itr) {
-			m_shared->m_wind->GetRenderWindow()->setView(*itr->second->GetView());
+			// A state that never set up a view keeps whatever the target has.
+			if (itr->second->GetView()) {
+				m_shared->m_wind->GetSceneTexture()->setView(*itr->second->GetView());
+			}
 			itr->second->Draw();
 		}
 	}
