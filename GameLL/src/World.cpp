@@ -58,8 +58,14 @@ bool World::SwitchTo(const std::string& i_name, const std::string& i_tileset, co
 	if (m_maps.find(i_name) == m_maps.end()){ return false;}
 	if (!HasMap(i_name)) { return false; }
 	if (GetCurrentMap()->GetMapName() == i_name) { return false; }
-	m_currentMap = GetMap(i_name);
-	GetCurrentMap()->LoadNext(i_name + ".map");
+	// A map with no tilesets cannot load anything: Map::LoadMap returns
+	// immediately on an empty tileset list. Bail out before committing, because
+	// LoadNext purges the current map first and would otherwise leave the editor
+	// with no tiles, no entities and nothing to paint with.
+	Map* target = GetMap(i_name);
+	if (!target || target->GetTilesets().empty()) { return false; }
+	m_currentMap = target;
+	target->LoadNext(i_name + ".map");
 	return true;
 }
 
