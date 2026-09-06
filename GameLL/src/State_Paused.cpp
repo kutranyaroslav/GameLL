@@ -45,10 +45,20 @@ void State_Paused::onDestroy() {
 	if (fonts) { fonts->ReleaseResource("Main"); }
 }
 
-void State_Paused::Draw() {
-	sf::RenderWindow* wind = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow();
-	wind->draw(m_text);
-	wind->draw(m_rect);
+// Nothing of the pause screen belongs to the scene: the world underneath is
+// drawn by State_Game.
+void State_Paused::Draw() {}
+
+// The dim and the label are screen space furniture, so they go on after the
+// scene has been post processed. Inside it the lighting multiply would have
+// darkened the label wherever the player happened to be standing, and the
+// grain would have crawled over both.
+void State_Paused::DrawOverlay() {
+	Window* wind = m_stateManager->GetSharedContext()->m_wind;
+	sf::RenderWindow* window = wind->GetRenderWindow();
+	window->setView(*wind->GetUIView());
+	window->draw(m_rect);
+	window->draw(m_text);
 }
 
 void State_Paused::Unpause(EventDetails* i_details) {

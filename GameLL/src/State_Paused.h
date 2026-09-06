@@ -11,6 +11,7 @@ public:
 	void Deactivate() override;
 	void Update(const sf::Time& i_time) override;
 	void Draw() override;
+	void DrawOverlay() override;
 	void Unpause(EventDetails* i_details);
 private:
 	sf::Text m_text;

@@ -55,6 +55,8 @@ void Game::Render() {
 ;
 	m_stateManager.Draw();
 	m_window.DisplayScene();
+	// After the scene is finished, before the GUI: neither is post processed.
+	m_stateManager.DrawOverlay();
 	m_window.GetRenderWindow()->setView(*m_window.GetUIView());
 	m_context.m_guiManager->Draw(m_window.GetRenderWindow());
 

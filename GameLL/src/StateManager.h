@@ -29,6 +29,10 @@ public:
 	virtual void Deactivate() = 0; 
 	virtual void Update(const sf::Time& i_time) = 0;
 	virtual void Draw() = 0;
+	// Drawn straight to the window after the scene has been post processed.
+	// For screen space furniture that should not pick up grain, vignette,
+	// bloom or lighting, the same way the GUI does not.
+	virtual void DrawOverlay() {}
 	// Called after the window resized AND the GUI has been rescaled. States that
 	// position elements by hand override this to re-run their layout.
 	virtual void OnResize(const sf::Vector2u& i_size) {}
@@ -100,6 +104,8 @@ public:
 
 	void Update(const sf::Time& i_time);
 	void Draw();
+	void DrawOverlay();
+	StateContainer::iterator FirstVisibleState();
 	void ProcessRequests();
 	bool HasState(const StateType& i_type);
 	void SwitchTo(const StateType& i_type);
