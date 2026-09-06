@@ -46,6 +46,8 @@ public:
 	sf::View* GetUIView()    { return &m_uiView; }
 	sf::View* GetGameView()  { return &m_gameView; }
 	sf::RenderTexture* GetSceneTexture() { return &m_sceneTexture; }	
+	sf::RenderTexture* GetLightmapTexture() { return &m_lightmapTexture; }
+	void SetLightingEnabled(bool i_on) { m_lightingEnabled = i_on; }
 	sf::FloatRect GetSceneViewSpace();
 
 private:
@@ -54,6 +56,7 @@ private:
 	void Create();
 	void OnResize(const sf::Vector2u& i_size);
 	void LoadShaders();
+	void ApplyLightmap();
 
 	EventManager m_eventManager;
 	SharedContext* m_context = nullptr;
@@ -69,6 +72,9 @@ private:
 	sf::View m_gameView;
 	//Scenes 
 	sf::RenderTexture m_sceneTexture;
+	// Multiplied over the scene before the bloom pass, so only what the
+	// light actually reaches can glow.
+	sf::RenderTexture m_lightmapTexture;
 
 	sf::Shader* m_compositeShader = nullptr;
 	bool m_compositeReady = false;
@@ -85,6 +91,7 @@ private:
 	PostProcessor m_postProcessor;
 	float m_bloomThreshold = 0.1f;
 	float m_bloomIntensity = 0.2f;
+	bool m_lightingEnabled = true;
 
 };
 

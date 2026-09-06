@@ -64,6 +64,9 @@ void State_Game::Draw() {
 	SharedContext* ctx = m_stateManager->GetSharedContext();
 	sf::RenderTexture* scene = ctx->m_wind->GetSceneTexture();
 	scene->setView(*m_view);
+	// Built once per frame, after the view is set, because the lights are
+	// placed in world coordinates.
+	ctx->m_systemManager->DrawLighting(ctx->m_wind);
 	for (unsigned int i = 0; i < Sheet::Num_Layers; ++i) {
 		ctx->m_world->Draw(*scene, scene->getView(), i); // Map::Draw уже берёт RenderTarget&, тут менять не надо
 		ctx->m_systemManager->Draw(ctx->m_wind, i);

@@ -28,6 +28,7 @@ public:
 	void HandleEvents();
 	void ProccesLastEvent(S_Base* i_system, const EntityId& i_entity);
 	void Draw(Window* i_wind, unsigned int i_elevation);
+	void DrawLighting(Window* i_wind);
 	void EntityModified(const EntityId& i_entity, const Bitmask& i_bits);
 	void RemoveEntity(const EntityId& i_entity);
 	void PurgeEntities();
