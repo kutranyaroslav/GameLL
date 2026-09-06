@@ -188,6 +188,9 @@ void Map::PurgeMap() {
 	}
 	m_tilemap.clear();
 	m_context->m_entityManager->Purge();
+	// Purge() destroyed the player entity, so the cached id no longer refers
+	// to anything.
+	m_playerId = -1;
 	if (m_backgroundTexture == "") { return; }
 	m_context->m_textureManager->ReleaseResource(m_backgroundTexture);
 	m_backgroundTexture = "";
@@ -324,7 +327,7 @@ void Map::LoadMap(const std::string& i_path) {
 			else if (type == "ENTITY") {
 				std::string name; 
 				keystream >> name;
-				if (name == "PLAYER" && m_playerId == -1) {
+				if (name == "PLAYER" && m_playerId != -1) {
 					continue;
 				}
 				int entityId = m_context->m_entityManager->AddEntity(name);

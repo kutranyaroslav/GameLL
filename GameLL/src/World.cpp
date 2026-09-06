@@ -43,7 +43,10 @@ bool World::LoadMap(const std::string& i_name) {
 	auto itr = m_maps.find(i_name);
 	if (itr == m_maps.end()) { return false; }
 	if (!itr->second) { return false; }
-	itr->second->LoadMap(i_name + ".map");
+	// LoadNext purges the previous map first. LoadMap on its own appends to
+	// whatever is already loaded, so entering a state that loads a map that is
+	// already in memory added every ENTITY a second time.
+	itr->second->LoadNext(i_name + ".map");
 	m_currentMap = itr->second;
 	return true;
 

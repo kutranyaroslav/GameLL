@@ -119,7 +119,7 @@ private:
 	sf::Vector2f m_playerStart;
 	unsigned int m_tileCount;
 	unsigned int m_tileSetCount;
-	int m_playerId; 
+	int m_playerId = -1;
 	float m_mapGravity;
 	bool m_loadNextMap;
 	
