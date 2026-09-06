@@ -1,6 +1,7 @@
 #pragma once
 #include "Textbox.h"
 #include "EventManager.h"
+#include "PostProcessor.h"
 #include <string>
 
 struct SharedContext;
@@ -31,6 +32,8 @@ public:
 	void SetColorGrade(const sf::Glsl::Vec3& i_lift, const sf::Glsl::Vec3& i_gamma, const sf::Glsl::Vec3& i_gain) {
 		m_lift = i_lift; m_gamma = i_gamma; m_gain = i_gain;
 	}
+	void SetBloomThreshold(float i_v) { m_bloomThreshold = i_v; }
+	void SetBloomIntensity(float i_v) { m_bloomIntensity = i_v; }
 
 	SharedContext* GetSharedContext();
 	sf::Vector2u GetWindowSize(); 
@@ -44,11 +47,14 @@ public:
 	sf::View* GetGameView()  { return &m_gameView; }
 	sf::RenderTexture* GetSceneTexture() { return &m_sceneTexture; }	
 	sf::FloatRect GetSceneViewSpace();
+
 private:
 	void Setup(const std::string& i_title, const sf::Vector2u& i_size);
 	void Destroy();
 	void Create();
 	void OnResize(const sf::Vector2u& i_size);
+	void LoadShaders();
+
 	EventManager m_eventManager;
 	SharedContext* m_context = nullptr;
 	Textbox m_textbox;
@@ -64,7 +70,7 @@ private:
 	//Scenes 
 	sf::RenderTexture m_sceneTexture;
 
-	sf::Shader m_compositeShader;
+	sf::Shader* m_compositeShader = nullptr;
 	bool m_compositeReady = false;
 	sf::Clock m_fxClock;
 	float m_vignetteStrength = 0.6f;
@@ -75,6 +81,10 @@ private:
 	sf::Glsl::Vec3 m_lift{ 0.f, 0.f, 0.f };
 	sf::Glsl::Vec3 m_gamma{ 1.f, 1.f, 1.f };
 	sf::Glsl::Vec3 m_gain{ 1.f, 1.f, 1.f };
+
+	PostProcessor m_postProcessor;
+	float m_bloomThreshold = 0.1f;
+	float m_bloomIntensity = 0.2f;
 
 };
 

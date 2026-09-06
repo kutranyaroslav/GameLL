@@ -126,6 +126,7 @@
     <ClCompile Include="src\Materials\Materials.cpp" />
     <ClCompile Include="src\Observer.cpp" />
     <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\PostProcessor.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\ShaderManager.cpp" />
     <ClCompile Include="src\SoundManager.cpp" />
@@ -195,6 +196,7 @@
     <ClInclude Include="src\Materials\Materials.h" />
     <ClInclude Include="src\Observer.h" />
     <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\PostProcessor.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\ShaderManager.h" />
     <ClInclude Include="src\SoundManager.h" />

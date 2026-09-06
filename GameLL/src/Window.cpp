@@ -54,18 +54,22 @@ void Window::Create() {
 		sf::VideoMode(m_windowedSize.x, m_windowedSize.y, 32);
 	m_window.create(mode, m_windowTitle, style);
 
-	m_compositeReady = false;
-	if (sf::Shader::isAvailable()) {
-		m_compositeReady = m_compositeShader.loadFromFile(
-			Utils::GetWorkingDirectory() + "Assets/Shaders/composite.frag",
-			sf::Shader::Fragment);
-	}
+	LoadShaders();
 	OnResize(m_window.getSize());
+}
+
+void Window::LoadShaders() {
+	if (!m_context || !m_context->m_shaderManager) { return; }
+	if (m_context->m_shaderManager->RequireResource("composite")) {
+		m_compositeShader = m_context->m_shaderManager->GetResource("composite");
+	}
+	m_postProcessor.LoadShaders(m_context->m_shaderManager);
 }
 void Window::OnResize(const sf::Vector2u& i_size)
 {
 	m_windowSize = i_size;
 	m_sceneTexture.create(i_size.x, i_size.y);
+	m_postProcessor.OnResize(i_size.x, i_size.y); // NEW — та же точка, что и у m_sceneTexture
 	m_uiView.reset(sf::FloatRect(0, 0, (float)i_size.x, (float)i_size.y));
 	//logic of all interfaces scaling 
 
@@ -118,22 +122,23 @@ void Window::EndDraw() { m_window.display(); }
 void Window::DisplayScene()
 {
 	m_sceneTexture.display();
+	m_postProcessor.ApplyBloom(m_sceneTexture, m_bloomThreshold, m_bloomIntensity); // NEW
 	sf::Sprite full(m_sceneTexture.getTexture());
 	//potentially maybe will a bug related to view
 	m_window.setView(m_window.getDefaultView());
 
-	if (m_compositeReady) {
-		m_compositeShader.setUniform("texture", sf::Shader::CurrentTexture);
-		m_compositeShader.setUniform("resolution", sf::Glsl::Vec2((float)m_windowSize.x, (float)m_windowSize.y));
-		m_compositeShader.setUniform("time", m_fxClock.getElapsedTime().asSeconds());
-		m_compositeShader.setUniform("vignetteStrength", m_vignetteStrength);
-		m_compositeShader.setUniform("grainStrength", m_grainStrength);
-		m_compositeShader.setUniform("aberrationStrength", m_aberrationStrength);
-		m_compositeShader.setUniform("scanlineStrength", m_scanlineStrength);
-		m_compositeShader.setUniform("lift", m_lift);
-		m_compositeShader.setUniform("gamma", m_gamma);
-		m_compositeShader.setUniform("gain", m_gain);
-		m_window.draw(full, &m_compositeShader);
+	if (m_compositeShader) {
+		m_compositeShader->setUniform("texture", sf::Shader::CurrentTexture);
+		m_compositeShader->setUniform("resolution", sf::Glsl::Vec2((float)m_windowSize.x, (float)m_windowSize.y));
+		m_compositeShader->setUniform("time", m_fxClock.getElapsedTime().asSeconds());
+		m_compositeShader->setUniform("vignetteStrength", m_vignetteStrength);
+		m_compositeShader->setUniform("grainStrength", m_grainStrength);
+		m_compositeShader->setUniform("aberrationStrength", m_aberrationStrength);
+		m_compositeShader->setUniform("scanlineStrength", m_scanlineStrength);
+		m_compositeShader->setUniform("lift", m_lift);
+		m_compositeShader->setUniform("gamma", m_gamma);
+		m_compositeShader->	setUniform("gain", m_gain);
+		m_window.draw(full, m_compositeShader);
 	}
 	else {
 		m_window.draw(full);
@@ -182,6 +187,7 @@ void Window::SetGameViewSize(const sf::Vector2f& i_size)
 void Window::SetSharedContext(SharedContext* i_context)
 {
 	m_context= i_context;
+	LoadShaders();
 }
 
 SharedContext* Window::GetSharedContext() {
