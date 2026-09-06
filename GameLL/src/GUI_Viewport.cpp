@@ -49,7 +49,7 @@ void GUI_Viewport::OnClick(const sf::Vector2f& i_mousePos)
 
 void GUI_Viewport::OnRelease()
 {
-	SetState(GUI_ElementState::Neutral);
+	SetState(GUI_ElementState::Neutral);	
 }
 
 void GUI_Viewport::OnHover(const sf::Vector2f& i_mousePos)

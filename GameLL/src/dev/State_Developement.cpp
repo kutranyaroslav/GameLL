@@ -13,8 +13,8 @@ void State_Developement::onCreate()
 	m_view = m_stateManager->GetSharedContext()->m_wind->GetUIView();
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "TestTileset", "Tiles.cfg", "Tilesheet");
-	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP1", "TestTileset2", "Tiles.cfg", "Tilesheet2");
-	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP1");
+	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP2", "TestTileset2", "Tiles.cfg", "Tilesheet2");
+	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP2");
 	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
 	//open up the bind file to write the changes 
 	m_state = StateType::Developement;
