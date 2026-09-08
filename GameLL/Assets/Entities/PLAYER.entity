@@ -18,6 +18,6 @@ Component 6 footstep:1,4
 |SoundListener
 Component 7
 |LightSource|radius|r|g|b|intensity|
-Component 8 120 255 226 170 1.0
+Component 8 240 255 226 170 1.0
 |Particles|rate|lifetime|speed|spreadDegrees|size|r|g|b|
 Component 9 18 1.6 34 70 3 255 170 90

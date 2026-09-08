@@ -25,11 +25,11 @@ public:
 	void SetAmbient(const sf::Color& i_ambient) { m_ambient = i_ambient; }
 	const sf::Color& GetAmbient() const { return m_ambient; }
 
-private:
+private:	
 	// How round each light looks. A fan is cheaper than a texture and needs no
-	// asset, and at this radius the facets are not visible.
-	static const unsigned int LIGHT_SEGMENTS = 24;
+	// asset, and at this radius the facets are not visible.	
+	static const unsigned int LIGHT_SEGMENTS = 24;			
 
-	sf::Color m_ambient = sf::Color(90, 90, 105);
+	sf::Color m_ambient = sf::Color(90, 90, 130);
 	sf::VertexArray m_fan;
 };

@@ -12,6 +12,7 @@ namespace Materials {
 		Wood,
 		Stone,
 		Metall,
+		Entity,
 	};
 	MaterialType StringToMaterialType(const std::string& i_material);
 

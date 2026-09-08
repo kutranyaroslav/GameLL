@@ -18,7 +18,7 @@ public:
 		int b = 255;
 		i_stream >> m_radius >> r >> g >> b >> m_intensity;
 		m_colour = sf::Color(static_cast<sf::Uint8>(r), static_cast<sf::Uint8>(g),
-			static_cast<sf::Uint8>(b));
+			static_cast<sf::Uint8>(b));	
 	}
 
 	float GetRadius() const { return m_radius; }
