@@ -22,4 +22,11 @@ private:
 
 	void HandleOpenDoor(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
 	void HandleHeal(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void HandlePickupItem(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void HandleToggleLever(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void HandleExamine(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void HandleSavePoint(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void HandleTerminal(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void HandleElevator(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
 };

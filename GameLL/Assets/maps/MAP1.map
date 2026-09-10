@@ -5,17 +5,28 @@ GRAVITY 0.2
 DEFAULT_FRICTION 0.1 0.1
 NEXTMAP MAP2.map
 |ENTITY|Name|x|y|elevation
-ENTITY PLAYER 120 120 2 
+ENTITY PLAYER 120 120 2
 |TILE|tilesetname|id|row|x|y|layer|solid|
 |TestRoom|
 |TopWall|
-TILE TestTileset 0 0 4 1 0 0
-TILE TestTileset 0 0 8 2 0 0
-TILE TestTileset 0 0 5 1 0 0
-TILE TestTileset 0 0 7 1 0 0
-TILE TestTileset 0 0 7 2 0 0
-TILE TestTileset 0 0 6 1 0 0
-TILE TestTileset 0 0 8 1 0 0
-TILE TestTileset 0 0 6 2 0 0
-TILE TestTileset 0 0 4 2 0 0
-TILE TestTileset 0 0 5 2 0 0
+TILE TestTileset 0 0 20 5 0 0
+TILE TestTileset 0 0 23 5 0 0
+TILE TestTileset 0 0 22 5 0 0
+TILE TestTileset 0 0 21 5 0 0
+TILE TestTileset 0 0 24 5 0 0
+TILE TestTileset 0 0 23 1 0 0
+TILE TestTileset 0 0 24 6 0 0
+TILE TestTileset 0 0 23 6 0 0
+TILE TestTileset 0 0 21 6 0 0
+TILE TestTileset 0 0 22 6 0 0
+TILE TestTileset 0 0 19 6 0 0
+TILE TestTileset 0 0 19 1 0 0
+TILE TestTileset 0 0 20 6 0 0
+TILE TestTileset 0 0 20 1 0 0
+TILE TestTileset 0 0 21 1 0 0
+TILE TestTileset 0 0 22 1 0 0
+TILE TestTileset 0 0 19 2 0 0
+TILE TestTileset 0 0 21 2 0 0
+TILE TestTileset 0 0 20 2 0 0
+TILE TestTileset 0 0 22 2 0 0
+TILE TestTileset 0 0 23 2 0 0

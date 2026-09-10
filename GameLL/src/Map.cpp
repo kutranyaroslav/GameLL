@@ -24,7 +24,7 @@ bool Map::AddTileset(const std::string& i_name, const std::string& i_path, const
 	auto itr = m_tilesets.find(i_name);
 	if (itr != m_tilesets.end()) { return false; }
 	TileSet tileset;
-	if(!LoadTiles(i_path,i_texture,tileset)){return false;}
+	if(!LoadTiles(i_name,i_path,i_texture,tileset)){return false;}
 	return m_tilesets.emplace(i_name, std::move(tileset)).second;
 
 }
@@ -208,7 +208,7 @@ void Map::PurgeTileSet() {
 	m_tileSetCount = 0;
 }
 
-bool Map::LoadTiles(const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles) {
+bool Map::LoadTiles(const std::string& i_name, const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles) {
 	std::ifstream file;
 	file.open(Utils::GetWorkingDirectory() + "nav//"+ i_path);
 	if (file.is_open()) {
@@ -225,6 +225,9 @@ bool Map::LoadTiles(const std::string& i_path, const std::string& i_texture, Til
 			std::string material = "";
 			///Add texture of tile set by name Tilesheet in textures.cfg 
 			TileInfo* tile = new TileInfo(m_context, i_texture, tileId, tileRow);
+			// Без этого SaveTiles писал пустое имя тайлсета в строку TILE ("TILE  0 0 15 5 0 0"),
+			// а LoadMap такие строки молча пропускал - карта пустела от сессии к сессии.
+			tile->m_tilesetName = i_name;
 			keystream >> tile->m_name >> tile->m_friction.x >> tile->m_friction.y >>
 				tile->m_deadly >> tile->m_solid;
 			keystream >> material;

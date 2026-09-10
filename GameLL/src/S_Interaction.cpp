@@ -1,5 +1,8 @@
 #include "S_Interaction.h"
 #include "EntityManagerNew.h"
+#include "StateManager.h" // for SharedContext (m_world, m_textbox)
+#include "World.h"
+#include "Textbox.h"
 #include <filesystem>
 S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	S_Base(System::Interaction, i_systemMgr)
@@ -17,6 +20,13 @@ S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	// here we to register handle for each type of interaction, so that Notify can call the right one
 	m_handlers[InteractionType::Door] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleOpenDoor(t, a, d); };
 	m_handlers[InteractionType::AidKit] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleHeal(t, a, d); };
+	m_handlers[InteractionType::PickupItem] = [this](EntityId t, EntityId a, C_Interactable* d) { HandlePickupItem(t, a, d); };
+	m_handlers[InteractionType::ReadNote] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleReadNote(t, a, d); };
+	m_handlers[InteractionType::ToggleLever] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleToggleLever(t, a, d); };
+	m_handlers[InteractionType::Examine] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleExamine(t, a, d); };
+	m_handlers[InteractionType::SavePoint] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleSavePoint(t, a, d); };
+	m_handlers[InteractionType::Terminal] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleTerminal(t, a, d); };
+	m_handlers[InteractionType::Elevator] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleElevator(t, a, d); };
 	// новый тип интеракции = новая строчка тут + один маленький Handle*, без нового класс
 }
 
@@ -50,6 +60,68 @@ void S_Interaction::HandleHeal(EntityId i_target, EntityId i_actor, C_Interactab
 	// entities->GetComponent<C_Health>(i_actor, Component::Health)->Add(i_data->GetAmount());
 	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Healed);
 }
+
+void S_Interaction::HandlePickupItem(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	// нет C_Inventory / InventoryManager пока — когда появится:
+	// inventory->AddItem(i_data->GetItemId(), i_data->GetQuantity());
+	// m_oneShot всегда true для PickupItem (см. C_Interactable::ReadIn), так что Notify()
+	// сам выставит m_used = true после этого вызова и повторно предмет не сработает.
+	// Настоящий despawn (EntityManagerNew::RemoveEntity) сюда нельзя добавлять как есть:
+	// Notify() трогает i_data сразу после возврата отсюда, а RemoveEntity удаляет компоненты -
+	// это UAF. Когда появится настоящий деспавн/пул сущностей, убирать нужно будет отложенно
+	// (следующий кадр), а не прямо из хендлера.
+	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Item_Picked);
+}
+
+void S_Interaction::HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (context && context->m_textbox) {
+		// GetTextId() сейчас просто id/ключ — как появится текстовый/локализационный менеджер,
+		// тут будет context->m_textbox->Add(localization->Get(i_data->GetTextId()));
+		context->m_textbox->Add(i_data->GetTextId());
+	}
+	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Note_Read);
+}
+
+void S_Interaction::HandleToggleLever(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	// i_target - сам рычаг, GetTargetId() - id сущности которую он контролирует (дверь, ворота и т.п.)
+	int controlled = i_data->GetTargetId();
+	if (controlled >= 0) {
+		m_systemMgr->AddEvent((EntityId)controlled, (EventId)EntityEvent::Lever_Toggled);
+	}
+	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Lever_Toggled);
+}
+
+void S_Interaction::HandleExamine(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (context && context->m_textbox) {
+		context->m_textbox->Add(i_data->GetTextId());
+	}
+	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Examined);
+}
+
+void S_Interaction::HandleSavePoint(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	// нет SaveManager пока — как появится:
+	// m_systemMgr->GetSharedContext()->m_saveManager->Save();
+	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Game_Saved);
+}
+
+void S_Interaction::HandleTerminal(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (context && context->m_textbox) {
+		context->m_textbox->Add(i_data->GetTextId());
+	}
+	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Terminal_Used);
+}
+
+void S_Interaction::HandleElevator(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (context && context->m_world && !i_data->GetTargetMap().empty()) {
+		context->m_world->SwitchTo(i_data->GetTargetMap());
+	}
+	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Map_Changed);
+}
+
 void S_Interaction::LoadMaterials() {
 	std::string path = Utils::GetWorkingDirectory() + "src//Materials/";
 	for (const auto& entry : std::filesystem::directory_iterator(path)) {

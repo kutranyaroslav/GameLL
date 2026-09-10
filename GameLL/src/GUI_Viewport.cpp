@@ -3,7 +3,7 @@
 #include <cmath>
 GUI_Viewport::GUI_Viewport(const std::string& i_name, GUI_Interface* i_owner):
 	GUI_Element(i_name, GUI_ElementType::Viewport, i_owner), m_hoverTilePos(-1 ,-1 ),
-	m_cameraSpeed(300.f)
+	m_clickedTileInfo(nullptr), m_cameraSpeed(300.f)
 {
 	m_view.reset(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
 }
@@ -239,15 +239,40 @@ void GUI_Viewport::SetClickedTileInfo(TileInfo* i_info)
 {
 	m_clickedTileInfo = i_info;
 }
-void GUI_Viewport::ChangeMap() {
+void GUI_Viewport::ChangeMap()
+{
+	// Идём через Map::PlaceTile/RemoveTile, а не в m_tilemap напрямую: это единая точка
+	// входа, через которую идёт и загрузка .map (см. Map.h). Правка карты руками мимо неё
+	// теряла привязанную логику - сущность по материалу тайла не спавнилась в редакторе
+	// (хотя тот же тайл из .map её спавнил), старая сущность при перекраске клетки
+	// оставалась висеть без тайла под ней, а m_checkout у нового Tile оставался
+	// неинициализированным и мог уехать в .map как ложный CHECKOUT при сохранении.
 	if (!m_world) { return; }
 	Map* m = m_world->GetCurrentMap();
 	if (!m) { return; }
-	if (m_clickedTileInfo == nullptr) {
-		m->RemoveTile(m_clickedTilePos.x, m_clickedTilePos.y, m_layerIndex);
+
+	// m_clickedTilePos знаковый: клик левее/выше карты даёт отрицательные координаты,
+	// а PlaceTile/RemoveTile принимают unsigned - без проверки они бы завернулись
+	// в огромное число и намусорили в тайлмапе.
+	if (m_clickedTilePos.x < 0 || m_clickedTilePos.y < 0) { return; }
+	const sf::Vector2u mapSize = m->GetMapSize();
+	if (static_cast<unsigned int>(m_clickedTilePos.x) >= mapSize.x ||
+		static_cast<unsigned int>(m_clickedTilePos.y) >= mapSize.y) {
 		return;
 	}
-	m->PlaceTile(m_clickedTilePos.x, m_clickedTilePos.y, m_layerIndex, m_clickedTileInfo);
+	if (m_layerIndex < 0 || m_layerIndex >= Sheet::Num_Layers) { return; }
+
+	const unsigned int x = static_cast<unsigned int>(m_clickedTilePos.x);
+	const unsigned int y = static_cast<unsigned int>(m_clickedTilePos.y);
+	const unsigned int layer = static_cast<unsigned int>(m_layerIndex);
+
+	if (!m_clickedTileInfo) {
+		// пустая кисть = ластик, как и было раньше
+		m->RemoveTile(x, y, layer);
+		return;
+	}
+	// PlaceTile сам снимает старый тайл вместе с его сущностью
+	m->PlaceTile(x, y, layer, m_clickedTileInfo);
 }
 void GUI_Viewport::ClearBrush()
 {
@@ -262,7 +287,6 @@ float& GUI_Viewport::GetCameraSpeed()
 
 void GUI_Viewport::React(EventDetails* i_details)
 {
-
 	//logic for saving map 
 	if (!m_world) { return; }
 	if (!m_world->GetCurrentMap()) { return; }

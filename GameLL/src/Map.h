@@ -107,7 +107,10 @@ public:
 	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
 private:
 	
-	bool LoadTiles(const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles);
+	// i_name - имя тайлсета, под которым он лежит в m_tilesets. Прокидывается сюда, чтобы
+	// проштамповать его в каждый TileInfo: SaveTiles пишет TileInfo::m_tilesetName в строку
+	// TILE, и без этого имя уезжало в файл пустым.
+	bool LoadTiles(const std::string& i_name, const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles);
 	void PurgeMap();
 	void PurgeTileSet();
 	

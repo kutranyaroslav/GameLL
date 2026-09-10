@@ -32,24 +32,12 @@ void State_Game::onCreate() {
 	evMgr->AddCallback(StateType::Game, "Player_StopMoveright", &State_Game::Stop, this);
 	evMgr->AddCallback(StateType::Game, "Player_StopMoveup", &State_Game::Stop, this);
 	evMgr->AddCallback(StateType::Game, "Player_StopMovedown", &State_Game::Stop, this);
-	//test integration of map
-	World* world = m_stateManager->GetSharedContext()->m_world;
-	// если пришли из редактора (или из предыдущей игровой сессии) — продолжаем с той карты,
-	// что там осталась активной; если это самый первый запуск без редактора вообще — дефолт MAP1
-	std::string targetMap = world->GetCurrentMap() ? world->GetCurrentMap()->GetMapName() : "MAP1";
-	if (!world->HasMap(targetMap)) {
-		world->AddMap(targetMap, "TestTileset", "Tiles.cfg", "Tilesheet");
-	}
-	world->AddTileset(targetMap, "TestTileset2", "Tiles.cfg", "Tilesheet2"); // безопасно вызывать повторно — Map::AddTileset сам себя от дублей бережёт
-	world->LoadMap(targetMap);
-	if (!world->GetCurrentMap()) { return; }
-	
-	m_player = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetPlayerId();
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetWorld
-		(m_stateManager->GetSharedContext()->m_world);
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetWorld(
-	m_stateManager->GetSharedContext()->m_world);
-	
+	// Map/tileset setup, m_player and the system wiring used to live here, but onCreate()
+	// only ever runs once per state instance (StateManager keeps states alive and reuses
+	// them - see Activate() for why that matters). Moved to Activate() so it re-runs every
+	// time this state becomes active again, not just the first time it's created.
+
+	Activate();
 }
 
 void State_Game::onDestroy() {
@@ -60,8 +48,6 @@ void State_Game::onDestroy() {
 }
 
 void State_Game::Update(const sf::Time& i_time) {
-	EntityManagerNew* entities = m_stateManager->GetSharedContext()->m_entityManager;
-	__debugbreak();
 	SharedContext* context = m_stateManager->GetSharedContext();
 	UpdateCamera();
 	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
@@ -84,7 +70,25 @@ void State_Game::Draw() {
 	
 }
 
-void State_Game::Activate(){}
+void State_Game::Activate() {
+	World* world = m_stateManager->GetSharedContext()->m_world;
+	// если пришли из редактора (или из предыдущей игровой сессии) — продолжаем с той карты,
+	// что там осталась активной; если это самый первый запуск без редактора вообще — дефолт MAP1
+	std::string targetMap = world->GetCurrentMap() ? world->GetCurrentMap()->GetMapName() : "MAP1";
+	if (!world->HasMap(targetMap)) {
+		world->AddMap(targetMap);
+	}
+	// AddTileset is safe to call repeatedly - Map::AddTileset dedupes by name - so attach
+	// both unconditionally after making sure the map itself exists.
+	world->AddTileset(targetMap, "TestTileset", "Tiles.cfg", "Tilesheet");
+	world->AddTileset(targetMap, "TestTileset2", "Tiles.cfg", "Tilesheet2");
+	world->LoadMap(targetMap);
+	if (!world->GetCurrentMap()) { m_player = -1; return; }
+
+	m_player = world->GetCurrentMap()->GetPlayerId();
+	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetWorld(world);
+	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetWorld(world);
+}
 void State_Game::Deactivate() {}
 
 void State_Game::MainMenu(EventDetails* i_details) {
@@ -102,6 +106,7 @@ void State_Game::UpdateCamera() {
 	SharedContext* context = m_stateManager->GetSharedContext();
 	C_Position* pos = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Position>
 		(m_player, Component::Position);
+	if (!pos) { return; } // m_player id is stale (e.g. purged by a map switch) - nothing to follow this frame
 	m_view->setCenter(pos->GetPosition());
 	sf::FloatRect viewSpace = context->m_wind->GetGameViewSpace();
 	if (viewSpace.left <= 0) {
@@ -147,6 +152,7 @@ void State_Game::Move(EventDetails* i_details){
 }
 void State_Game::Stop(EventDetails* i_details) {
 	C_Movable* mov = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Movable>(m_player, Component::Movable);
+	if (!mov) { return; } // same stale-id guard as UpdateCamera()
 	if (i_details->m_name == "Player_StopMoveleft" || i_details->m_name == "Player_StopMoveright") {
 		mov->SetVelocity(sf::Vector2f(0.f, mov->GetVelocity().y));
 	}
