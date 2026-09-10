@@ -41,35 +41,37 @@ int EntityManagerNew::AddEntity(const Bitmask& i_mask) {
 	return entity;
 }
 int EntityManagerNew::AddEntity(const std::string& i_file) {
-	int EntityId = -1;
+	int entityId = -1;
 	std::ifstream file;
 	file.open(Utils::GetWorkingDirectory() + "Assets/Entities/" + i_file + ".entity");
 	if (!file.is_open()) {
 		return -1;
 	}
 	std::string line;
+	std::string name;
 	while (std::getline(file, line)) {
 		if (line[0] == '|') { continue; }
 		std::stringstream keystream(line);
 		std::string type; 
 		keystream >> type;
 		if (type == "Name") {
-
+			keystream >> name;
 		}
 		else if (type == "Attributes") {
-			if (EntityId != -1) { continue; }
+			if (entityId != -1) { continue; }
 			Bitset set = 0;
 			Bitmask mask;
 			keystream >> set;
 			mask.setMask(set);
-			EntityId = AddEntity(mask);
-			if (EntityId == -1) { return -1; }
+			entityId = AddEntity(mask);
+			if (entityId == -1) { return -1; }
+			m_entitiesIdsNames.emplace(name, (EntityId)entityId);
 		}
 		else if (type == "Component") {
-			if (EntityId == -1) { continue; }
+			if (entityId == -1) { continue; }
 			unsigned int c_id = 0;
 			keystream >> c_id;
-			C_Base* component = GetComponent<C_Base>(EntityId,(Component) c_id);
+			C_Base* component = GetComponent<C_Base>(entityId,(Component) c_id);
 			if (!component) { continue; }
 			keystream >> *component;
 			if (component->getComponentType() == Component::SpriteSheet) { 
@@ -79,7 +81,7 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 		}
  	}
 	file.close();
-	return EntityId;
+	return entityId;
 }
 
 bool EntityManagerNew::RemoveEntity(const EntityId& i_id) {
@@ -142,6 +144,7 @@ void EntityManagerNew::Purge() {
 		entity.second.first.Clear();
 	}
 	m_entities.clear();
+	m_entitiesIdsNames.clear();
 	m_idCounter = 0;
 }
 

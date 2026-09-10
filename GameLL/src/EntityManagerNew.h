@@ -53,6 +53,8 @@ private:
 
 	
 	unsigned int m_idCounter;
+	//first is the name second is an id of the entity
+	std::unordered_map<std::string, EntityId> m_entitiesIdsNames;
 	EntityContainer m_entities;
 	ComponentFactory m_cFactory;
 	SystemManager* m_systems;

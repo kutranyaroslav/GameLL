@@ -2,7 +2,7 @@ Name Player
 Attributes 1023
 |Component|ID|Indidividual attributes
 |Position|ID|x|y|elevation|
-Component 0 0 0 1
+Component 0 0 0 2
 |SpriteSheet|SheetName|
 Component 1 Player
 |State|Enum0-5 state|

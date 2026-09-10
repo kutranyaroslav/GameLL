@@ -1,6 +1,7 @@
 #include "Map.h"
 #include "S_Collision.h"
 #include "S_Movement.h"
+#include "S_Interaction.h"
 
 Map::Map(SharedContext* i_context, const std::string& i_mapName, const std::string& i_tilesetName
 	, const std::string& i_tileset, const std::string& i_texture ) :
@@ -280,14 +281,7 @@ void Map::LoadMap(const std::string& i_path) {
 				unsigned int tileSolidity;
 				keystream >> tileCords.x >> tileCords.y >> tileLayer >> tileSolidity;
 				if (tileCords.x > m_maxMapSize.x || tileCords.y > m_maxMapSize.y || tileLayer >= Sheet::Num_Layers) { continue; }
-				Tile* tile = new Tile();
-				tile->m_properties = itr3->second;
-				tile->m_properties->m_tilesetName = tilesetname;
-				if (!m_tilemap.emplace(ConvertCordinates(tileCords.x, tileCords.y,tileLayer), tile).second) {
-					delete tile;
-					tile = nullptr;
-					continue;
-				}
+				Tile* tile = PlaceTile(tileCords.x, tileCords.y, tileLayer, itr3->second);
 				std::string warp;
 				keystream >> warp;
 				tile->m_checkout = false;
@@ -351,6 +345,42 @@ void Map::LoadNext(const std::string& i_name) {
 	m_checkoutTiles.clear();
 	LoadMap(i_name);
 }
+Tile* Map::PlaceTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer, TileInfo* i_info) {
+	if (!i_info) { return nullptr; }
+	RemoveTile(i_x, i_y, i_layer); // если там уже что-то стояло — уберём вместе с его сущностью
+
+	Tile* tile = new Tile();
+	tile->m_properties = i_info;
+	tile->m_checkout = false;
+
+	for (auto& tag : i_info->m_materialTags) {
+		int linked = m_context->m_systemManager->GetSystem<S_Interaction>(System::Interaction)
+			->SpawnForTile(tag,
+				sf::Vector2f((i_x + 0.5f) * Sheet::Tile_Size, (i_y + 0.5f) * Sheet::Tile_Size),
+				i_layer);
+		if (linked != -1) { tile->m_linkedEntity = linked; break; }
+	}
+
+	m_tilemap.emplace(ConvertCordinates(i_x, i_y, i_layer), tile);
+	return tile;
+}
+
+bool Map::RemoveTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer) {
+	auto itr = m_tilemap.find(ConvertCordinates(i_x, i_y, i_layer));
+	if (itr == m_tilemap.end()) { return false; }
+	if (itr->second->m_linkedEntity != -1) {
+		// иначе перекраска клетки в редакторе оставляет старую аптечку висеть без тайла под ней
+		m_context->m_entityManager->RemoveEntity(itr->second->m_linkedEntity);
+	}
+	delete itr->second;
+	m_tilemap.erase(itr);
+	return true;
+}
+
+
+
+
+
 
 
 float Map::GetGravity() const { return m_mapGravity; }

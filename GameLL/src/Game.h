@@ -22,6 +22,7 @@ private:
 	StateManager m_stateManager;
 	TextureManager m_textureManager;
 	SharedContext m_context;
+	//system manager must be define before entity manaager to avoid problems with purgin in game engine
 	SystemManager m_systemManager;
 	EntityManagerNew m_entityManager;
 	FontManager m_fontManager;

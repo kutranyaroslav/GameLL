@@ -4,8 +4,9 @@ using ComponentType = unsigned int;
 
 enum class Component {
 	Position = 0, SpriteSheet, State, Movable, Controller,Collidable, SoundEmitter, SoundListener,
-	LightSource, Particles, Interactable
+	LightSource, Particles, Interactable,
 };
 enum class System {
-	Renderer = 0, Movement,Collision, Control, State, SheetAnimation,Sound, Lighting, Particles
+	Renderer = 0, Movement,Collision, Control, State, SheetAnimation,Sound, Lighting, Particles,
+	Interaction,
 };

@@ -11,7 +11,7 @@ public:
 	~S_Renderer();
 	void Update(float i_dT) override;
 	void HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) override;
-	void Notify(const  Message& i_message);
+	void Notify(const  Message& i_message)override;
 	void Render(Window* i_wind, unsigned int i_layer);
 	void LoadMaterial(const std::string& i_materialName) override;
 	void LoadMaterials() override;

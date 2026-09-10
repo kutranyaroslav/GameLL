@@ -239,41 +239,15 @@ void GUI_Viewport::SetClickedTileInfo(TileInfo* i_info)
 {
 	m_clickedTileInfo = i_info;
 }
-void GUI_Viewport::ChangeMap()
-{
-	if (m_world)
-	{
-		Map* m = m_world->GetCurrentMap();
-		if (m) {
-			unsigned int key = m->ConvertCordinates(m_clickedTilePos.x, m_clickedTilePos.y, m_layerIndex);
-			TileMap* tileMap = m->GetTileMap();
-			if (tileMap) {
-				auto itr = tileMap->find(key);
-				if (itr == tileMap->end()) { 
-					//there is no tile yet
-					if (m_clickedTileInfo == nullptr) { return; }
-					Tile* newTile = new Tile();
-					newTile->m_properties = m_clickedTileInfo;
-					tileMap->emplace(key, newTile);
-					
-				}
-				else
-				{
-					//there is a tile 
-					Tile* oldTile = itr->second;
-					delete oldTile;
-					tileMap->erase(key);
-					if (m_clickedTileInfo == nullptr) { return;  }
-					Tile* newTile = new Tile();
-					newTile->m_properties = m_clickedTileInfo; 
-					tileMap->emplace(key, newTile);
-					
-
-				}
-
-			}
-		}
+void GUI_Viewport::ChangeMap() {
+	if (!m_world) { return; }
+	Map* m = m_world->GetCurrentMap();
+	if (!m) { return; }
+	if (m_clickedTileInfo == nullptr) {
+		m->RemoveTile(m_clickedTilePos.x, m_clickedTilePos.y, m_layerIndex);
+		return;
 	}
+	m->PlaceTile(m_clickedTilePos.x, m_clickedTilePos.y, m_layerIndex, m_clickedTileInfo);
 }
 void GUI_Viewport::ClearBrush()
 {

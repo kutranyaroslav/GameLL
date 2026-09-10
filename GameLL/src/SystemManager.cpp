@@ -10,6 +10,7 @@
 #include "S_Sound.h"
 #include "S_Lighting.h"
 #include "S_Particles.h"
+#include "S_Interaction.h"
 SystemManager::SystemManager() :m_entityManager(nullptr){
 	m_systems[System::Control] = new S_Control(this);
 	m_systems[System::Movement] = new S_Movement(this);
@@ -20,6 +21,7 @@ SystemManager::SystemManager() :m_entityManager(nullptr){
 	m_systems[System::Sound] = new S_Sound(this);
 	m_systems[System::Lighting] = new S_Lighting(this);
 	m_systems[System::Particles] = new S_Particles(this);
+	m_systems[System::Interaction] = new S_Interaction(this);
 
 }
 SystemManager::~SystemManager() { PurgeSystems(); }
