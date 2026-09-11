@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "S_Sound.h"
+#include "S_Interaction.h"
 Game::Game() :
 	m_window(),
 	m_stateManager(&m_context),
@@ -21,6 +22,8 @@ Game::Game() :
 	m_context.m_soundManager = &m_soundManager;
 	m_context.m_world = &m_world;
 	m_context.m_shaderManager = &m_shaderManager;
+	//to load materials for interaction object we must do it here 
+	m_systemManager.GetSystem<S_Interaction>(System::Interaction)->LoadMaterials();
 	//TO DO Erase after developement done
 	m_systemManager.SetSharedContext(&m_context);
 	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");

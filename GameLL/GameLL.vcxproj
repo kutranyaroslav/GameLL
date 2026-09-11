@@ -97,6 +97,7 @@
     <ClCompile Include="src\C_Collidable.cpp" />
     <ClCompile Include="src\C_Controller.cpp" />
     <ClCompile Include="src\C_Drawable.cpp" />
+    <ClCompile Include="src\C_Interactable.cpp" />
     <ClCompile Include="src\C_Movable.cpp" />
     <ClCompile Include="src\C_Position.cpp" />
     <ClCompile Include="src\C_SoundEmitter.cpp" />
@@ -140,6 +141,7 @@
     <ClCompile Include="src\S_Base.cpp" />
     <ClCompile Include="src\S_Collision.cpp" />
     <ClCompile Include="src\S_Control.cpp" />
+    <ClCompile Include="src\S_Interaction.cpp" />
     <ClCompile Include="src\S_Lighting.cpp" />
     <ClCompile Include="src\S_Particles.cpp" />
     <ClCompile Include="src\S_Movement.cpp" />
@@ -165,6 +167,7 @@
     <ClInclude Include="src\C_Collidable.h" />
     <ClInclude Include="src\C_Controller.h" />
     <ClInclude Include="src\C_Drawable.h" />
+    <ClInclude Include="src\C_Interactable.h" />
     <ClInclude Include="src\C_Movable.h" />
     <ClInclude Include="src\C_Position.h" />
     <ClInclude Include="src\C_SoundEmitter.h" />
@@ -213,6 +216,7 @@
     <ClInclude Include="src\S_Base.h" />
     <ClInclude Include="src\S_Collision.h" />
     <ClInclude Include="src\S_Control.h" />
+    <ClInclude Include="src\S_Interaction.h" />
     <ClInclude Include="src\S_Movement.h" />
     <ClInclude Include="src\C_LightSource.h" />
     <ClInclude Include="src\C_Particles.h" />

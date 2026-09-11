@@ -12,6 +12,8 @@ namespace Materials
 
         else if (i_material == "Metall")
             return MaterialType::Metall;
+		else if (i_material == "AidKit")
+			return MaterialType::AidKit;
 
         return MaterialType::None;
     }
@@ -23,6 +25,8 @@ namespace Materials
             return "Stone";
         else if (i_material == MaterialType::Metall)
             return "Metall";
+		else if (i_material == MaterialType::AidKit)
+			return "AidKit";
 
         return "";
     }

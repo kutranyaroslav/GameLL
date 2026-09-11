@@ -12,6 +12,7 @@ namespace Materials {
 		Wood,
 		Stone,
 		Metall,
+		AidKit,
 	};
 	MaterialType StringToMaterialType(const std::string& i_material);
 

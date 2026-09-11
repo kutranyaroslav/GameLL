@@ -1,0 +1,15 @@
+Name AidKit
+Attributes 1829
+|Component|ID|Indidividual attributes
+|Position|ID|x|y|elevation|
+Component 0 0 0 2
+|SpriteSheet|SheetName|
+Component 1 AidKit
+|State|Enum0-5 state|
+Component 2 7
+|Collidable|m_AABB.width|m_AABB.height|m_offset.x|m_offset.y|Origin|
+Component 5 64 64 5 5 1
+|LightSource|radius|r|g|b|intensity|
+Component 8 60 255 226 170 1.0
+|Interactable|look Read in method it is too big to put here
+Component 10 2 25 1

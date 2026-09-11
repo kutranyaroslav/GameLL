@@ -14,6 +14,7 @@ void S_State::Update(float i_dT) {
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 	for (auto& entity : m_entities) {
 		C_State* state = entities->GetComponent<C_State>(entity, Component::State);
+		if (state == nullptr) { return; }
 		if (state->GetState() == EntityState::Walking) {
 			if (state->GetDelay() > 0.f) {
 				state->GetDelay() -= i_dT;

@@ -48,6 +48,7 @@ struct Tile {
 	TileInfo* m_properties;
 	bool m_checkout;
 	std::string m_checkoutMap;
+	int m_linkedEntity = -1;
 };
 struct TileKey {
 	int id; 
@@ -82,6 +83,10 @@ public:
 	void Update(float i_dT);
 	void Draw(sf::RenderTarget& i_target,const sf::View& i_view,unsigned int i_layer);
 	bool SaveTiles();
+	// единая точка входа "положить тайл в (x,y,layer)" — и загрузка .map, и редактор
+	// идут через неё, чтобы привязанная логика (спавн сущности под материалом) срабатывала одинаково
+	Tile* PlaceTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer, TileInfo* i_info);
+	bool RemoveTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer);
 	
 	//SETTERS AND GETTER
 
@@ -102,7 +107,10 @@ public:
 	unsigned int ConvertCordinates(const unsigned int& i_x, const unsigned int& i_y, const unsigned int& i_layer)const;
 private:
 	
-	bool LoadTiles(const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles);
+	// i_name - имя тайлсета, под которым он лежит в m_tilesets. Прокидывается сюда, чтобы
+	// проштамповать его в каждый TileInfo: SaveTiles пишет TileInfo::m_tilesetName в строку
+	// TILE, и без этого имя уезжало в файл пустым.
+	bool LoadTiles(const std::string& i_name, const std::string& i_path, const std::string& i_texture, TileSet& i_outTiles);
 	void PurgeMap();
 	void PurgeTileSet();
 	
