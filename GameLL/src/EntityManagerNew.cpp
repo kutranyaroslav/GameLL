@@ -50,7 +50,7 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 	std::string line;
 	std::string name;
 	while (std::getline(file, line)) {
-		if (line[0] == '|') { continue; }
+		if (line.empty()) { continue; }
 		std::stringstream keystream(line);
 		std::string type; 
 		keystream >> type;
@@ -65,7 +65,7 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 			mask.setMask(set);
 			entityId = AddEntity(mask);
 			if (entityId == -1) { return -1; }
-			m_entitiesIdsNames.emplace(name, (EntityId)entityId);
+			m_entitiesIdsNames.emplace((EntityId)entityId, name);
 		}
 		else if (type == "Component") {
 			if (entityId == -1) { continue; }
@@ -92,6 +92,7 @@ bool EntityManagerNew::RemoveEntity(const EntityId& i_id) {
 		itr->second.second.pop_back();
 		
 	}
+	m_entitiesIdsNames.erase(itr->first);
 	m_entities.erase(itr);
 	m_systems->RemoveEntity(i_id);
 	return true;
