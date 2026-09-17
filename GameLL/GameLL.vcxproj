@@ -121,6 +121,7 @@
     <ClCompile Include="src\GUI_Scrollbar.cpp" />
     <ClCompile Include="src\GUI_Textfield.cpp" />
     <ClCompile Include="src\GUI_Viewport.cpp" />
+    <ClCompile Include="src\ItemManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainMenu.cpp" />
     <ClCompile Include="src\Map.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="src\GUI_Scrollbar.h" />
     <ClInclude Include="src\GUI_Textfield.h" />
     <ClInclude Include="src\GUI_Viewport.h" />
+    <ClInclude Include="src\ItemManager.h" />
     <ClInclude Include="src\MainMenu.h" />
     <ClInclude Include="src\Map.h" />
     <ClInclude Include="src\Materials\Materials.h" />

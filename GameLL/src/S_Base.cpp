@@ -15,7 +15,7 @@ bool S_Base::HasEntity(const EntityId& i_entity) {
 	return std::find(m_entities.begin(), m_entities.end(), i_entity) != m_entities.end();
 }
 bool S_Base::RemoveEntity(const EntityId& i_entity) {
-	auto itr = std::find_if(m_entities.begin(), m_entities.end(), [&i_entity](EntityId& id) {return id = i_entity;});
+	auto itr = std::find_if(m_entities.begin(), m_entities.end(), [&i_entity](EntityId& id) {return id == i_entity;});
 	if (itr == m_entities.end()) { return false; }
 	m_entities.erase(itr);
 	return true;

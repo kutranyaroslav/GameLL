@@ -216,6 +216,9 @@
     <ClCompile Include="src\S_Interaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ItemManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Anim_Base.h">
@@ -441,6 +444,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\S_Interaction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ItemManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
