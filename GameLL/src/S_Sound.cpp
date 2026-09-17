@@ -120,16 +120,17 @@ void S_Sound::Notify(const Message& i_message) {
 			break;
 		}
 
-		if (sound == EntitySound::Footstep) 
+		if (sound == EntitySound::Footstep)
 		{
 			C_Position* pos = entities->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
 			
 			//here we need right logic for elevation checking cause slides are under the player and the continuing the logic with materials 
 			//overriding the sound of the tile with the material of the slide
 			Tile* tile = nullptr;
+			Map* m  = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
+			if (!m){	return;	}
 			for (int i = pos->getElevation() - 1; i >= 0; --i) {
-				tile = m_systemMgr->GetSharedContext()->m_world->
-					GetCurrentMap()->GetTile(pos->GetPosition().x / Sheet::Tile_Size, pos->GetPosition().y / Sheet::Tile_Size, i);
+				tile = m->GetTile(pos->GetPosition().x / Sheet::Tile_Size, pos->GetPosition().y / Sheet::Tile_Size, i);
 
 			}
 			if (tile) {

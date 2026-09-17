@@ -143,8 +143,8 @@ void StateManager::SwitchTo(const StateType& i_type) {
 			m_currentState = tmp_state;
 			m_states.erase(itr);
 			m_states.emplace_back(tmp_type, tmp_state);
+			m_shared->m_soundManager->ChangeState(i_type); // moved: now runs before Activate()
 			tmp_state->Activate();
-			m_shared->m_soundManager->ChangeState(i_type); // fix bug 1
 			return;
 		}
 	}
@@ -154,7 +154,6 @@ void StateManager::SwitchTo(const StateType& i_type) {
 	m_shared->m_soundManager->ChangeState(i_type);
 	m_states.back().second->Activate();
 }
-
 
 void StateManager::CreateState(const StateType& i_type) {
 	auto newState = m_stateFactory.find(i_type);
