@@ -120,30 +120,21 @@ void S_Sound::Notify(const Message& i_message) {
 			break;
 		}
 
+		//the material of the tile under the entity overrides its footstep sound
+		std::string materialSound = "";
 		if (sound == EntitySound::Footstep)
 		{
 			C_Position* pos = entities->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
-			
-			//here we need right logic for elevation checking cause slides are under the player and the continuing the logic with materials 
-			//overriding the sound of the tile with the material of the slide
-			Tile* tile = nullptr;
-			Map* m  = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
-			if (!m){	return;	}
-			for (int i = pos->getElevation() - 1; i >= 0; --i) {
-				tile = m->GetTile(pos->GetPosition().x / Sheet::Tile_Size, pos->GetPosition().y / Sheet::Tile_Size, i);
-
-			}
+			Tile* tile = GetTileUnder(pos);
 			if (tile) {
 				for (auto& itr : tile->m_properties->m_materialTags) {
-					if (m_materials.find(Materials::MaterialToString(itr)) != m_materials.end()) {
-						EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int, Materials::MaterialToString(itr));
-					};
+					materialSound = GetMaterialSound(itr);
+					if (materialSound != "") { break; }
 				}
 			}
-
-
 		}
-			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int);
+			//one emit: the material sound when there is one, the emitter's own otherwise
+			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int, materialSound);
 			break;
 		}
 	case EntityMessage::Direction_Changed: {
@@ -200,6 +191,35 @@ void S_Sound::Notify(const Message& i_message) {
 	}
 
 
+
+//topmost tile under the entity: slides sit below it, so the first hit going down wins
+Tile* S_Sound::GetTileUnder(C_Position* i_pos) {
+	if (!i_pos) { return nullptr; }
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (!context || !context->m_world) { return nullptr; }
+	Map* map = context->m_world->GetCurrentMap();
+	if (!map) { return nullptr; }
+	unsigned int x = static_cast<unsigned int>(i_pos->GetPosition().x / Sheet::Tile_Size);
+	unsigned int y = static_cast<unsigned int>(i_pos->GetPosition().y / Sheet::Tile_Size);
+	//cast before the subtraction: getElevation() is unsigned and 0 - 1 wraps around
+	for (int layer = static_cast<int>(i_pos->getElevation()) - 1; layer >= 0; --layer) {
+		Tile* tile = map->GetTile(x, y, layer);
+		if (tile) { return tile; }
+	}
+	return nullptr;
+}
+
+//sound named by "Sound <name>" in the .material file, which is a file in Assets/SoundsFiles.
+//materials that declare none keep using their own name. "" means no material sound.
+std::string S_Sound::GetMaterialSound(const Materials::MaterialType& i_material) {
+	const std::string name = Materials::MaterialToString(i_material);
+	if (name == "") { return ""; }
+	auto material = m_materials.find(name);
+	if (material == m_materials.end()) { return ""; }
+	const std::vector<std::string>& sounds = material->second.m_soundNames;
+	if (sounds.empty()) { return name; }
+	return sounds[Utils::RandomIndex(sounds.size())];
+}
 
 sf::Vector3f S_Sound::MakeSoundPosition(const sf::Vector2f& i_pos, unsigned int i_elevation){
 	return sf::Vector3f(i_pos.x, i_elevation * Sheet::Tile_Size, i_pos.y);
