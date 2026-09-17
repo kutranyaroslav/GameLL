@@ -11,7 +11,7 @@
 #include "S_Lighting.h"
 #include "S_Particles.h"
 #include "S_Interaction.h"
-SystemManager::SystemManager() :m_entityManager(nullptr){
+SystemManager::SystemManager() :m_entityManager(nullptr), m_context(nullptr){
 	m_systems[System::Control] = new S_Control(this);
 	m_systems[System::Movement] = new S_Movement(this);
 	m_systems[System::State] = new S_State(this);
