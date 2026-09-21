@@ -10,6 +10,7 @@
 #include "C_SoundListener.h"
 #include "C_LightSource.h"
 #include "C_Particles.h"
+#include  "C_Interactable.h"
 EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr):
 	m_systems(i_systemMgr), m_textureManager(i_textureMgr), m_idCounter(0)
 {
@@ -23,6 +24,7 @@ EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i
 	AddComponentType<C_SoundListener>(Component::SoundListener);
 	AddComponentType<C_LightSource>(Component::LightSource);
 	AddComponentType<C_Particles>(Component::Particles);
+	AddComponentType<C_Interactable>(Component::Interactable);
 }
 
 EntityManagerNew::~EntityManagerNew() { 

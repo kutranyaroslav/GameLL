@@ -1,11 +1,14 @@
 #pragma once
 #include "Window.h"
+#include "CraftManager.h"
 #include "StateManager.h"
 #include "SpriteSheet.h"
 #include "SoundManager.h"
 #include "GUI_Manager.h"
 #include "ShaderManager.h"
 #include "World.h"
+#include "ItemManager.h"
+#include "CraftManager.h"
 class Game
 {
 public :
@@ -30,6 +33,8 @@ private:
 	AudioManager m_audioManager;
 	SoundManager m_soundManager;
 	ShaderManager m_shaderManager;
+	ItemManager m_itemManager;
+	CraftManager m_craftManager;
 	World m_world;
 	sf::Clock m_clock;
 	sf::Time m_elapsed;

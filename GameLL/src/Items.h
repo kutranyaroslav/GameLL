@@ -13,7 +13,7 @@ namespace Items {
 		KeyItem,
 	};
 
-	std::string  ItemCategoryToString(const ItemCategory& i_category) {
+	inline std::string  ItemCategoryToString(const ItemCategory& i_category) {
 		if (i_category == ItemCategory::Consumable) {
 			return "Consumable";
 		}
@@ -27,7 +27,7 @@ namespace Items {
 			return "KeyItem";
 		}
 	}
-	ItemCategory ItemCategoryFromString(const std::string& i_category) {
+	inline ItemCategory ItemCategoryFromString(const std::string& i_category) {
 		if (i_category == "Consumable") {
 			return ItemCategory::Consumable;
 		}

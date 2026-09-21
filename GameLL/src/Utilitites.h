@@ -30,7 +30,7 @@ namespace Utils {
         i_stream >> i_string;
         if (i_string.at(0) == '"')
         {
-            while ((i_string.at(i_string.length() - 1) != '"') || !i_stream.eof()) {
+            while ((i_string.at(i_string.length() - 1) != '"') && !i_stream.eof()) {
                 std::string str;
                 i_stream >> str;
                 i_string.append(" " + str);

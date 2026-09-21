@@ -1,6 +1,7 @@
 #pragma once
 #include "S_Base.h"
 #include "C_Interactable.h"
+#include "ItemManager.h"
 #include <functional>
 
 //message m_receiver = target entity, m_sender = actor entity
@@ -29,4 +30,5 @@ private:
 	void HandleSavePoint(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
 	void HandleTerminal(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
 	void HandleElevator(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	ItemManager* GetItemManager() const;
 };

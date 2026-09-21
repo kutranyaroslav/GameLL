@@ -5,6 +5,7 @@ C_Interactable::C_Interactable() :
 	m_oneShot(false), m_used(false), m_amount(0.f),
 	m_requiresKey(false), m_keyId(-1), m_quantity(0), m_targetId(-1)
 {
+
 }
 
 // формат: "Component <componentId> <interactionType> <поля именно под этот тип>"

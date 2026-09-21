@@ -120,7 +120,7 @@ void S_Sound::Notify(const Message& i_message) {
 			break;
 		}
 
-		if (sound == EntitySound::Footstep)
+	/*	if (sound == EntitySound::Footstep)
 		{
 			C_Position* pos = entities->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
 			
@@ -142,7 +142,7 @@ void S_Sound::Notify(const Message& i_message) {
 			}
 
 
-		}
+		}*/
 			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int);
 			break;
 		}
