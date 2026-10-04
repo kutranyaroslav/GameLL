@@ -236,8 +236,11 @@ bool Map::LoadTiles(const std::string& i_name, const std::string& i_path, const 
 				keystream >> numofMaterialTags;
 				for (int i = 0; i < numofMaterialTags; ++i) {
 					std::string materialTag;
-					keystream >> materialTag;	
-					tile->m_materialTags.push_back(Materials::StringToMaterialType(materialTag));
+					//a count bigger than the tags on the line used to tag the tile with None
+					if (!(keystream >> materialTag)) { break; }
+					Materials::MaterialType type = Materials::StringToMaterialType(materialTag);
+					if (type == Materials::MaterialType::None) { continue; }
+					tile->m_materialTags.push_back(type);
 				}
 			}
 

@@ -22,6 +22,8 @@ public:
 	void LoadMaterials()override;
 private:
 	sf::Vector3f MakeSoundPosition(const sf::Vector2f& i_entityPos, unsigned int i_elevation);
+	Tile* GetTileUnder(C_Position* i_pos);
+	std::string GetMaterialSound(const Materials::MaterialType& i_material);
 	void EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bool i_useId, bool i_relative,
 		int i_checkFrame = -1,const std::string& i_overrideSound = "");
 	void StopSound(const EntityId& i_entity, const EntitySound& i_sound);
