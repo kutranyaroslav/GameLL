@@ -116,10 +116,16 @@ void S_Interaction::HandleTerminal(EntityId i_target, EntityId i_actor, C_Intera
 
 void S_Interaction::HandleElevator(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
 	SharedContext* context = m_systemMgr->GetSharedContext();
+	i_data->GetItemId();
 	if (context && context->m_world && !i_data->GetTargetMap().empty()) {
 		context->m_world->SwitchTo(i_data->GetTargetMap());
 	}
 	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Map_Changed);
+}
+
+ItemManager * S_Interaction::GetItemManager() const {
+	SharedContext* ctx = m_systemMgr->GetSharedContext();
+	return ctx ? ctx->m_itemManager : nullptr;
 }
 
 void S_Interaction::LoadMaterials() {

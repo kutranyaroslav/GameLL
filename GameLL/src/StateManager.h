@@ -5,7 +5,10 @@
 #include "FontManager.h"
 #include "ShaderManager.h"
 #include "dev/ErrorLogManager.h"
+#include "ItemManager.h"
+#include "CraftManager.h"
 #include "Window.h"
+
 class World;
 class GUI_Manager;
 class EntityManager;
@@ -68,8 +71,12 @@ class StateManager;
 
 struct SharedContext {
 	SharedContext():m_wind(nullptr), m_eventManager(nullptr), m_textbox(nullptr), 
-		m_textureManager(nullptr), m_stateManager(nullptr), m_entityManager(nullptr), m_shaderManager(nullptr),
-		m_systemManager(nullptr),m_fontManager(nullptr), m_guiManager(nullptr),m_soundManager(nullptr), m_audioManager(nullptr),
+		m_textureManager(nullptr), m_stateManager(nullptr),
+	m_entityManager(nullptr), m_shaderManager(nullptr),
+		m_systemManager(nullptr),m_fontManager(nullptr),
+	m_guiManager(nullptr),m_soundManager(nullptr),
+	m_audioManager(nullptr),m_itemManager(nullptr),
+	m_craftManager(nullptr),
 		// States call LogException/createFile through this from their catch blocks.
 		m_errorLogManager(ErrorLogManager::GetInstance()),
 	m_world(nullptr)
@@ -90,6 +97,8 @@ struct SharedContext {
 	AudioManager* m_audioManager;
 	ErrorLogManager* m_errorLogManager;
 	World* m_world;
+	ItemManager* m_itemManager;
+	CraftManager* m_craftManager;
 	
 };
 

@@ -44,7 +44,8 @@ SharedContext* SystemManager::GetSharedContext()
 EntityManagerNew* SystemManager::GetEntityManager() { return m_entityManager; }
 MessageHandler* SystemManager::GetMessageHandler() { return &m_messages; }
 
-void SystemManager::AddEvent(const EntityId& i_entity, const EventId& i_event) {
+void SystemManager::AddEvent(const EntityId& i_entity,
+	const EventId& i_event) {
 	m_entityEvents[i_entity].AddEvent(i_event);
 }
 

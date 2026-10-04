@@ -120,6 +120,7 @@ void S_Sound::Notify(const Message& i_message) {
 			break;
 		}
 
+	/*	if (sound == EntitySound::Footstep)
 		//the material of the tile under the entity overrides its footstep sound
 		std::string materialSound = "";
 		if (sound == EntitySound::Footstep)
@@ -132,6 +133,10 @@ void S_Sound::Notify(const Message& i_message) {
 					if (materialSound != "") { break; }
 				}
 			}
+
+
+		}*/
+			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int);
 		}
 			//one emit: the material sound when there is one, the emitter's own otherwise
 			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int, materialSound);

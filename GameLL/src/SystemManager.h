@@ -23,7 +23,7 @@ public:
 		auto itr = m_systems.find(i_system);
 		return(itr != m_systems.end() ? dynamic_cast<T*>(itr->second) : nullptr);
 	}
-	void AddEvent(const EntityId& i_entity, const EventId& i_event);
+	void AddEvent(const EntityId& i_entity,const EventId& i_event);
 	void Update(float i_dT);
 	void HandleEvents();
 	void ProccesLastEvent(S_Base* i_system, const EntityId& i_entity);
