@@ -4,6 +4,7 @@
 
 #ifndef GAMELL_CRAFTMANAGER_H
 #define GAMELL_CRAFTMANAGER_H
+#pragma once
 #include "ItemManager.h"
 #include "Utilitites.h"
 #include <unordered_map>

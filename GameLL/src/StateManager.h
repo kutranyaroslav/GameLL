@@ -8,6 +8,7 @@
 #include "ItemManager.h"
 #include "CraftManager.h"
 #include "Window.h"
+#include "InventoryManager.h"
 
 class World;
 class GUI_Manager;
@@ -76,7 +77,7 @@ struct SharedContext {
 		m_systemManager(nullptr),m_fontManager(nullptr),
 	m_guiManager(nullptr),m_soundManager(nullptr),
 	m_audioManager(nullptr),m_itemManager(nullptr),
-	m_craftManager(nullptr),
+	m_craftManager(nullptr),m_inventoryManager(nullptr),
 		// States call LogException/createFile through this from their catch blocks.
 		m_errorLogManager(ErrorLogManager::GetInstance()),
 	m_world(nullptr)
@@ -99,6 +100,7 @@ struct SharedContext {
 	World* m_world;
 	ItemManager* m_itemManager;
 	CraftManager* m_craftManager;
+	InventoryManager* m_inventoryManager;
 	
 };
 

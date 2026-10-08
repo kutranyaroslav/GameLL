@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <functional>
 #include "EntityEventEnum.h"
+#include "InventoryManager.h"
 
 using EntityId = unsigned int; 
 using ComponentContainer = std::vector<C_Base*>;
@@ -19,7 +20,8 @@ class SystemManager;
 class EntityManagerNew
 {
 public:
-	EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr);
+	EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr
+		, InventoryManager* i_inventoryMgr);
 	~EntityManagerNew();
 	int AddEntity(const Bitmask& i_mask);
 	int AddEntity(const std::string& i_file);
@@ -59,6 +61,7 @@ private:
 	ComponentFactory m_cFactory;
 	SystemManager* m_systems;
 	TextureManager* m_textureManager;
+	InventoryManager* m_inventoryManager;
 
 };
 

@@ -1,8 +1,15 @@
 #include "InventoryManager.h"
-
-
-InventoryManager::InventoryManager(ItemManager *i_itemManager):
-m_itemManager(i_itemManager){
+#include "ItemManager.h"
+#include "CraftManager.h"
+#include <algorithm>
+#undef min
+InventoryManager::InventoryManager(
+    ItemManager* i_itemManager,
+    CraftManager* i_craftManager
+)
+    : m_itemManager(i_itemManager),
+      m_craftManager(i_craftManager)
+{
     m_inventorySlots.resize(SLOTS_AMOUNT_START);
 }
 InventoryManager::~InventoryManager() {}
@@ -42,7 +49,6 @@ bool InventoryManager::AddItem(Items::ItemId i_itemId, int i_amount) {
     return false;
 }
 
-
 bool InventoryManager::RemoveItem(Items::ItemId i_itemId, int i_amount) {
     if (!m_itemManager || i_amount <= 0) {return false;}
     for (InventorySlot& slot: m_inventorySlots) {
@@ -59,12 +65,17 @@ bool InventoryManager::RemoveItem(Items::ItemId i_itemId, int i_amount) {
 }
 
 bool InventoryManager::MoveItem(std::size_t i_from, std::size_t i_to) {
-    if (i_from > m_inventorySlots.size() || i_to > m_inventorySlots.size()) {
+    if (i_from >= m_inventorySlots.size() || i_to >= m_inventorySlots.size()) {
         return false;
     }
     std::swap(m_inventorySlots[i_from], m_inventorySlots[i_to]);
     return true;
 }
+
+void InventoryManager::SetUpInventorySize(std::size_t i_size) {
+    m_inventorySlots.resize(i_size);
+}
+
 std::size_t InventoryManager::GetSlotCount() const {
     return m_inventorySlots.size();
 }

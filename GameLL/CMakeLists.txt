@@ -15,7 +15,10 @@ file(GLOB_RECURSE GAMELL_SOURCES CONFIGURE_DEPENDS
 
 add_executable(GameLL ${GAMELL_SOURCES}
         src/CraftManager.cpp
-        src/CraftManager.h)
+        src/CraftManager.h
+        src/C_Inventory.cpp
+        src/C_Inventory.h
+        src/C_Inventory.h)
 
 target_include_directories(GameLL PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
@@ -26,6 +29,7 @@ target_include_directories(GameLL PRIVATE
 # Matches GameLL.vcxproj exactly: static SFML, same define, same extra
 # dependency libs the static SFML libs need pulled in directly.
 target_compile_definitions(GameLL PRIVATE SFML_STATIC)
+target_compile_options(GameLL PRIVATE /showIncludes)
 
 set(SFML_MODULES graphics window system audio network)
 foreach(mod ${SFML_MODULES})

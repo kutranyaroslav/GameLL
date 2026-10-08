@@ -1,5 +1,5 @@
 Name Player
-Attributes 1023
+Attributes 3071
 |Component|ID|Indidividual attributes
 |Position|ID|x|y|elevation|
 Component 0 0 0 2
@@ -21,3 +21,5 @@ Component 7
 Component 8 240 255 226 170 1.0
 |Particles|rate|lifetime|speed|spreadDegrees|size|r|g|b|
 Component 9 18 1.6 34 70 3 255 170 90
+|Inventory for Now No Parameters|
+Component 11 

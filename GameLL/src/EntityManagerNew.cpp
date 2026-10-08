@@ -11,8 +11,10 @@
 #include "C_LightSource.h"
 #include "C_Particles.h"
 #include  "C_Interactable.h"
-EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr):
-	m_systems(i_systemMgr), m_textureManager(i_textureMgr), m_idCounter(0)
+#include "C_Inventory.h"
+EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr
+	,InventoryManager* i_inventoryMgr):
+	m_systems(i_systemMgr), m_textureManager(i_textureMgr),m_inventoryManager(i_inventoryMgr), m_idCounter(0)
 {
 	AddComponentType<C_Position>(Component::Position);
 	AddComponentType<C_SpriteSheet>(Component::SpriteSheet);
@@ -25,6 +27,7 @@ EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i
 	AddComponentType<C_LightSource>(Component::LightSource);
 	AddComponentType<C_Particles>(Component::Particles);
 	AddComponentType<C_Interactable>(Component::Interactable);
+	AddComponentType<C_Inventory>(Component::Inventory);
 }
 
 EntityManagerNew::~EntityManagerNew() { 
@@ -79,6 +82,11 @@ int EntityManagerNew::AddEntity(const std::string& i_file) {
 			if (component->getComponentType() == Component::SpriteSheet) { 
 				C_SpriteSheet* sheet = (C_SpriteSheet*)component;
 				sheet->Create(m_textureManager);
+			}else if (component->getComponentType() == Component::Inventory) {
+				C_Inventory* inventory = (C_Inventory*)component;
+				if (m_inventoryManager) {
+					inventory->SetInventoryManager(m_inventoryManager);
+				}
 			}
 		}
  	}

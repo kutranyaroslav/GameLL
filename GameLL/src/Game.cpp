@@ -4,9 +4,10 @@
 Game::Game() :
 	m_window(),
 	m_stateManager(&m_context),
-	m_entityManager(&m_systemManager, &m_textureManager),
 	m_guiManager(m_window.GetEventManager(), &m_context), m_soundManager(&m_audioManager),m_world(&m_context),
-	m_craftManager(&m_itemManager)
+m_entityManager(&m_systemManager, &m_textureManager , &m_inventoryManager),
+	m_craftManager(&m_itemManager) ,m_inventoryManager(&m_itemManager, &m_craftManager)
+
 {
 	manualFrame = 0;
 	m_systemManager.SetEntityManager(&m_entityManager);
