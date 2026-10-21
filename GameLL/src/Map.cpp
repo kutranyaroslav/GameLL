@@ -223,6 +223,7 @@ bool Map::LoadTiles(const std::string& i_name, const std::string& i_path, const 
 			TileKey key{ tileId, tileRow };
 			if (tileId < 0) { continue; }
 			std::string material = "";
+			bool hasCustomeAABB = false;
 			///Add texture of tile set by name Tilesheet in textures.cfg 
 			TileInfo* tile = new TileInfo(m_context, i_texture, tileId, tileRow);
 			// Без этого SaveTiles писал пустое имя тайлсета в строку TILE ("TILE  0 0 15 5 0 0"),
@@ -230,9 +231,17 @@ bool Map::LoadTiles(const std::string& i_name, const std::string& i_path, const 
 			tile->m_tilesetName = i_name;
 			keystream >> tile->m_name >> tile->m_friction.x >> tile->m_friction.y >>
 				tile->m_deadly >> tile->m_solid;
+			keystream >> hasCustomeAABB;
+			if (hasCustomeAABB) {
+				//Code for applying custome AABB for smaller Tiles
+				float left,top,width,height = 0;
+				keystream >> left >> top >> width >> height;
+				tile->m_hasCustomCollisionBounds = true;
+				tile->m_collisionBounds = sf::FloatRect(left,top, width, height);
+			}
 			keystream >> material;
 			if (material != "") {
-				int numofMaterialTags = 0; 
+				int numofMaterialTags = 0;
 				keystream >> numofMaterialTags;
 				for (int i = 0; i < numofMaterialTags; ++i) {
 					std::string materialTag;

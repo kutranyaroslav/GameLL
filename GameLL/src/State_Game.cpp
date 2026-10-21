@@ -82,6 +82,7 @@ void State_Game::Activate() {
 	// both unconditionally after making sure the map itself exists.
 	world->AddTileset(targetMap, "TestTileset", "Tiles.cfg", "Tilesheet");
 	world->AddTileset(targetMap, "TestTileset2", "Tiles.cfg", "Tilesheet2");
+	world->AddTileset(targetMap, "scifi_objects", "scifi_objects.cfg", "scifi_objects");
 	world->LoadMap(targetMap);
 	if (!world->GetCurrentMap()) { m_player = -1; return; }
 

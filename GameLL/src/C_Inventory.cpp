@@ -6,25 +6,26 @@
 
 bool C_Inventory::AddItem(Items::ItemId i_itemId, int i_amount) {
     if (m_inventoryManager) {
-        m_inventoryManager->AddItem(i_itemId, i_amount);
+       return m_inventoryManager->AddItem(i_itemId, i_amount);
+
     }
 }
 
 bool C_Inventory::RemoveItem(Items::ItemId i_itemId, int i_amount) {
     if (m_inventoryManager) {
-        m_inventoryManager->RemoveItem(i_itemId, i_amount);
+       return m_inventoryManager->RemoveItem(i_itemId, i_amount);
     }
 }
 
 bool C_Inventory::MoveItem(std::size_t i_from, std::size_t i_to) {
     if (m_inventoryManager) {
-        m_inventoryManager->MoveItem(i_from, i_to);
+         return  m_inventoryManager->MoveItem(i_from, i_to);
     }
 }
 
 void C_Inventory::SetUpInventorySize(std::size_t i_size) {
     if (m_inventoryManager) {
-        m_inventoryManager->SetUpInventorySize(i_size);
+        return m_inventoryManager->SetUpInventorySize(i_size);
     }
 }
 

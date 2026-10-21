@@ -9,14 +9,15 @@ State_Developement::State_Developement(StateManager* i_stateManager)
 
 void State_Developement::onCreate()
 {
-	
+
 	m_view = m_stateManager->GetSharedContext()->m_wind->GetUIView();
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
 	m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "TestTileset", "Tiles.cfg", "Tilesheet");
 	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP2", "TestTileset2", "Tiles.cfg", "Tilesheet2");
+	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP1", "scifi_objects", "scifi_objects.cfg", "scifi_objects");
 	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP2");
 	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
-	//open up the bind file to write the changes 
+	//open up the bind file to write the changes
 	m_state = StateType::Developement;
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
 
@@ -24,7 +25,7 @@ void State_Developement::onCreate()
 	gui->LoadInterface(StateType::Developement, "ListLayers.interface", "ListLayers");
 	gui->LoadInterface(StateType::Developement, "ListLevels.interface", "ListLevels");
 	//setting up levels interface
-	
+
 	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetMaps().begin(); itr !=
 		m_stateManager->GetSharedContext()->m_world->GetMaps().end(); itr++) {
 		GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListLevels");
@@ -50,7 +51,7 @@ void State_Developement::onCreate()
 			gui->LoadStyle("ListLayersLabel.style", e);
 			e->ApplyStyle();
 			interf->AdjustContentSize(e);
-			e->SetText("Layer " + std::to_string(i)); 
+			e->SetText("Layer " + std::to_string(i));
 			evMgr->AddDynamicBinding("Layer_" + std::to_string(i), EventType::GUI_Click, interf->GetName(), e->GetName());
 			evMgr->AddCallback(StateType::Developement, "Key_" + std::to_string(i), &State_Developement::React, this);
 			evMgr->AddCallback(StateType::Developement, "Layer_" + std::to_string(i), &State_Developement::React, this);
@@ -62,8 +63,8 @@ void State_Developement::onCreate()
 	m_layerIndex = 0;
 
 
-		//setting default map and getting default tileset 
-		
+		//setting default map and getting default tileset
+
 		for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
 			itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); ++itr) {
 			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
@@ -84,7 +85,7 @@ void State_Developement::onCreate()
 		}
 		SetUpLayoutTilesetBottom();
 
-		//setting up the viewport for the map 
+		//setting up the viewport for the map
 		//TO DO doesn't work the size you have to add manually what is not good to be honest
 		gui->LoadInterface(StateType::Developement, "ViewportDevMode.interface", "Viewport");
 		GUI_Interface* i = gui->GetInterface(StateType::Developement, "Viewport");
@@ -118,7 +119,7 @@ void State_Developement::onCreate()
 		// OnResize derives its delta from m_scale, so this is a no-op for interfaces
 		// that are already at the current scale.
 		gui->OnResize(m_stateManager->GetSharedContext()->m_wind->GetWindowSize());
-	
+
 }
 void State_Developement::onDestroy()
 {
@@ -252,7 +253,7 @@ void State_Developement::React(EventDetails* i_details)
 			}
 		}
 		outFile.close();
-		//switching the map 
+		//switching the map
 		auto& dc = m_dynamicCallbacks;
 		dc.erase(
 			std::remove_if(dc.begin(), dc.end(), [&](const std::string& s) {
@@ -305,7 +306,7 @@ void State_Developement::React(EventDetails* i_details)
 		outFileNew.close();
 
 	}
-	//Clicks on GUI_Tileset buttons 
+	//Clicks on GUI_Tileset buttons
 	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
 		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
 
