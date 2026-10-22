@@ -14,7 +14,12 @@ public:
 	void OnResize(const sf::Vector2u& i_size) override;
 	void SetUpLayoutTilesetBottom();
 private:
+	void PopulateTilesetDropdown();
+	void SelectTileset(const std::string& i_tilesetName);
+	void RemoveCurrentTilesetPreview();
 	unsigned int m_layerIndex;
 	int m_testIndex;
 	std::string m_currentTileset;
+	std::string m_tilesetPreviewName;
+	bool m_hitboxEditMode = false;
 };

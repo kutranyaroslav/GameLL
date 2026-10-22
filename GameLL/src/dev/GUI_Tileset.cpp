@@ -1,7 +1,9 @@
-#include "GUI_Tileset.h"
+	#include "GUI_Tileset.h"
 #include "../GUI_Interface.h"
 #include "../GUI_Manager.h"
+#include <algorithm>
 #include <cmath>
+#include <iostream>
 GUI_Tileset::GUI_Tileset(const std::string& i_name, GUI_Interface* i_owner) :
 	GUI_Element(i_name, GUI_ElementType::Tileset, i_owner), m_tilesetSize(0.f, 0.f), m_selectedTileId(-1)
 	,m_hoverTileDefColor(0, 0, 255, 125),m_clickedTileDefColor(0,255,0,130), m_hoverTilePos(-1, -1), m_clickedTilePos(-1, -1)
@@ -13,6 +15,9 @@ GUI_Tileset::GUI_Tileset(const std::string& i_name, GUI_Interface* i_owner) :
 	m_hoverTile.setSize(sf::Vector2f(Sheet::Tile_Size, Sheet::Tile_Size));
 	m_selectedTile.setFillColor(sf::Color(0, 0, 0, 0));
 	m_selectedTile.setSize(sf::Vector2f(Sheet::Tile_Size, Sheet::Tile_Size));
+	m_hitboxOutline.setFillColor(sf::Color(0, 0, 0, 0));
+	m_hitboxOutline.setOutlineColor(sf::Color(255, 90, 70, 255));
+	m_hitboxOutline.setOutlineThickness(-2.f);
 	
 }
 
@@ -51,10 +56,31 @@ void GUI_Tileset::OnClick(const sf::Vector2f& i_mousePos) {
 		+ tileY * tileSize;
 	m_selectedTile.setPosition(x, y);
 	m_selectedTile.setSize(sf::Vector2f(tileSize, tileSize));
+	if (m_hitboxEditMode) {
+		m_draggingHitbox = true;
+		m_hitboxDragStart = sf::Vector2f(local.x - tileX * tileSize,
+			local.y - tileY * tileSize) / m_scale;
+		m_hitboxDragEnd = m_hitboxDragStart;
+		UpdateHitboxFromMouse(i_mousePos);
+	}
 
 	SetRedraw(true);
 }
 void GUI_Tileset::OnRelease() {
+	if (m_draggingHitbox && m_world && m_world->GetCurrentMap()) {
+		if (TileInfo* tile = GetSelectedTileInfo()) {
+			std::string tilesetName = m_name;
+			const std::string suffix = "_Tileset";
+			if (tilesetName.size() >= suffix.size()) {
+				tilesetName.erase(tilesetName.size() - suffix.size());
+			}
+			if (!m_world->GetCurrentMap()->SaveTilesetHitbox(tilesetName, tile)) {
+				std::cerr << "Could not save hitbox for tile " << tile->m_id << ':'
+					<< tile->m_row << " in tileset " << tilesetName << '\n';
+			}
+		}
+	}
+	m_draggingHitbox = false;
 	SetState(GUI_ElementState::Neutral);
 }
 void GUI_Tileset::OnHover(const sf::Vector2f& i_mousePos) {
@@ -75,10 +101,15 @@ void GUI_Tileset::OnHover(const sf::Vector2f& i_mousePos) {
 			+ tileY * tileSize;
 	m_hoverTile.setPosition(x, y);
 	m_hoverTile.setSize(sf::Vector2f(tileSize, tileSize));
-	SetState(GUI_ElementState::Focused);
+	if (m_draggingHitbox) {
+		UpdateHitboxFromMouse(i_mousePos);
+		// GUI_Interface dispatches OnRelease only to children still in Clicked state.
+		SetState(GUI_ElementState::Clicked);
+	}
+	else { SetState(GUI_ElementState::Focused); }
 }
 void GUI_Tileset::OnLeave() {
-	SetState(GUI_ElementState::Neutral);
+	SetState(m_draggingHitbox ? GUI_ElementState::Clicked : GUI_ElementState::Neutral);
 	m_hoverTile.setFillColor(sf::Color(0, 0, 0,0));
 	m_hoverTilePos = { -1,-1 };
 }
@@ -97,6 +128,20 @@ void GUI_Tileset::DrawOverlay(sf::RenderTarget* i_target)
 {
 	i_target->draw(m_selectedTile);
 	i_target->draw(m_hoverTile);
+	if (TileInfo* tile = GetSelectedTileInfo()) {
+		const float scale = (m_scale > 0.f ? m_scale : 1.f);
+		const float tileSize = GetScaledTileSize();
+		const sf::Vector2f tilePosition = GetGlobalPosition() + sf::Vector2f(
+			m_clickedTilePos.x * tileSize, m_clickedTilePos.y * tileSize);
+		const sf::FloatRect bounds = tile->GetCollisionBounds();
+		m_hitboxOutline.setPosition(tilePosition.x + bounds.left * scale,
+			tilePosition.y + bounds.top * scale);
+		m_hitboxOutline.setSize(sf::Vector2f(bounds.width * scale, bounds.height * scale));
+		m_hitboxOutline.setOutlineColor(m_hitboxEditMode
+			? sf::Color(255, 90, 70, 255) : sf::Color(80, 220, 120, 255));
+		m_hitboxOutline.setOutlineThickness(-std::max(1.f, 2.f * scale));
+		i_target->draw(m_hitboxOutline);
+	}
 	
 }
 
@@ -159,7 +204,7 @@ int GUI_Tileset::GetSelectedTileId() const
 TileInfo* GUI_Tileset::GetSelectedTileInfo()
 {
 	if (m_selectedTileId == -1) { return nullptr; }
-	if (!m_world) { return nullptr; }
+	if (!m_world || !m_world->GetCurrentMap()) { return nullptr; }
 	std::string tilesetName = m_name;
 
 	const std::string suffix = "_Tileset";
@@ -169,6 +214,7 @@ TileInfo* GUI_Tileset::GetSelectedTileInfo()
 	}
 
 	TileSet* tileset = m_world->GetCurrentMap()->GetTileset(tilesetName);
+	if (!tileset) { return nullptr; }
 
 	TileKey key{ m_clickedTilePos.x, m_clickedTilePos.y };
 
@@ -181,4 +227,42 @@ TileInfo* GUI_Tileset::GetSelectedTileInfo()
 	itr->second->m_tilesetName = tilesetName;
 
 	return itr->second;
+}
+
+void GUI_Tileset::SetHitboxEditMode(bool i_enabled)
+{
+	m_hitboxEditMode = i_enabled;
+	if (!i_enabled) { m_draggingHitbox = false; }
+	SetRedraw(true);
+}
+
+bool GUI_Tileset::GetHitboxEditMode() const
+{
+	return m_hitboxEditMode;
+}
+
+void GUI_Tileset::UpdateHitboxFromMouse(const sf::Vector2f& i_mousePos)
+{
+	if (!m_hitboxEditMode || !m_draggingHitbox || m_clickedTilePos.x < 0 ||
+		m_clickedTilePos.y < 0) { return; }
+	const float scale = (m_scale > 0.f ? m_scale : 1.f);
+	const float tileSize = GetScaledTileSize();
+	const sf::Vector2f tilePosition = GetGlobalPosition() + sf::Vector2f(
+		m_clickedTilePos.x * tileSize, m_clickedTilePos.y * tileSize);
+	const sf::Vector2f local = (i_mousePos - tilePosition) / scale;
+	m_hitboxDragEnd.x = std::clamp(local.x, 0.f, static_cast<float>(Sheet::Tile_Size));
+	m_hitboxDragEnd.y = std::clamp(local.y, 0.f, static_cast<float>(Sheet::Tile_Size));
+	const float left = std::min(m_hitboxDragStart.x, m_hitboxDragEnd.x);
+	const float top = std::min(m_hitboxDragStart.y, m_hitboxDragEnd.y);
+	const float right = std::max(m_hitboxDragStart.x, m_hitboxDragEnd.x);
+	const float bottom = std::max(m_hitboxDragStart.y, m_hitboxDragEnd.y);
+	if (TileInfo* tile = GetSelectedTileInfo()) {
+		tile->m_collisionBounds = sf::FloatRect(left, top,
+			std::max(1.f, right - left), std::max(1.f, bottom - top));
+		tile->m_hasCustomCollisionBounds = true;
+		// The collision system only tests tiles marked solid, so creating a
+		// hitbox also enables collision for this tile.
+		tile->m_solid = true;
+		SetRedraw(true);
+	}
 }

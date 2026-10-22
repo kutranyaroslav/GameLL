@@ -49,6 +49,7 @@ m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 	RegisterElement<GUI_Textfield>(GUI_ElementType::Textfield);
 	RegisterElement<GUI_Tileset>(GUI_ElementType::Tileset);
 	RegisterElement<GUI_Viewport>(GUI_ElementType::Viewport);
+	RegisterElement<GUI_Droplist>(GUI_ElementType::Droplist);
 	//RegisterElement<GUI_Window>(GUI_ElementType::Window);
 	m_elemTypes.emplace("Label", GUI_ElementType::Label);
 	m_elemTypes.emplace("Button", GUI_ElementType::Button);
@@ -57,10 +58,15 @@ m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 	m_elemTypes.emplace("Window", GUI_ElementType::Window);
 	m_elemTypes.emplace("Tileset", GUI_ElementType::Tileset);
 	m_elemTypes.emplace("Viewport", GUI_ElementType::Viewport);
+	m_elemTypes.emplace("Droplist", GUI_ElementType::Droplist);
 
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left", &GUI_Manager::HandleClick, this);
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left_Release", &GUI_Manager::HandleRelease, this);
 	m_eventMgr->AddCallback(StateType(0), "Text_Entered", &GUI_Manager::HandleTextEntered, this);
+	m_eventMgr->AddCallback(StateType(0), "GUI_Mouse_Wheel", &GUI_Manager::HandleMouseWheel, this);
+	Binding* mouseWheel = new Binding("GUI_Mouse_Wheel");
+	mouseWheel->BindEvent(EventType::MouseWheel);
+	if (!m_eventMgr->AddBinding(mouseWheel)) { delete mouseWheel; }
 }
 
 
@@ -68,6 +74,8 @@ GUI_Manager::~GUI_Manager() {
 	m_eventMgr->RemoveCallback(StateType(0), "Mouse_Left");
 	m_eventMgr->RemoveCallback(StateType(0), "Mouse_Left_Release");
 	m_eventMgr->RemoveCallback(StateType(0), "Text_Entered");
+	m_eventMgr->RemoveCallback(StateType(0), "GUI_Mouse_Wheel");
+	m_eventMgr->RemoveBinding("GUI_Mouse_Wheel");
 	for (auto& itr : m_interfaces) {
 		for (auto& itr2 : itr.second) {
 			delete itr2.second;
@@ -103,9 +111,10 @@ bool GUI_Manager::RemoveInterface(const StateType& i_state, const std::string& i
 void GUI_Manager::Update(float i_dT) {
 	sf::Vector2i mousePxPos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
 	
-	// convert from pixel space to view/world space
-	sf::Vector2f mousePos = m_context->m_wind->GetRenderWindow()->mapPixelToCoords(mousePxPos);
-	// now use mousePos (Vector2f) everywhere instead of sf::Vector2f(mousePos)
+	// GUI elements are positioned in the UI view, so hover and click handling
+	// must convert pixels through that same view.
+	sf::Vector2f mousePos = m_context->m_wind->GetRenderWindow()->mapPixelToCoords(
+		mousePxPos, *m_context->m_wind->GetUIView());
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
 	std::vector<std::pair<std::string ,GUI_Interface*>> ordered(state->second.begin(), state->second.end());
@@ -140,17 +149,29 @@ void GUI_Manager::Draw(sf::RenderWindow* i_wind) {
 }
 
 void GUI_Manager::HandleClick(EventDetails* i_details) {
+	if (!m_context || !m_context->m_wind || !m_eventMgr) { return; }
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
-	sf::Vector2i mousePos = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
+	const sf::Vector2i pixel = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
+	const sf::Vector2f mousePos = m_context->m_wind->GetRenderWindow()->mapPixelToCoords(
+		pixel, *m_context->m_wind->GetUIView());
+	for (auto& guiInterface : state->second) {
+		for (const auto& child : guiInterface.second->GetElements()) {
+			if (auto* droplist = dynamic_cast<GUI_Droplist*>(child.second)) {
+				if (droplist->IsOpen() && !droplist->IsInside(mousePos)) {
+					droplist->Close();
+				}
+			}
+		}
+	}
 	std::vector<std::pair<std::string, GUI_Interface*>> ordered(state->second.begin(), state->second.end());
 	for (auto itr = ordered.rbegin(); itr != ordered.rend(); ++itr) {
-		if (!itr->second->IsInside(sf::Vector2f(mousePos))) { continue; }
+		if (!itr->second->IsInside(mousePos)) { continue; }
 		if (!itr->second->GetActive()) { continue; }
 		// Exactly one interface may hold focus, otherwise HandleTextEntered cannot
 		// tell which one should receive typing.
 		for (auto& other : state->second) { other.second->Defocus(); }
-		itr->second->OnClick(sf::Vector2f(mousePos));
+		itr->second->OnClick(mousePos);
 		itr->second->Focus();
 		if (itr->second->IsBeingMoved()) { itr->second->BeginMoving(); }
 		return;
@@ -170,6 +191,28 @@ void GUI_Manager::HandleRelease(EventDetails* i_details) {
 		}
 	}
 }
+
+void GUI_Manager::HandleMouseWheel(EventDetails* i_details)
+{
+	if (!i_details || !m_context || !m_context->m_wind) { return; }
+	auto state = m_interfaces.find(m_currentState);
+	if (state == m_interfaces.end()) { return; }
+	const sf::Vector2i pixel = m_eventMgr->GetMousePos(m_context->m_wind->GetRenderWindow());
+	const sf::Vector2f mousePos = m_context->m_wind->GetRenderWindow()->mapPixelToCoords(
+		pixel, *m_context->m_wind->GetUIView());
+	for (auto& guiInterface : state->second) {
+		if (!guiInterface.second->GetActive()) { continue; }
+		for (const auto& child : guiInterface.second->GetElements()) {
+			if (auto* droplist = dynamic_cast<GUI_Droplist*>(child.second)) {
+				if (droplist->IsPopupInside(mousePos)) {
+					droplist->OnMouseWheel(i_details->mouseWheelDelta);
+					return;
+				}
+			}
+		}
+	}
+}
+
 void GUI_Manager::HandleTextEntered(EventDetails* i_details) {
 	auto state = m_interfaces.find(m_currentState);
 	if (state == m_interfaces.end()) { return; }
@@ -228,6 +271,9 @@ GUI_ElementType GUI_Manager::StringToType(const std::string& i_string)
 	}
 	else if (i_string == "Viewport") {
 		return GUI_ElementType::Viewport;
+	}
+	else if (i_string == "Droplist") {
+		return GUI_ElementType::Droplist;
 	}
 	return GUI_ElementType::None;
 }

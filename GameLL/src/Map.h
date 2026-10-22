@@ -151,6 +151,7 @@ public:
 	~Map();
 	bool AddTileset(const std::string& i_name, const std::string& i_path, const std::string& i_texture);
 	bool RemoveTileset(const std::string& i_name);
+	bool SaveTilesetHitbox(const std::string& i_name, const TileInfo* i_tile);
 
 	bool HasTileset(const std::string& i_name);
 	void LoadMap(const std::string& i_path);
@@ -195,6 +196,7 @@ private:
 	std::string m_mapName;
 	std::string m_mapFileName;
 	std::unordered_map<std::string, TileSet> m_tilesets;
+	std::unordered_map<std::string, std::string> m_tilesetPaths;
 	TileMap m_tilemap;
 	sf::Sprite m_background;
 	TileInfo m_defaultTile;

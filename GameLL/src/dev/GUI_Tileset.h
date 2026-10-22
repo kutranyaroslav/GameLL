@@ -18,6 +18,8 @@ public:
     void ApplyBgStyle() override;
     void CallbackSetup()override;
 	void SetTileset(const std::string& i_tilesetName);
+	void SetHitboxEditMode(bool i_enabled);
+	bool GetHitboxEditMode() const;
 
 	std::string&  GetTilesetTexture();
 	// One tile as it appears on screen (texture tile * current GUI scale).
@@ -28,11 +30,17 @@ public:
 private:
     sf::RectangleShape m_hoverTile;
     sf::RectangleShape m_selectedTile;
+    sf::RectangleShape m_hitboxOutline;
     sf::Color m_clickedTileDefColor; 
     sf::Color m_hoverTileDefColor;
     sf::Vector2i m_clickedTilePos{ -1, -1 };
     sf::Vector2i m_hoverTilePos{ -1,-1 };
     sf::Vector2f m_tilesetSize;
     int m_selectedTileId;
+	bool m_hitboxEditMode = false;
+	bool m_draggingHitbox = false;
+	sf::Vector2f m_hitboxDragStart{ 0.f, 0.f };
+	sf::Vector2f m_hitboxDragEnd{ 0.f, 0.f };
+	void UpdateHitboxFromMouse(const sf::Vector2f& i_mousePos);
 };
 

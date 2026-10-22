@@ -2,6 +2,11 @@
 #include "S_Collision.h"
 #include "S_Movement.h"
 #include "S_Interaction.h"
+#include <cctype>
+#include <exception>
+#include <iomanip>
+#include <sstream>
+#include <vector>
 
 Map::Map(SharedContext* i_context, const std::string& i_mapName, const std::string& i_tilesetName
 	, const std::string& i_tileset, const std::string& i_texture ) :
@@ -25,7 +30,10 @@ bool Map::AddTileset(const std::string& i_name, const std::string& i_path, const
 	if (itr != m_tilesets.end()) { return false; }
 	TileSet tileset;
 	if(!LoadTiles(i_name,i_path,i_texture,tileset)){return false;}
-	return m_tilesets.emplace(i_name, std::move(tileset)).second;
+	auto inserted = m_tilesets.emplace(i_name, std::move(tileset));
+	if (!inserted.second) { return false; }
+	m_tilesetPaths[i_name] = i_path;
+	return true;
 
 }
 bool Map::RemoveTileset(const std::string& i_name) {
@@ -36,9 +44,93 @@ bool Map::RemoveTileset(const std::string& i_name) {
 	}
 	itr->second.clear();
 	m_tilesets.erase(itr);
+	m_tilesetPaths.erase(i_name);
 	return true;
 
 }
+
+bool Map::SaveTilesetHitbox(const std::string& i_name, const TileInfo* i_tile)
+{
+	if (!i_tile) { return false; }
+	auto source = m_tilesetPaths.find(i_name);
+	if (source == m_tilesetPaths.end()) { return false; }
+	const std::string fileName = Utils::GetWorkingDirectory() + "nav//" + source->second;
+	std::ifstream input(fileName);
+	if (!input.is_open()) { return false; }
+
+	auto nextToken = [](const std::string& i_line, std::size_t& io_pos, std::string& o_token) {
+		while (io_pos < i_line.size() &&
+			std::isspace(static_cast<unsigned char>(i_line[io_pos]))) { ++io_pos; }
+		if (io_pos >= i_line.size()) { return false; }
+		const std::size_t start = io_pos;
+		while (io_pos < i_line.size() &&
+			!std::isspace(static_cast<unsigned char>(i_line[io_pos]))) { ++io_pos; }
+		o_token = i_line.substr(start, io_pos - start);
+		return true;
+	};
+
+	std::vector<std::string> lines;
+	std::string line;
+	bool updated = false;
+	while (std::getline(input, line)) {
+		std::size_t pos = 0;
+		std::string token;
+		if (nextToken(line, pos, token) && token[0] != '|') {
+			int tileId = -1;
+			try { tileId = std::stoi(token); }
+			catch (const std::exception&) { lines.push_back(line); continue; }
+			if (nextToken(line, pos, token)) {
+				int tileRow = -1;
+				try { tileRow = std::stoi(token); }
+				catch (const std::exception&) { lines.push_back(line); continue; }
+				bool complete = true;
+				std::size_t solidStart = 0;
+				std::size_t solidEnd = 0;
+				// Name, friction x/y, deadly, and solid precede the optional bounds.
+				for (int field = 0; field < 5; ++field) {
+					const std::size_t fieldStart = pos;
+					if (!nextToken(line, pos, token)) { complete = false; break; }
+					if (field == 4) { solidStart = fieldStart; solidEnd = pos; }
+				}
+				if (complete && tileId == static_cast<int>(i_tile->m_id) &&
+					tileRow == static_cast<int>(i_tile->m_row)) {
+					const std::size_t afterSolid = pos;
+					std::string suffix = line.substr(afterSolid);
+					std::size_t suffixPos = 0;
+					std::string hasBounds;
+					if (nextToken(suffix, suffixPos, hasBounds) &&
+						(hasBounds == "0" || hasBounds == "1")) {
+						if (hasBounds == "1") {
+							for (int bound = 0; bound < 4; ++bound) {
+								if (!nextToken(suffix, suffixPos, token)) { break; }
+							}
+						}
+						suffix = suffix.substr(suffixPos);
+					}
+					std::ostringstream bounds;
+					bounds << std::fixed << std::setprecision(3)
+						<< " 1 " << i_tile->m_collisionBounds.left
+						<< ' ' << i_tile->m_collisionBounds.top
+						<< ' ' << i_tile->m_collisionBounds.width
+						<< ' ' << i_tile->m_collisionBounds.height;
+					const std::string prefix = line.substr(0, solidStart) + "1" +
+						line.substr(solidEnd, afterSolid - solidEnd);
+					line = prefix + bounds.str() + suffix;
+					updated = true;
+				}
+			}
+		}
+		lines.push_back(line);
+	}
+	input.close();
+	if (!updated) { return false; }
+
+	std::ofstream output(fileName, std::ios::trunc);
+	if (!output.is_open()) { return false; }
+	for (const std::string& savedLine : lines) { output << savedLine << '\n'; }
+	return output.good();
+}
+
 bool Map::HasTileset(const std::string& i_name) {
 	return m_tilesets.find(i_name)!= m_tilesets.end();
 }
@@ -49,7 +141,8 @@ std::string Map::GetMapName()
 }
 
 TileSet* Map::GetTileset(const std::string& i_name) {
-	return &m_tilesets.find(i_name)->second;
+	auto found = m_tilesets.find(i_name);
+	return found == m_tilesets.end() ? nullptr : &found->second;
 }
 TileMap* Map::GetTileMap()
 {
@@ -205,6 +298,7 @@ void Map::PurgeTileSet() {
 		itr2.clear();
 	}
 	m_tilesets.clear();
+	m_tilesetPaths.clear();
 	m_tileSetCount = 0;
 }
 

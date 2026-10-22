@@ -1,7 +1,6 @@
 #include "State_Developement.h"
 #include "World.h"
-#include "ErrorLogManager.h"
-#include <fstream>
+#include <algorithm>
 State_Developement::State_Developement(StateManager* i_stateManager)
 	:BaseState(i_stateManager), m_layerIndex(0), m_currentTileset(""), m_testIndex(0)
 {
@@ -19,6 +18,14 @@ void State_Developement::onCreate()
 	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
 	//open up the bind file to write the changes
 	m_state = StateType::Developement;
+	Binding* hitboxEditBinding = new Binding("ToggleHitboxEdit");
+	hitboxEditBinding->BindEvent(EventType::KeyDown, EventInfo(sf::Keyboard::H));
+	if (evMgr->AddBinding(hitboxEditBinding)) {
+		evMgr->AddCallback(StateType::Developement, "ToggleHitboxEdit",
+			&State_Developement::React, this);
+		m_dynamicCallbacks.push_back("ToggleHitboxEdit");
+	}
+	else { delete hitboxEditBinding; }
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
 
 	gui->LoadInterface(StateType::Developement, "ListBottomDevMode.interface", "ListBottom");
@@ -63,26 +70,22 @@ void State_Developement::onCreate()
 	m_layerIndex = 0;
 
 
-		//setting default map and getting default tileset
-
-		for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
-			itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); ++itr) {
-			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
-			if (i) {
-				i->AddElement(GUI_ElementType::Label, itr->first);
-				GUI_Element* e = i->GetElement(itr->first);
-				if(!e){continue;}
-				gui->LoadStyle("ListBottomLabel.style", e);
-				e->ApplyStyle();
-				e->SetWorld(m_stateManager->GetSharedContext()->m_world);
-				i->AdjustContentSize(e);
-				e->SetText(itr->first);
-				evMgr->AddDynamicBinding(itr->first, EventType::GUI_Click, i->GetName(), e->GetName());
-				evMgr->AddCallback(StateType::Developement, itr->first, &State_Developement::React, this);
-				m_dynamicCallbacks.push_back(itr->first);
-
-			}
+		GUI_Interface* tilesetPanel = gui->GetInterface(StateType::Developement, "ListBottom");
+		if (tilesetPanel && tilesetPanel->AddElement(GUI_ElementType::Droplist, "TilesetDropdown")) {
+			GUI_Element* element = tilesetPanel->GetElement("TilesetDropdown");
+			gui->LoadStyle("ListBottomLabel.style", element);
+			element->SetSize(sf::Vector2f(300.f, 40.f) * element->GetScale());
+			element->SetPosition(sf::Vector2f(tilesetPanel->GetPadding().x,
+				tilesetPanel->GetPadding().y));
+			element->ApplyStyle();
+			EventManager* events = m_stateManager->GetSharedContext()->m_eventManager;
+			events->AddDynamicBinding("TilesetDropdown", EventType::GUI_Click,
+				tilesetPanel->GetName(), element->GetName());
+			events->AddCallback(StateType::Developement, "TilesetDropdown",
+				&State_Developement::React, this);
+			m_dynamicCallbacks.push_back("TilesetDropdown");
 		}
+		PopulateTilesetDropdown();
 		SetUpLayoutTilesetBottom();
 
 		//setting up the viewport for the map
@@ -182,210 +185,166 @@ void State_Developement::Update(const sf::Time& i_time)
 
 		}
 	}
-	GUI_Interface* iTilesets = gui->GetInterface(StateType::Developement, "ListBottom");
-	if (m_currentTileset == "" || !iTilesets) { return; }
-	GUI_Element* eTileset = iTilesets->GetElement(m_currentTileset);
-	if (iTilesets && eTileset) {
-		eTileset->SetState(GUI_ElementState::Clicked);
-	}
 }
-//to do finish the function get rid off this fucking file overwriting and just make it throuhg dynamic binding
 void State_Developement::React(EventDetails* i_details)
 {
-	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
-	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-	if (m_stateManager->GetSharedContext()->m_world->HasMap(i_details->m_name) &&
-		m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetMapName() != i_details->m_name) {
-		//clearing the hover tile of viewport
-		GUI_Interface* iViewport = gui->GetInterface(StateType::Developement, "Viewport");
+	if (!i_details) { return; }
+	SharedContext* context = m_stateManager->GetSharedContext();
+	GUI_Manager* gui = context->m_guiManager;
+	World* world = context->m_world;
 
-
-		//clearing the current interface from elements
-		GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
-		std::ifstream file;
-		try {
-			file.open(Utils::GetWorkingDirectory() + "//nav//binding_config.cfg", std::ios::in | std::ios::out);
-		}
-		catch (const cException& e) {
-			m_stateManager->GetSharedContext()->m_errorLogManager->LogException(e);
-			THROW_EXCEPTION(2, "ERROR_FILE_NOT_FOUND");
-		}
-		std::string line;
-		std::vector<std::string> lines;
-		while (std::getline(file, line)) {
-			std::stringstream ss(line);
-			std::string key;
-			ss >> key;
-			bool shouldRemove = false;
-			for (auto itr = m_dynamicCallbacks.begin(); itr != m_dynamicCallbacks.end(); ++itr) {
-				if (key == *itr) { shouldRemove = true; break; };
-			}
-			if (!shouldRemove) {
-				lines.push_back(line);
-			}
-		}
-		file.close();
-		std::ofstream outFile;
-		try {
-			outFile.open(Utils::GetWorkingDirectory() + "//nav//binding_config.cfg", std::ios::trunc);
-		}
-		catch (const cException& e) {
-			m_stateManager->GetSharedContext()->m_errorLogManager->LogException(e);
-			THROW_EXCEPTION(2, "ERROR_FILE_NOT_FOUND");
-		}
-
-		// Write the remaining lines back to the file
-		for (const auto& validLine : lines) {
-			outFile << validLine << std::endl;
-		}
-		if (i) {
-			for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
-				itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
-				GUI_Element* e = i->GetElement(itr->first);
-				GUI_Element* e2 = i->GetElement(itr->first + "_Tileset");
-				if (e) {
-					i->RemoveElement(e->GetName());
-				}
-				if (e2) {
-					i->RemoveElement(e2->GetName());
-				}
-
-			}
-		}
-		outFile.close();
-		//switching the map
-		auto& dc = m_dynamicCallbacks;
-		dc.erase(
-			std::remove_if(dc.begin(), dc.end(), [&](const std::string& s) {
-				// remove old tileset names (not Layer_ or Key_ entries)
-				for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
-					itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++)
-					if (s == itr->first) return true;
-				return false;
-				}),
-			dc.end()
-		);
-		m_stateManager->GetSharedContext()->m_world->SwitchTo(i_details->m_name);
-
-
-		std::ofstream outFileNew;
-		try {
-			outFileNew.open(Utils::GetWorkingDirectory() + "//nav//binding_config.cfg", std::ios::app);
-		}
-		catch (const cException& e) {
-			m_stateManager->GetSharedContext()->m_errorLogManager->LogException(e);
-			THROW_EXCEPTION(2, "ERROR_FILE_NOT_FOUND");
-		}
-		int index = 0;
-		float e_x = 0.f;
-		float e_y = 0.f;
-		float pos_x = 0.f;
-		//placing new callbacks to out file and placing new elements
-		for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
-			itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
-			if (i) {
-				i->AddElement(GUI_ElementType::Label, itr->first);
-				GUI_Element* e = i->GetElement(itr->first);
-				gui->LoadStyle("ListBottomLabel.style", e);
-				e->ApplyStyle();
-				i->AdjustContentSize(e);
-				e_x = e->GetPosition().x;
-				e_y = e->GetPosition().y;
-				pos_x = e_x + i->GetPadding().x + (index * (e->GetSize().x + e->GetMargin().x));
-				e->SetPosition(sf::Vector2f(pos_x, e_y));
-				e->SetText(itr->first);
-				++index;
-				if (outFileNew.is_open()) {
-					outFileNew << "\n" << itr->first << " " << "27:" << i->GetName() << ":" << e->GetName();
-					evMgr->AddCallback(StateType::Developement, itr->first, &State_Developement::React, this);
-					m_dynamicCallbacks.push_back(itr->first);
-				}
-			}
-
-		}
-		outFileNew.close();
-
+	if (i_details->m_name == "TilesetDropdown") {
+		GUI_Interface* panel = gui->GetInterface(StateType::Developement, "ListBottom");
+		auto* dropdown = panel ? dynamic_cast<GUI_Droplist*>(panel->GetElement("TilesetDropdown")) : nullptr;
+		if (dropdown) { SelectTileset(dropdown->GetSelectedOption()); }
+		return;
 	}
-	//Clicks on GUI_Tileset buttons
-	for (auto itr = m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().begin();
-		itr != m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->GetTilesets().end(); itr++) {
-
-		if (i_details->m_name == itr->first + "_Tileset") {
-			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
-			auto* tileset = dynamic_cast<GUI_Tileset*>(i->GetElement(itr->first + "_Tileset"));
-			GUI_Interface* v = gui->GetInterface(StateType::Developement, "Viewport");
-			auto* viewport = dynamic_cast<GUI_Viewport*>(v->GetElement("ViewportMap"));
-			if (tileset && viewport) {
-				viewport->SetClickedTileInfo(tileset->GetSelectedTileInfo());
-			}
-		}
-
-		if (i_details->m_name == itr->first) {
-			GUI_Interface* i = gui->GetInterface(StateType::Developement, "ListBottom");
-			if (i) {
-				if (m_currentTileset != "" && m_currentTileset != itr->first) {
-					GUI_Element* e = i->GetElement(m_currentTileset + "_Tileset");
-					if (e) {
-						i->RemoveElement(e->GetName());
-					}
-
-				}
-			}
-			m_currentTileset = itr->first;
-			float i_y = 0.f;
-			if (i) {
-				i->AddElement(GUI_ElementType::Tileset, itr->first + "_Tileset");
-				GUI_Element* e = i->GetElement(itr->first + "_Tileset");
-				GUI_Element* e2 = i->GetElement(itr->first);
-				i_y = e2->GetPosition().y + e2->GetSize().y + i->GetPadding().y;
-				gui->LoadStyle("ListBottomTileset.style", e);
-				e->SetBackgroundImage(itr->second.at(TileKey{ 0, 0 })->m_texture);
-				e->SetPosition(sf::Vector2f(0, i_y));
-				e->ApplyStyle();
-				//setting up for the viewport
-				e->SetWorld(m_stateManager->GetSharedContext()->m_world);
-				i->AdjustContentSize(e);
-				//setting up the Callbacks for the new tileset_Tileset element
-				EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-				evMgr->AddDynamicBinding(itr->first + "_Tileset", EventType::GUI_Click, i->GetName(), e->GetName());
-				evMgr->AddCallback(StateType::Developement, itr->first + "_Tileset", &State_Developement::React, this);
-			}
-
-		}
+	if (i_details->m_name == "ToggleHitboxEdit") {
+		m_hitboxEditMode = !m_hitboxEditMode;
+		GUI_Interface* panel = gui->GetInterface(StateType::Developement, "ListBottom");
+		auto* tileset = panel
+			? dynamic_cast<GUI_Tileset*>(panel->GetElement(m_tilesetPreviewName)) : nullptr;
+		if (tileset) { tileset->SetHitboxEditMode(m_hitboxEditMode); }
+		return;
 	}
 
+	if (i_details->m_name == m_tilesetPreviewName && !m_tilesetPreviewName.empty()) {
+		GUI_Interface* panel = gui->GetInterface(StateType::Developement, "ListBottom");
+		GUI_Interface* viewportPanel = gui->GetInterface(StateType::Developement, "Viewport");
+		auto* tileset = panel ? dynamic_cast<GUI_Tileset*>(panel->GetElement(m_tilesetPreviewName)) : nullptr;
+		auto* viewport = viewportPanel ? dynamic_cast<GUI_Viewport*>(viewportPanel->GetElement("ViewportMap")) : nullptr;
+		if (tileset && viewport) { viewport->SetClickedTileInfo(tileset->GetSelectedTileInfo()); }
+		return;
+	}
 
+	if (world->HasMap(i_details->m_name) && world->GetCurrentMap() &&
+		world->GetCurrentMap()->GetMapName() != i_details->m_name) {
+		RemoveCurrentTilesetPreview();
+		world->SwitchTo(i_details->m_name);
+		PopulateTilesetDropdown();
+		SetUpLayoutTilesetBottom();
+		return;
+	}
 
-	for (int layer = 0; layer < Sheet::Num_Layers; layer++) {
-		if (i_details->m_name == "Layer_" + std::to_string(layer) || i_details->m_name == "Key_" + std::to_string(layer)) {
+	for (int layer = 0; layer < Sheet::Num_Layers; ++layer) {
+		if (i_details->m_name == "Layer_" + std::to_string(layer) ||
+			i_details->m_name == "Key_" + std::to_string(layer)) {
 			m_layerIndex = layer;
-			GUI_Interface* iViewport = gui->GetInterface(StateType::Developement, "Viewport");
-			if (!iViewport) { continue; }
-			GUI_Element* e = iViewport->GetElement("ViewportMap");
-			if (!e) { continue; }
-			e->SetLayer(m_layerIndex);
+			GUI_Interface* viewportPanel = gui->GetInterface(StateType::Developement, "Viewport");
+			GUI_Element* viewport = viewportPanel ? viewportPanel->GetElement("ViewportMap") : nullptr;
+			if (viewport) { viewport->SetLayer(m_layerIndex); }
+			return;
 		}
-
 	}
 
 	if (i_details->m_name == "Key_Escape") {
 		m_stateManager->SwitchTo(StateType::MainMenu);
+		return;
 	}
 	if (i_details->m_name == "ViewportMapHover") {
-		GUI_Interface* v = gui->GetInterface(StateType::Developement, "Viewport");
-		GUI_Interface* t = gui->GetInterface(StateType::Developement, "ListBottom");
-		GUI_Interface* m = gui->GetInterface(StateType::Developement, "ListLevels");
-		if (v && t && m) {
-			auto* tileset = dynamic_cast<GUI_Tileset*>(t->GetElement(m_currentTileset + "_Tileset"));
-			auto* viewport = dynamic_cast<GUI_Viewport*>(v->GetElement("ViewportMap"));
-			if (tileset && viewport) {
-				viewport->SetBrush(tileset->GetTilesetTexture(), tileset->GetSelectedTileId());
-			}
-			if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()->HasTileset(m_currentTileset)) {
-				viewport->ClearBrush();
-			}
+		GUI_Interface* viewportPanel = gui->GetInterface(StateType::Developement, "Viewport");
+		GUI_Interface* tilesetPanel = gui->GetInterface(StateType::Developement, "ListBottom");
+		auto* tileset = tilesetPanel
+			? dynamic_cast<GUI_Tileset*>(tilesetPanel->GetElement(m_tilesetPreviewName)) : nullptr;
+		auto* viewport = viewportPanel
+			? dynamic_cast<GUI_Viewport*>(viewportPanel->GetElement("ViewportMap")) : nullptr;
+		if (tileset && viewport && tileset->GetSelectedTileId() >= 0) {
+			viewport->SetBrush(tileset->GetTilesetTexture(), tileset->GetSelectedTileId());
 		}
+		else if (viewport) { viewport->ClearBrush(); }
+	}
+}
 
+void State_Developement::PopulateTilesetDropdown()
+{
+	SharedContext* context = m_stateManager->GetSharedContext();
+	GUI_Interface* panel = context->m_guiManager->GetInterface(StateType::Developement, "ListBottom");
+	auto* dropdown = panel ? dynamic_cast<GUI_Droplist*>(panel->GetElement("TilesetDropdown")) : nullptr;
+	if (!dropdown) { return; }
+	dropdown->ClearOptions();
+	Map* map = context->m_world->GetCurrentMap();
+	if (!map) { RemoveCurrentTilesetPreview(); return; }
+	for (const auto& tileset : map->GetTilesets()) { dropdown->AddOption(tileset.first); }
+	if (dropdown->GetOptions().empty()) { RemoveCurrentTilesetPreview(); return; }
+	dropdown->SetSelectedIndex(0);
+	SelectTileset(dropdown->GetSelectedOption());
+}
+
+void State_Developement::SelectTileset(const std::string& i_tilesetName)
+{
+	if (i_tilesetName.empty()) { return; }
+	SharedContext* context = m_stateManager->GetSharedContext();
+	World* world = context->m_world;
+	Map* map = world->GetCurrentMap();
+	if (!map) { return; }
+	const auto& allTilesets = map->GetTilesets();
+	auto tilesetIt = allTilesets.find(i_tilesetName);
+	if (tilesetIt == allTilesets.end()) { return; }
+	if (m_currentTileset == i_tilesetName && !m_tilesetPreviewName.empty()) { return; }
+	RemoveCurrentTilesetPreview();
+
+	GUI_Manager* gui = context->m_guiManager;
+	GUI_Interface* panel = gui->GetInterface(StateType::Developement, "ListBottom");
+	if (!panel || !panel->AddElement(GUI_ElementType::Tileset, i_tilesetName + "_Tileset")) { return; }
+	GUI_Element* element = panel->GetElement(i_tilesetName + "_Tileset");
+	if (!element) { return; }
+	gui->LoadStyle("ListBottomTileset.style", element);
+	TileInfo* firstTile = nullptr;
+	for (const auto& entry : tilesetIt->second) {
+		if (entry.second) { firstTile = entry.second; break; }
+	}
+	if (!firstTile) { panel->RemoveElement(element->GetName()); return; }
+	element->SetBackgroundImage(firstTile->m_texture);
+	if (auto* tilesetPreview = dynamic_cast<GUI_Tileset*>(element)) {
+		tilesetPreview->SetHitboxEditMode(m_hitboxEditMode);
+	}
+	GUI_Element* dropdown = panel->GetElement("TilesetDropdown");
+	const float previewY = dropdown
+		? dropdown->GetPosition().y + dropdown->GetSize().y + panel->GetPadding().y
+		: panel->GetPadding().y;
+	element->SetPosition(sf::Vector2f(panel->GetPadding().x, previewY));
+	element->ApplyStyle();
+	element->SetWorld(world);
+	panel->AdjustContentSize(element);
+
+	m_currentTileset = i_tilesetName;
+	m_tilesetPreviewName = element->GetName();
+	EventManager* events = context->m_eventManager;
+	events->AddDynamicBinding(m_tilesetPreviewName, EventType::GUI_Click,
+		panel->GetName(), m_tilesetPreviewName);
+	events->AddCallback(StateType::Developement, m_tilesetPreviewName,
+		&State_Developement::React, this);
+	m_dynamicCallbacks.push_back(m_tilesetPreviewName);
+
+	GUI_Interface* viewportPanel = gui->GetInterface(StateType::Developement, "Viewport");
+	auto* viewport = viewportPanel
+		? dynamic_cast<GUI_Viewport*>(viewportPanel->GetElement("ViewportMap")) : nullptr;
+	if (viewport) {
+		viewport->SetClickedTileInfo(nullptr);
+		viewport->ClearBrush();
+	}
+}
+
+void State_Developement::RemoveCurrentTilesetPreview()
+{
+	SharedContext* context = m_stateManager->GetSharedContext();
+	if (m_tilesetPreviewName.empty()) { m_currentTileset.clear(); }
+	else {
+		context->m_eventManager->RemoveBinding(m_tilesetPreviewName);
+		context->m_eventManager->RemoveCallback(StateType::Developement, m_tilesetPreviewName);
+		m_dynamicCallbacks.erase(std::remove(m_dynamicCallbacks.begin(), m_dynamicCallbacks.end(),
+			m_tilesetPreviewName), m_dynamicCallbacks.end());
+		GUI_Interface* panel = context->m_guiManager->GetInterface(StateType::Developement, "ListBottom");
+		if (panel) { panel->RemoveElement(m_tilesetPreviewName); }
+		m_tilesetPreviewName.clear();
+		m_currentTileset.clear();
+	}
+	GUI_Interface* viewportPanel = context->m_guiManager->GetInterface(StateType::Developement, "Viewport");
+	auto* viewport = viewportPanel
+		? dynamic_cast<GUI_Viewport*>(viewportPanel->GetElement("ViewportMap")) : nullptr;
+	if (viewport) {
+		viewport->SetClickedTileInfo(nullptr);
+		viewport->ClearBrush();
 	}
 }
 
@@ -403,24 +362,24 @@ void State_Developement::SetUpLayoutTilesetBottom()
 	SharedContext* context = m_stateManager->GetSharedContext();
 	if (!context || !context->m_guiManager || !context->m_world) { return; }
 	GUI_Manager* gui = context->m_guiManager;
-	Map* currentMap = context->m_world->GetCurrentMap();
-
-	//setting default layout for listbottom in dev mod
+	// Pin the tileset selector at the top of the panel and keep the sheet below it.
 	GUI_Interface* i_ListBottom = gui->GetInterface(StateType::Developement, "ListBottom");
-	if (i_ListBottom && currentMap && !currentMap->GetTilesets().empty()) {
-		GUI_Element* e_ListBottom = i_ListBottom->GetElement(currentMap->GetTilesets().begin()->first);
-		if (e_ListBottom) {
-			sf::Vector2f base = e_ListBottom->GetPosition();
-			int index = 0;
-			float pos_x = 0.f;
-			for (auto itr = currentMap->GetTilesets().begin(); itr != currentMap->GetTilesets().end(); ++itr) {
-				GUI_Element* e = i_ListBottom->GetElement(itr->first);
-				if (!e) { continue; }
-				pos_x = base.x + (index * (e->GetSize().x + e->GetMargin().x));
-				e->SetPosition(sf::Vector2f(pos_x, base.y));
-				++index;
+	if (i_ListBottom) {
+		auto* dropdown = dynamic_cast<GUI_Droplist*>(i_ListBottom->GetElement("TilesetDropdown"));
+		if (dropdown) {
+			const float scale = dropdown->GetScale();
+			const sf::Vector2f padding = i_ListBottom->GetPadding() * scale;
+			const float centeredX = std::max(padding.x,
+				(i_ListBottom->GetSize().x - dropdown->GetSize().x) * 0.5f);
+			dropdown->SetPosition(sf::Vector2f(centeredX, padding.y));
+			dropdown->SetRedraw(true);
+			GUI_Element* preview = i_ListBottom->GetElement(m_tilesetPreviewName);
+			if (preview) {
+				preview->SetPosition(sf::Vector2f(padding.x,
+					dropdown->GetPosition().y + dropdown->GetSize().y + padding.y));
+				i_ListBottom->AdjustContentSize(preview);
+				preview->SetRedraw(true);
 			}
-			i_ListBottom->AdjustContentSize();
 			i_ListBottom->SetRedraw(true);
 		}
 	}

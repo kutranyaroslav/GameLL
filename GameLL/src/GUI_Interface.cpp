@@ -1,5 +1,6 @@
 #include "GUI_Interface.h"
 #include "GUI_Manager.h"
+#include "GUI_Droplist.h"
 #include "World.h"
 #include <algorithm>
 #include <cmath>
@@ -83,6 +84,13 @@ void GUI_Interface::ReadIn(std::stringstream& i_stream) {
 }
 void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
 	DefocusTextFields();
+	for (auto& itr : m_elements) {
+		if (auto* droplist = dynamic_cast<GUI_Droplist*>(itr.second)) {
+			if (droplist->IsOpen() && !droplist->IsInside(i_mousePos)) {
+				droplist->Close();
+			}
+		}
+	}
 
 	if (m_titleBar.getGlobalBounds().contains(i_mousePos) && m_movable && m_showTitleBar) {
 		m_beingMoved = true;
@@ -95,6 +103,19 @@ void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
 		event.m_clickCoordinates.x = i_mousePos.x;
 		event.m_clickCoordinates.y = i_mousePos.y;
 		m_guiManager->AddEvent(event);
+		// An open dropdown's popup is drawn over sibling controls, so route its
+		// option click before testing the header or other overlapping elements.
+		for (auto& itr : m_elements) {
+			if (auto* droplist = dynamic_cast<GUI_Droplist*>(itr.second)) {
+				if (droplist->GetActive() && droplist->IsPopupInside(i_mousePos)) {
+					droplist->OnClick(i_mousePos);
+					event.m_element = droplist->GetName();
+					m_guiManager->AddEvent(event);
+					SetState(GUI_ElementState::Clicked);
+					return;
+				}
+			}
+		}
 		// Scrollbars sit over the content at the interface edges. Give controls
 		// first refusal so a click on a bar cannot also select the covered tile.
 		for (bool controlsFirst : { true, false }) {
@@ -193,7 +214,13 @@ void GUI_Interface::Draw(sf::RenderTarget* i_target) {
 	i_target->draw(m_control);
 	i_target->draw(m_visual.m_text);
 	for (auto& e : m_elements) {
+		if (dynamic_cast<GUI_Droplist*>(e.second)) { continue; }
+		e.second->DrawOverlay(i_target);
+	}
+	for (auto& e : m_elements) {
+		if (dynamic_cast<GUI_Droplist*>(e.second)) {
 			e.second->DrawOverlay(i_target);
+		}
 	}
 	if (!m_showTitleBar) { return; }
 	i_target->draw(m_titleBar);
