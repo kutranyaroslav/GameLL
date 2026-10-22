@@ -1,4 +1,5 @@
 #include "GUI_Scrollbar.h"
+#include <algorithm>
 #include <sstream>
 
 GUI_Scrollbar::GUI_Scrollbar(const std::string& i_name, GUI_Interface* i_owner) :
@@ -28,11 +29,30 @@ void GUI_Scrollbar::ReadIn(std::stringstream& i_stream) {
 	
 }
 void GUI_Scrollbar::OnClick(const sf::Vector2f& i_mousePos) {
-	if (!m_slider.getGlobalBounds().contains(i_mousePos - m_owner->GetPosition())) {
-		return;
-	}
+	if (!m_owner) { return; }
+	// The scrollbar is rendered into the interface's control texture, where its
+	// shapes use interface-local coordinates. Convert the pointer to that same
+	// space before testing the handle (and allow clicking the track to page).
+	const sf::Vector2f local = i_mousePos - m_owner->GetGlobalPosition();
+	const bool horizontal = m_sliderType == SliderType::Horizontal;
+	const sf::FloatRect handle = m_slider.getGlobalBounds();
+	const sf::FloatRect track = m_visual.m_backgroundSolid.getGlobalBounds();
+	if (!track.contains(local)) { return; }
 	SetState(GUI_ElementState::Clicked);
 	m_mouseMoveLast = i_mousePos;
+	if (!handle.contains(local) && m_workArea > 0.f) {
+		const float clickAxis = horizontal ? local.x : local.y;
+		const float trackStart = horizontal ? track.left : track.top;
+		const float handleLength = horizontal ? handle.width : handle.height;
+		const float next = std::clamp(clickAxis - trackStart - handleLength * 0.5f,
+			0.f, m_workArea);
+		if (horizontal) { m_slider.setPosition(next, m_slider.getPosition().y); }
+		else { m_slider.setPosition(m_slider.getPosition().x, next); }
+		const int percentage = static_cast<int>((next / m_workArea) * 100.f);
+		if (horizontal) { m_owner->UpdateScrollHorizontal(percentage); }
+		else { m_owner->UpdateScrollVertical(percentage); }
+		SetRedraw(true);
+	}
 }
 void GUI_Scrollbar::OnRelease() {
 	SetState(GUI_ElementState::Neutral);
@@ -59,6 +79,7 @@ void GUI_Scrollbar::Update(float i_dT) {
 		return;
 	}
 	SharedContext* context = m_owner->GetGuiManager()->GetSharedContext();
+	if (!context || !context->m_eventManager || !context->m_wind) { return; }
 	sf::Vector2f mousepos = sf::Vector2f(context->m_eventManager->GetMousePos(context->m_wind->GetRenderWindow()));
 	if (m_mouseMoveLast == mousepos) { return; }
 	sf::Vector2f difference = mousepos - m_mouseMoveLast;

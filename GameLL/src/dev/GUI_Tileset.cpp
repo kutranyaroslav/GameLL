@@ -31,10 +31,6 @@ void GUI_Tileset::OnClick(const sf::Vector2f& i_mousePos) {
 	const float tileSize = GetScaledTileSize();
 	sf::Vector2f local = i_mousePos - GetGlobalPosition();
 
-	// add scroll offset!
-	local.x += m_owner->GetScrollHorizontal();
-	local.y += m_owner->GetScrollVertical();
-
 	// local is in scaled screen pixels and tileSize is the scaled tile, so the scale
 	// cancels and the result is a texture tile index - which is what it has to be,
 	// because m_clickedTilePos is used as a TileKey into the tileset.
@@ -48,13 +44,11 @@ void GUI_Tileset::OnClick(const sf::Vector2f& i_mousePos) {
 	m_selectedTileId = tileY * tilesPerRow + tileX;
 	float x =
 		std::round(GetGlobalPosition().x)
-		+ tileX * tileSize
-		- std::round(m_owner->GetScrollHorizontal());
+		+ tileX * tileSize;
 
 	float y =
 		std::round(GetGlobalPosition().y)
-		+ tileY * tileSize
-		- std::round(m_owner->GetScrollVertical());
+		+ tileY * tileSize;
 	m_selectedTile.setPosition(x, y);
 	m_selectedTile.setSize(sf::Vector2f(tileSize, tileSize));
 
@@ -67,8 +61,6 @@ void GUI_Tileset::OnHover(const sf::Vector2f& i_mousePos) {
 	m_hoverTile.setFillColor(m_hoverTileDefColor);
 	const float tileSize = GetScaledTileSize();
 	sf::Vector2f local = i_mousePos - GetGlobalPosition();
-	local.x += m_owner->GetScrollHorizontal();
-	local.y += m_owner->GetScrollVertical();
 	int tileX = static_cast<int>(local.x / tileSize);
 	int tileY = static_cast<int>(local.y / tileSize);
 	m_hoverTilePos  = { tileX, tileY };
@@ -76,13 +68,11 @@ void GUI_Tileset::OnHover(const sf::Vector2f& i_mousePos) {
 
 	float x =
 			std::round(GetGlobalPosition().x)
-			+ tileX * tileSize
-			- std::round(m_owner->GetScrollHorizontal());
+			+ tileX * tileSize;
 
 	float y =
 			std::round(GetGlobalPosition().y)
-			+ tileY * tileSize
-			- std::round(m_owner->GetScrollVertical());
+			+ tileY * tileSize;
 	m_hoverTile.setPosition(x, y);
 	m_hoverTile.setSize(sf::Vector2f(tileSize, tileSize));
 	SetState(GUI_ElementState::Focused);
