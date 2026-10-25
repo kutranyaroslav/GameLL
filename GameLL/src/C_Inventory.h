@@ -21,8 +21,9 @@ public:
     void SetUpInventorySize(std::size_t i_size);
 
     std::size_t GetSlotCount() const;
+    const InventorySlot* GetSlot(std::size_t i_index) const;
 private:
-    InventoryManager* m_inventoryManager;
+    InventoryManager* m_inventoryManager = nullptr;
 
 };
 

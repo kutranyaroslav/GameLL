@@ -33,4 +33,9 @@ std::size_t C_Inventory::GetSlotCount() const {
     if (m_inventoryManager) {
         return m_inventoryManager->GetSlotCount();
     }
+    return 0;
+}
+
+const InventorySlot* C_Inventory::GetSlot(std::size_t i_index) const {
+    return m_inventoryManager ? m_inventoryManager->GetSlot(i_index) : nullptr;
 }

@@ -5,6 +5,7 @@
 #include "C_State.h"
 #include "C_Movable.h"
 #include "GUI_Manager.h"
+#include "C_Inventory.h"
 #include "World.h"
 #include <cmath>
 State_Game::State_Game(StateManager* i_stateManager) :
