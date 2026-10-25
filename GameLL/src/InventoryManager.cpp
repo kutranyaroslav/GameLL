@@ -79,3 +79,7 @@ void InventoryManager::SetUpInventorySize(std::size_t i_size) {
 std::size_t InventoryManager::GetSlotCount() const {
     return m_inventorySlots.size();
 }
+
+const InventorySlot* InventoryManager::GetSlot(std::size_t i_index) const {
+    return i_index < m_inventorySlots.size() ? &m_inventorySlots[i_index] : nullptr;
+}

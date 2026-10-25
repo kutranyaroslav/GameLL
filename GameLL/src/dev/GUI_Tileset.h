@@ -20,6 +20,7 @@ public:
 	void SetTileset(const std::string& i_tilesetName);
 	void SetHitboxEditMode(bool i_enabled);
 	bool GetHitboxEditMode() const;
+	bool ToggleSelectedTileSolidity();
 
 	std::string&  GetTilesetTexture();
 	// One tile as it appears on screen (texture tile * current GUI scale).

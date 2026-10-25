@@ -7,6 +7,60 @@
 #include <iomanip>
 #include <sstream>
 #include <vector>
+#include <cmath>
+#include <filesystem>
+
+namespace {
+	struct ConfigToken {
+		std::string value;
+		std::size_t begin;
+		std::size_t end;
+	};
+
+	std::vector<ConfigToken> TokenizeConfigLine(const std::string& line) {
+		std::vector<ConfigToken> tokens;
+		std::size_t pos = 0;
+		while (pos < line.size()) {
+			while (pos < line.size() && std::isspace(static_cast<unsigned char>(line[pos]))) { ++pos; }
+			if (pos == line.size()) { break; }
+			const std::size_t begin = pos;
+			while (pos < line.size() && !std::isspace(static_cast<unsigned char>(line[pos]))) { ++pos; }
+			tokens.push_back({line.substr(begin, pos - begin), begin, pos});
+		}
+		return tokens;
+	}
+
+	bool ParseConfigFloat(const std::string& value, float& result) {
+		try {
+			std::size_t consumed = 0;
+			result = std::stof(value, &consumed);
+			return consumed == value.size() && std::isfinite(result);
+		} catch (const std::exception&) { return false; }
+	}
+
+	bool ParseConfigFlag(const std::string& value, bool& result) {
+		if (value == "0") { result = false; return true; }
+		if (value == "1") { result = true; return true; }
+		return false;
+	}
+
+	// Locate the friction/deadly/solid columns by their numeric shape. Tile names
+	// are allowed to contain spaces, so they cannot be consumed as one token.
+	bool FindTileConfigFields(const std::vector<ConfigToken>& tokens, std::size_t& propertyStart) {
+		if (tokens.size() < 7) { return false; }
+		for (std::size_t i = 2; i + 3 < tokens.size(); ++i) {
+			float frictionX = 0.f, frictionY = 0.f;
+			bool deadly = false, solid = false;
+			if (ParseConfigFloat(tokens[i].value, frictionX) && frictionX >= 0.f && frictionX <= 1.f &&
+				ParseConfigFloat(tokens[i + 1].value, frictionY) && frictionY >= 0.f && frictionY <= 1.f &&
+				ParseConfigFlag(tokens[i + 2].value, deadly) && ParseConfigFlag(tokens[i + 3].value, solid)) {
+				propertyStart = i;
+				return true;
+			}
+		}
+		return false;
+	}
+}
 
 Map::Map(SharedContext* i_context, const std::string& i_mapName, const std::string& i_tilesetName
 	, const std::string& i_tileset, const std::string& i_texture ) :
@@ -58,66 +112,48 @@ bool Map::SaveTilesetHitbox(const std::string& i_name, const TileInfo* i_tile)
 	std::ifstream input(fileName);
 	if (!input.is_open()) { return false; }
 
-	auto nextToken = [](const std::string& i_line, std::size_t& io_pos, std::string& o_token) {
-		while (io_pos < i_line.size() &&
-			std::isspace(static_cast<unsigned char>(i_line[io_pos]))) { ++io_pos; }
-		if (io_pos >= i_line.size()) { return false; }
-		const std::size_t start = io_pos;
-		while (io_pos < i_line.size() &&
-			!std::isspace(static_cast<unsigned char>(i_line[io_pos]))) { ++io_pos; }
-		o_token = i_line.substr(start, io_pos - start);
-		return true;
-	};
-
 	std::vector<std::string> lines;
 	std::string line;
 	bool updated = false;
 	while (std::getline(input, line)) {
-		std::size_t pos = 0;
-		std::string token;
-		if (nextToken(line, pos, token) && token[0] != '|') {
-			int tileId = -1;
-			try { tileId = std::stoi(token); }
-			catch (const std::exception&) { lines.push_back(line); continue; }
-			if (nextToken(line, pos, token)) {
-				int tileRow = -1;
-				try { tileRow = std::stoi(token); }
-				catch (const std::exception&) { lines.push_back(line); continue; }
-				bool complete = true;
-				std::size_t solidStart = 0;
-				std::size_t solidEnd = 0;
-				// Name, friction x/y, deadly, and solid precede the optional bounds.
-				for (int field = 0; field < 5; ++field) {
-					const std::size_t fieldStart = pos;
-					if (!nextToken(line, pos, token)) { complete = false; break; }
-					if (field == 4) { solidStart = fieldStart; solidEnd = pos; }
-				}
-				if (complete && tileId == static_cast<int>(i_tile->m_id) &&
-					tileRow == static_cast<int>(i_tile->m_row)) {
-					const std::size_t afterSolid = pos;
-					std::string suffix = line.substr(afterSolid);
-					std::size_t suffixPos = 0;
-					std::string hasBounds;
-					if (nextToken(suffix, suffixPos, hasBounds) &&
-						(hasBounds == "0" || hasBounds == "1")) {
-						if (hasBounds == "1") {
-							for (int bound = 0; bound < 4; ++bound) {
-								if (!nextToken(suffix, suffixPos, token)) { break; }
-							}
+		const std::vector<ConfigToken> tokens = TokenizeConfigLine(line);
+		if (!tokens.empty() && tokens[0].value[0] != '|') {
+			try {
+				const int tileId = std::stoi(tokens[0].value);
+				const int tileRow = tokens.size() > 1 ? std::stoi(tokens[1].value) : -1;
+				std::size_t propertyStart = 0;
+				if (tileId == static_cast<int>(i_tile->m_id) &&
+					tileRow == static_cast<int>(i_tile->m_row) &&
+					FindTileConfigFields(tokens, propertyStart)) {
+					const std::size_t solidStart = tokens[propertyStart + 3].begin;
+					const std::size_t solidEnd = tokens[propertyStart + 3].end;
+					std::string suffix = line.substr(solidEnd);
+					const std::vector<ConfigToken> suffixTokens = TokenizeConfigLine(suffix);
+					std::size_t keepFrom = 0;
+					bool hasBounds = false;
+					if (!suffixTokens.empty() && ParseConfigFlag(suffixTokens[0].value, hasBounds)) {
+						keepFrom = suffixTokens[0].end;
+						if (hasBounds) {
+							if (suffixTokens.size() < 5) { lines.push_back(line); continue; }
+							keepFrom = suffixTokens[4].end;
 						}
-						suffix = suffix.substr(suffixPos);
 					}
-					std::ostringstream bounds;
-					bounds << std::fixed << std::setprecision(3)
-						<< " 1 " << i_tile->m_collisionBounds.left
-						<< ' ' << i_tile->m_collisionBounds.top
-						<< ' ' << i_tile->m_collisionBounds.width
-						<< ' ' << i_tile->m_collisionBounds.height;
-					const std::string prefix = line.substr(0, solidStart) + "1" +
-						line.substr(solidEnd, afterSolid - solidEnd);
-					line = prefix + bounds.str() + suffix;
+					suffix = suffix.substr(keepFrom);
+					std::ostringstream collision;
+					collision << ' ' << (i_tile->m_hasCustomCollisionBounds ? 1 : 0);
+					if (i_tile->m_hasCustomCollisionBounds) {
+						collision << std::fixed << std::setprecision(3)
+							<< ' ' << i_tile->m_collisionBounds.left
+							<< ' ' << i_tile->m_collisionBounds.top
+							<< ' ' << i_tile->m_collisionBounds.width
+							<< ' ' << i_tile->m_collisionBounds.height;
+					}
+				line = line.substr(0, solidStart) + (i_tile->m_solid ? "1" : "0") +
+					collision.str() + suffix;
 					updated = true;
 				}
+			} catch (const std::exception&) {
+				// Header/comment lines are copied unchanged.
 			}
 		}
 		lines.push_back(line);
@@ -128,7 +164,10 @@ bool Map::SaveTilesetHitbox(const std::string& i_name, const TileInfo* i_tile)
 	std::ofstream output(fileName, std::ios::trunc);
 	if (!output.is_open()) { return false; }
 	for (const std::string& savedLine : lines) { output << savedLine << '\n'; }
-	return output.good();
+	output.flush();
+	const bool saved = output.good();
+	output.close();
+	return saved && !output.fail();
 }
 
 bool Map::HasTileset(const std::string& i_name) {
@@ -207,12 +246,15 @@ void Map::Draw(sf::RenderTarget& i_target, const sf::View& i_view,unsigned int i
 
 bool Map::SaveTiles()
 {
+	if (m_mapFileName.empty()) { return false; }
 	//saving of the header lines of the .map file 
 	std::vector<std::string> headerLines;
 
 	std::ifstream file(m_mapFileName);
+	if (!file.is_open()) { return false; }
 
 	std::string line;
+	bool hasSizeHeader = false;
 
 	while (std::getline(file, line))
 	{
@@ -220,6 +262,7 @@ bool Map::SaveTiles()
 
 		std::string type;
 		stream >> type;
+		if (type == "SIZE") { hasSizeHeader = true; }
 
 		if (type == "TILE")
 			break;
@@ -228,6 +271,19 @@ bool Map::SaveTiles()
 	}
 
 	file.close();
+	// An unreadable, empty, or malformed source must never be replaced by a
+	// headerless map. Keep the original intact so it can be repaired manually.
+	if (!hasSizeHeader || headerLines.empty()) { return false; }
+
+	std::error_code backupError;
+	std::filesystem::path backupPath(m_mapFileName);
+	backupPath += ".bak";
+	if (!std::filesystem::copy_file(m_mapFileName, backupPath,
+		std::filesystem::copy_options::overwrite_existing, backupError) || backupError) {
+		std::cerr << "Could not create map backup '" << backupPath.string()
+			<< "': " << backupError.message() << '\n';
+		return false;
+	}
 
 
 	std::ofstream outFile(m_mapFileName, std::ios::trunc);
@@ -269,7 +325,7 @@ bool Map::SaveTiles()
 
 	}
 	outFile.close();
-	return true;
+	return outFile.good();
 
 }
 
@@ -308,39 +364,57 @@ bool Map::LoadTiles(const std::string& i_name, const std::string& i_path, const 
 	if (file.is_open()) {
 		std::string line;
 		while (std::getline(file, line)) {
-			if (line[0] == '|') { continue; }
-			std::stringstream keystream(line);
-			int tileId;
-			int tileRow;
-			keystream >> tileId;
-			keystream >> tileRow;
+			const std::vector<ConfigToken> tokens = TokenizeConfigLine(line);
+			if (tokens.empty() || tokens[0].value[0] == '|') { continue; }
+			int tileId = -1, tileRow = -1;
+			try {
+				tileId = std::stoi(tokens[0].value);
+				tileRow = tokens.size() > 1 ? std::stoi(tokens[1].value) : -1;
+			} catch (const std::exception&) { continue; }
+			std::size_t propertyStart = 0;
+			if (tileId < 0 || tileRow < 0 || !FindTileConfigFields(tokens, propertyStart)) { continue; }
 			TileKey key{ tileId, tileRow };
-			if (tileId < 0) { continue; }
-			std::string material = "";
-			bool hasCustomeAABB = false;
 			///Add texture of tile set by name Tilesheet in textures.cfg 
 			TileInfo* tile = new TileInfo(m_context, i_texture, tileId, tileRow);
 			// Без этого SaveTiles писал пустое имя тайлсета в строку TILE ("TILE  0 0 15 5 0 0"),
 			// а LoadMap такие строки молча пропускал - карта пустела от сессии к сессии.
 			tile->m_tilesetName = i_name;
-			keystream >> tile->m_name >> tile->m_friction.x >> tile->m_friction.y >>
-				tile->m_deadly >> tile->m_solid;
-			keystream >> hasCustomeAABB;
-			if (hasCustomeAABB) {
-				//Code for applying custome AABB for smaller Tiles
-				float left,top,width,height = 0;
-				keystream >> left >> top >> width >> height;
-				tile->m_hasCustomCollisionBounds = true;
-				tile->m_collisionBounds = sf::FloatRect(left,top, width, height);
+			for (std::size_t nameToken = 2; nameToken < propertyStart; ++nameToken) {
+				if (!tile->m_name.empty()) { tile->m_name += ' '; }
+				tile->m_name += tokens[nameToken].value;
 			}
-			keystream >> material;
+			ParseConfigFloat(tokens[propertyStart].value, tile->m_friction.x);
+			ParseConfigFloat(tokens[propertyStart + 1].value, tile->m_friction.y);
+			ParseConfigFlag(tokens[propertyStart + 2].value, tile->m_deadly);
+			ParseConfigFlag(tokens[propertyStart + 3].value, tile->m_solid);
+
+			std::stringstream tail(line.substr(tokens[propertyStart + 3].end));
+			std::string firstTailToken;
+			std::string material;
+			bool customAabb = false;
+			if (tail >> firstTailToken) {
+				bool hasAabbFlag = false;
+				if (ParseConfigFlag(firstTailToken, hasAabbFlag)) {
+					customAabb = hasAabbFlag;
+					if (customAabb) {
+						float left = 0.f, top = 0.f, width = 0.f, height = 0.f;
+						if (tail >> left >> top >> width >> height) {
+							tile->m_hasCustomCollisionBounds = true;
+							tile->m_collisionBounds = sf::FloatRect(left, top, width, height);
+						}
+					}
+					tail >> material;
+				} else {
+					material = firstTailToken;
+				}
+			}
 			if (material != "") {
 				int numofMaterialTags = 0;
-				keystream >> numofMaterialTags;
+				tail >> numofMaterialTags;
 				for (int i = 0; i < numofMaterialTags; ++i) {
 					std::string materialTag;
 					//a count bigger than the tags on the line used to tag the tile with None
-					if (!(keystream >> materialTag)) { break; }
+					if (!(tail >> materialTag)) { break; }
 					Materials::MaterialType type = Materials::StringToMaterialType(materialTag);
 					if (type == Materials::MaterialType::None) { continue; }
 					tile->m_materialTags.push_back(type);

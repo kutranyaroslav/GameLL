@@ -18,6 +18,8 @@ public:
 	bool SwitchTo(const std::string& i_name, const std::string&i_tileset = "", const std::string& i_texture = "");
 	bool AddTileset(const std::string& i_mapName, const std::string& i_tilesetName,
 		const std::string& i_path, const std::string& i_texture);
+	// Registers every tileset in the central built-in tileset catalog on a map.
+	bool AddConfiguredTilesets(const std::string& i_mapName, bool i_includeAll = false);
 	bool RemoveTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 	bool HasTileset(const std::string& i_mapName, const std::string& i_tilesetName);
 	Map* GetMap(const std::string& i_name);

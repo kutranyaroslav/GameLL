@@ -1,5 +1,46 @@
 #include "World.h"
 #include <filesystem>
+#include <array>
+
+namespace {
+	struct TilesetDefinition {
+		const char* name;
+		const char* config;
+		const char* texture;
+		bool gameplayDefault;
+	};
+
+	// Keep built-in tileset setup in one place. Add a catalog entry here when a
+	// new tileset config and texture are added to nav/textures.cfg.
+	constexpr std::array<TilesetDefinition, 25> BuiltInTilesets{{
+		{"TestTileset", "Tiles.cfg", "Tilesheet", true},
+		{"TestTileset2", "Tiles.cfg", "Tilesheet2", true},
+		{"tileTest2", "Tiles.cfg", "Tilesheet", false},
+		{"scifi_objects", "scifi_objects.cfg", "scifi_objects", true},
+		{"scifi_objects2", "scifi_objects2.cfg", "scifi_objects2", false},
+		{"scifi_tileset_01", "scifi_tileset_01.cfg", "scifi_tileset_01", false},
+		{"scifi_tileset_02", "scifi_tileset_02.cfg", "scifi_tileset_02", false},
+		{"BunkerObjects1", "BunkerObjects1.cfg", "BunkerObjects1", false},
+		{"BunkerObjects2", "BunkerObjects2.cfg", "BunkerObjects2", false},
+		{"BunkerObjects3Weapon", "BunkerObjects3Weapon.cfg", "BunkerObjects3Weapon", false},
+		{"BunkerObjects4Flora", "BunkerObjects4Flora.cfg", "BunkerObjects4Flora", false},
+		{"BunkerObjects4Flora2", "BunkerObjects4Flora2.cfg", "BunkerObjects4Flora2", false},
+		{"BunkerTileset1", "BunkerTileset1.cfg", "BunkerTileset1", false},
+		{"BunkerTileset2", "BunkerTileset2.cfg", "BunkerTileset2", false},
+		{"BunkerTileset3", "BunkerTileset3.cfg", "BunkerTileset3", false},
+		{"SpaceTilesetFloor", "SpaceTilesetFloor.cfg", "SpaceTilesetFloor", false},
+		{"SpaceTilesetWalls", "SpaceTilesetWalls.cfg", "SpaceTilesetWalls", false},
+		{"SpaceTilesetWalls2", "SpaceTilesetWalls2.cfg", "SpaceTilesetWalls2", false},
+		{"Tile_A2-2", "Tile_A2-2.cfg", "Tile_A2-2", false},
+		{"Tile_A2-3", "Tile_A2-3.cfg", "Tile_A2-3", false},
+		{"tile-B-01", "tile-B-01.cfg", "tile-B-01", false},
+		{"tile-B-02", "tile-B-02.cfg", "tile-B-02", false},
+		{"tile-B-03", "tile-B-03.cfg", "tile-B-03", false},
+		{"tile-B-04", "tile-B-04.cfg", "tile-B-04", false},
+		{"tile-B-05", "tile-B-05.cfg", "tile-B-05", false}
+	}};
+}
+
 World::World(SharedContext* i_context) :m_context(i_context), m_currentMap(nullptr)
 {
 	std::string path = Utils::GetWorkingDirectory() + "Assets/maps/";
@@ -74,6 +115,19 @@ bool World::AddTileset(const std::string& i_mapName, const std::string& i_tilese
 	if (!HasMap(i_mapName)) { return false; }
 	Map* map = GetMap(i_mapName);
 	return map->AddTileset(i_tilesetName, i_path, i_texture);
+}
+
+bool World::AddConfiguredTilesets(const std::string& i_mapName, bool i_includeAll) {
+	if (!HasMap(i_mapName)) { return false; }
+	bool allAddedOrPresent = true;
+	for (const TilesetDefinition& definition : BuiltInTilesets) {
+		if (!i_includeAll && !definition.gameplayDefault) { continue; }
+		if (HasTileset(i_mapName, definition.name)) { continue; }
+		if (!AddTileset(i_mapName, definition.name, definition.config, definition.texture)) {
+			allAddedOrPresent = false;
+		}
+	}
+	return allAddedOrPresent;
 }
 
 bool World::RemoveTileset(const std::string& i_mapName, const std::string& i_tilesetName){

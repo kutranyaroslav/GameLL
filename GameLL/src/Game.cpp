@@ -25,6 +25,7 @@ m_entityManager(&m_systemManager, &m_textureManager , &m_inventoryManager),
 	m_context.m_world = &m_world;
 	m_context.m_shaderManager = &m_shaderManager;
 	m_context.m_itemManager = &m_itemManager;
+	m_context.m_inventoryManager = &m_inventoryManager;
 	m_context.m_craftManager = &m_craftManager;
 	//to load materials for interaction object we must do it here 
 	m_systemManager.GetSystem<S_Interaction>(System::Interaction)->LoadMaterials();

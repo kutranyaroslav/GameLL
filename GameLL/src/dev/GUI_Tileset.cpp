@@ -138,7 +138,8 @@ void GUI_Tileset::DrawOverlay(sf::RenderTarget* i_target)
 			tilePosition.y + bounds.top * scale);
 		m_hitboxOutline.setSize(sf::Vector2f(bounds.width * scale, bounds.height * scale));
 		m_hitboxOutline.setOutlineColor(m_hitboxEditMode
-			? sf::Color(255, 90, 70, 255) : sf::Color(80, 220, 120, 255));
+			? sf::Color(255, 90, 70, 255)
+			: (tile->m_solid ? sf::Color(255, 90, 70, 255) : sf::Color(90, 190, 220, 255)));
 		m_hitboxOutline.setOutlineThickness(-std::max(1.f, 2.f * scale));
 		i_target->draw(m_hitboxOutline);
 	}
@@ -239,6 +240,27 @@ void GUI_Tileset::SetHitboxEditMode(bool i_enabled)
 bool GUI_Tileset::GetHitboxEditMode() const
 {
 	return m_hitboxEditMode;
+}
+
+bool GUI_Tileset::ToggleSelectedTileSolidity()
+{
+	TileInfo* tile = GetSelectedTileInfo();
+	if (!tile || !m_world || !m_world->GetCurrentMap()) { return false; }
+	std::string tilesetName = m_name;
+	const std::string suffix = "_Tileset";
+	if (tilesetName.size() >= suffix.size()) {
+		tilesetName.erase(tilesetName.size() - suffix.size());
+	}
+	const bool previous = tile->m_solid;
+	tile->m_solid = !previous;
+	if (!m_world->GetCurrentMap()->SaveTilesetHitbox(tilesetName, tile)) {
+		tile->m_solid = previous;
+		std::cerr << "Could not save solidity for tile " << tile->m_id << ':' << tile->m_row
+			<< " in tileset " << tilesetName << '\n';
+		return false;
+	}
+	SetRedraw(true);
+	return true;
 }
 
 void GUI_Tileset::UpdateHitboxFromMouse(const sf::Vector2f& i_mousePos)

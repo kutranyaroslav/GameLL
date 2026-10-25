@@ -3,6 +3,7 @@
 #include "StateManager.h" // for SharedContext (m_world, m_textbox)
 #include "World.h"
 #include "Textbox.h"
+#include <algorithm>
 #include <filesystem>
 S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	S_Base(System::Interaction, i_systemMgr)
@@ -75,6 +76,10 @@ void S_Interaction::HandlePickupItem(EntityId i_target, EntityId i_actor, C_Inte
 
 void S_Interaction::HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
 	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (context && !i_data->GetTextId().empty() &&
+		std::find(context->m_readNotes.begin(), context->m_readNotes.end(), i_data->GetTextId()) == context->m_readNotes.end()) {
+		context->m_readNotes.push_back(i_data->GetTextId());
+	}
 	if (context && context->m_textbox) {
 		// GetTextId() сейчас просто id/ключ — как появится текстовый/локализационный менеджер,
 		// тут будет context->m_textbox->Add(localization->Get(i_data->GetTextId()));

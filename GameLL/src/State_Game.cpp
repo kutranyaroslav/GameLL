@@ -6,6 +6,7 @@
 #include "C_Movable.h"
 #include "GUI_Manager.h"
 #include "World.h"
+#include <cmath>
 State_Game::State_Game(StateManager* i_stateManager) :
 	BaseState(i_stateManager),m_spriteSheet(i_stateManager->GetSharedContext()->m_textureManager)
 {}
@@ -22,6 +23,12 @@ void State_Game::onCreate() {
 	sf::Vector2u windowSize = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getSize();
 	evMgr->AddCallback(StateType::Game, "Key_Escape", &State_Game::MainMenu, this);
 	evMgr->AddCallback(StateType::Game, "Key_P", &State_Game::Pause, this);     
+	Binding* terminalBinding = new Binding("OpenFieldTerminal");
+	terminalBinding->BindEvent(EventType::KeyDown, EventInfo(sf::Keyboard::I));
+	if (evMgr->AddBinding(terminalBinding)) {
+		evMgr->AddCallback(StateType::Game, "OpenFieldTerminal", &State_Game::OpenFieldTerminal, this);
+		m_dynamicCallbacks.push_back("OpenFieldTerminal");
+	} else { delete terminalBinding; }
 
 	evMgr->AddCallback(StateType::Game, "Player_Moveleft", &State_Game::Move, this);
 	evMgr->AddCallback(StateType::Game, "Player_Moveright", &State_Game::Move, this);
@@ -45,12 +52,18 @@ void State_Game::onDestroy() {
 	evMgr->RemoveCallback(StateType::Game, "Key_Escape");
 	evMgr->RemoveCallback(StateType::Game, "Key_P");
 	evMgr->RemoveCallback(StateType::Game, "Key_R");
+	for (const std::string& callback : m_dynamicCallbacks) {
+		evMgr->RemoveCallback(StateType::Game, callback);
+		evMgr->RemoveBinding(callback);
+	}
+	m_dynamicCallbacks.clear();
 }
 
 void State_Game::Update(const sf::Time& i_time) {
 	SharedContext* context = m_stateManager->GetSharedContext();
 	UpdateCamera();
-	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
+	UpdateMovementInput();
+	context->m_systemManager->Update(i_time.asSeconds());
 
 }
 
@@ -78,11 +91,7 @@ void State_Game::Activate() {
 	if (!world->HasMap(targetMap)) {
 		world->AddMap(targetMap);
 	}
-	// AddTileset is safe to call repeatedly - Map::AddTileset dedupes by name - so attach
-	// both unconditionally after making sure the map itself exists.
-	world->AddTileset(targetMap, "TestTileset", "Tiles.cfg", "Tilesheet");
-	world->AddTileset(targetMap, "TestTileset2", "Tiles.cfg", "Tilesheet2");
-	world->AddTileset(targetMap, "scifi_objects", "scifi_objects.cfg", "scifi_objects");
+	world->AddConfiguredTilesets(targetMap);
 	world->LoadMap(targetMap);
 	if (!world->GetCurrentMap()) { m_player = -1; return; }
 
@@ -90,7 +99,16 @@ void State_Game::Activate() {
 	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetWorld(world);
 	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetWorld(world);
 }
-void State_Game::Deactivate() {}
+void State_Game::Deactivate() {
+	m_moveLeft = m_moveRight = m_moveUp = m_moveDown = false;
+	if (m_player == -1) { return; }
+	C_Movable* movable = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Movable>(
+		m_player, Component::Movable);
+	if (movable) {
+		movable->SetAcceleration(sf::Vector2f(0.f, 0.f));
+		movable->SetVelocity(sf::Vector2f(0.f, 0.f));
+	}
+}
 
 void State_Game::MainMenu(EventDetails* i_details) {
 	m_stateManager->SwitchTo(StateType::MainMenu);
@@ -98,6 +116,10 @@ void State_Game::MainMenu(EventDetails* i_details) {
 
 void State_Game::Pause(EventDetails* i_details) {
 	m_stateManager->SwitchTo(StateType::Paused);
+}
+
+void State_Game::OpenFieldTerminal(EventDetails* i_details) {
+	m_stateManager->SwitchTo(StateType::FieldTerminal);
 }
 
 
@@ -134,7 +156,11 @@ void State_Game::UpdateCamera() {
 }
 
 void State_Game::Move(EventDetails* i_details){
-	
+	if (i_details->m_name == "Player_Moveleft") { m_moveLeft = true; }
+	else if (i_details->m_name == "Player_Moveright") { m_moveRight = true; }
+	else if (i_details->m_name == "Player_Moveup") { m_moveUp = true; }
+	else if (i_details->m_name == "Player_Movedown") { m_moveDown = true; }
+
 	Message msg2((MessageType)EntityMessage::Move);
 	if (i_details->m_name == "Player_Moveleft") {
 		msg2.m_int = (int)Direction::Left;
@@ -155,9 +181,30 @@ void State_Game::Stop(EventDetails* i_details) {
 	C_Movable* mov = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Movable>(m_player, Component::Movable);
 	if (!mov) { return; } // same stale-id guard as UpdateCamera()
 	if (i_details->m_name == "Player_StopMoveleft" || i_details->m_name == "Player_StopMoveright") {
-		mov->SetVelocity(sf::Vector2f(0.f, mov->GetVelocity().y));
+		if (i_details->m_name == "Player_StopMoveleft") { m_moveLeft = false; }
+		else { m_moveRight = false; }
+		if (!m_moveLeft && !m_moveRight) {
+			mov->SetVelocity(sf::Vector2f(0.f, mov->GetVelocity().y));
+		}
 	}
 	else {
-		mov->SetVelocity(sf::Vector2f(mov->GetVelocity().x, 0.f));
+		if (i_details->m_name == "Player_StopMoveup") { m_moveUp = false; }
+		else { m_moveDown = false; }
+		if (!m_moveUp && !m_moveDown) {
+			mov->SetVelocity(sf::Vector2f(mov->GetVelocity().x, 0.f));
+		}
 	}
+}
+//Виталий Скапчевский
+void State_Game::UpdateMovementInput() {
+	if (m_player == -1) { return; }
+	C_Movable* movable = m_stateManager->GetSharedContext()->m_entityManager->GetComponent<C_Movable>(
+		m_player, Component::Movable);
+	if (!movable) { return; }
+	float x = (m_moveRight ? 1.f : 0.f) - (m_moveLeft ? 1.f : 0.f);
+	float y = (m_moveDown ? 1.f : 0.f) - (m_moveUp ? 1.f : 0.f);
+	const float length = std::sqrt(x * x + y * y);
+	if (length > 1.f) { x /= length; y /= length; }
+	const sf::Vector2f speed = movable->GetSpeed();
+	movable->SetAcceleration(sf::Vector2f(x * speed.x, y * speed.y));
 }

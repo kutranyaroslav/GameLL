@@ -1,6 +1,7 @@
 #include "State_Developement.h"
 #include "World.h"
 #include <algorithm>
+#include <iostream>
 State_Developement::State_Developement(StateManager* i_stateManager)
 	:BaseState(i_stateManager), m_layerIndex(0), m_currentTileset(""), m_testIndex(0)
 {
@@ -11,10 +12,12 @@ void State_Developement::onCreate()
 
 	m_view = m_stateManager->GetSharedContext()->m_wind->GetUIView();
 	EventManager* evMgr = m_stateManager->GetSharedContext()->m_eventManager;
-	m_stateManager->GetSharedContext()->m_world->AddMap("MAP1", "TestTileset", "Tiles.cfg", "Tilesheet");
-	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP2", "TestTileset2", "Tiles.cfg", "Tilesheet2");
-	m_stateManager->GetSharedContext()->m_world->AddTileset("MAP1", "scifi_objects", "scifi_objects.cfg", "scifi_objects");
-	m_stateManager->GetSharedContext()->m_world->LoadMap("MAP2");
+	World* world = m_stateManager->GetSharedContext()->m_world;
+	if (!world->HasMap("MAP1")) { world->AddMap("MAP1"); }
+	if (!world->HasMap("MAP2")) { world->AddMap("MAP2"); }
+	world->AddConfiguredTilesets("MAP1", true);
+	world->AddConfiguredTilesets("MAP2", true);
+	world->LoadMap("MAP2");
 	if (!m_stateManager->GetSharedContext()->m_world->GetCurrentMap()) { return; }
 	//open up the bind file to write the changes
 	m_state = StateType::Developement;
@@ -26,6 +29,13 @@ void State_Developement::onCreate()
 		m_dynamicCallbacks.push_back("ToggleHitboxEdit");
 	}
 	else { delete hitboxEditBinding; }
+	Binding* solidityBinding = new Binding("ToggleTileSolidity");
+	solidityBinding->BindEvent(EventType::KeyDown, EventInfo(sf::Keyboard::B));
+	if (evMgr->AddBinding(solidityBinding)) {
+		evMgr->AddCallback(StateType::Developement, "ToggleTileSolidity",
+			&State_Developement::React, this);
+		m_dynamicCallbacks.push_back("ToggleTileSolidity");
+	} else { delete solidityBinding; }
 	GUI_Manager* gui = m_stateManager->GetSharedContext()->m_guiManager;
 
 	gui->LoadInterface(StateType::Developement, "ListBottomDevMode.interface", "ListBottom");
@@ -205,6 +215,17 @@ void State_Developement::React(EventDetails* i_details)
 		auto* tileset = panel
 			? dynamic_cast<GUI_Tileset*>(panel->GetElement(m_tilesetPreviewName)) : nullptr;
 		if (tileset) { tileset->SetHitboxEditMode(m_hitboxEditMode); }
+		return;
+	}
+	if (i_details->m_name == "ToggleTileSolidity") {
+		GUI_Interface* panel = gui->GetInterface(StateType::Developement, "ListBottom");
+		auto* tileset = panel
+			? dynamic_cast<GUI_Tileset*>(panel->GetElement(m_tilesetPreviewName)) : nullptr;
+		if (!tileset || !tileset->ToggleSelectedTileSolidity()) {
+			std::cerr << "Select a tile in the tileset preview before toggling solidity.\n";
+		} else if (TileInfo* selected = tileset->GetSelectedTileInfo()) {
+			std::cout << "Tile solidity: " << (selected->m_solid ? "ON" : "OFF") << '\n';
+		}
 		return;
 	}
 
