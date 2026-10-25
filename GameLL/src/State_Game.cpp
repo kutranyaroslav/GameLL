@@ -22,15 +22,14 @@ void State_Game::onCreate() {
 	*m_stateManager->GetSharedContext()->m_wind->GetGameView());
 	m_view = m_stateManager->GetSharedContext()->m_wind->GetGameView();
 	sf::Vector2u windowSize = m_stateManager->GetSharedContext()->m_wind->GetRenderWindow()->getSize();
-	evMgr->AddCallback(StateType::Game, "Key_Escape", &State_Game::MainMenu, this);
-	evMgr->AddCallback(StateType::Game, "Key_P", &State_Game::Pause, this);     
 	Binding* terminalBinding = new Binding("OpenFieldTerminal");
 	terminalBinding->BindEvent(EventType::KeyDown, EventInfo(sf::Keyboard::I));
 	if (evMgr->AddBinding(terminalBinding)) {
 		evMgr->AddCallback(StateType::Game, "OpenFieldTerminal", &State_Game::OpenFieldTerminal, this);
 		m_dynamicCallbacks.push_back("OpenFieldTerminal");
 	} else { delete terminalBinding; }
-
+	evMgr->AddCallback(StateType::Game, "Key_Escape", &State_Game::MainMenu, this);
+	evMgr->AddCallback(StateType::Game, "Key_P", &State_Game::Pause, this);
 	evMgr->AddCallback(StateType::Game, "Player_Moveleft", &State_Game::Move, this);
 	evMgr->AddCallback(StateType::Game, "Player_Moveright", &State_Game::Move, this);
 	evMgr->AddCallback(StateType::Game, "Player_Moveup", &State_Game::Move, this);
@@ -65,7 +64,7 @@ void State_Game::Update(const sf::Time& i_time) {
 	UpdateCamera();
 	UpdateMovementInput();
 	context->m_systemManager->Update(i_time.asSeconds());
-
+	EntityManagerNew* entities = m_stateManager->GetSharedContext()->m_entityManager;
 }
 
 void State_Game::Draw() {
@@ -196,6 +195,7 @@ void State_Game::Stop(EventDetails* i_details) {
 		}
 	}
 }
+
 //Виталий Скапчевский
 void State_Game::UpdateMovementInput() {
 	if (m_player == -1) { return; }

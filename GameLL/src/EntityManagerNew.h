@@ -10,7 +10,9 @@
 #include "EntityEventEnum.h"
 #include "InventoryManager.h"
 
-using EntityId = unsigned int; 
+
+using EntityId = unsigned int;
+constexpr EntityId InvalidEntityId = static_cast<EntityId>(-1);
 using ComponentContainer = std::vector<C_Base*>;
 using EntityData = std::pair<Bitmask, ComponentContainer>;
 using EntityContainer = std::unordered_map<EntityId, EntityData>;

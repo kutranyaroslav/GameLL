@@ -10,9 +10,7 @@ S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 {
 	Bitmask req;
 	req.turnOnBit((unsigned int)Component::Position);
-	req.turnOnBit((unsigned int)Component::SpriteSheet);
 	req.turnOnBit((unsigned int)Component::State);
-	req.turnOnBit((unsigned int)Component::Collidable);
 	req.turnOnBit((unsigned int)Component::Interactable);
 	m_requiredComponents.push_back(req);
 	req.Clear();
@@ -29,6 +27,10 @@ S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	m_handlers[InteractionType::Terminal] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleTerminal(t, a, d); };
 	m_handlers[InteractionType::Elevator] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleElevator(t, a, d); };
 	// новый тип интеракции = новая строчка тут + один маленький Handle*, без нового класс
+}
+
+S_Interaction::~S_Interaction() {
+	m_systemMgr->GetSharedContext()->m_eventManager->RemoveCallback(StateType(0),"Key_E");
 }
 
 void S_Interaction::Notify(const Message& i_message) {
@@ -128,6 +130,52 @@ void S_Interaction::HandleElevator(EntityId i_target, EntityId i_actor, C_Intera
 	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Map_Changed);
 }
 
+void S_Interaction::Interact(EventDetails *i_details) {
+	if (!m_systemMgr){return;}
+	if (!m_systemMgr->GetSharedContext()->m_stateManager){	return;}
+	StateType currentState = m_systemMgr->GetSharedContext()->m_stateManager->GetCurrentState()->GetState();
+	if (currentState == StateType::Game) {
+		EntityId actor = FindTheClosestActor();
+		if (actor == InvalidEntityId){ return;}
+		//TO DO Finish the logic of interaction with the closest actor based on it's type
+		if ()
+
+	}else if (currentState == StateType::FieldTerminal) {
+
+	}
+
+}
+
+EntityId& S_Interaction::FindTheClosestActor() {
+	if (m_systemMgr) {
+		SharedContext* context = m_systemMgr->GetSharedContext();
+		EntityManagerNew* entities = context->m_entityManager;
+		if (context && entities && context->m_world) {
+			int player = context->m_world->GetCurrentMap()->GetPlayerId();
+			C_Position* playerPos = entities->GetComponent<C_Position>(player, Component::Position);
+			const sf::Vector2f playerPosition = playerPos->GetPosition();
+			EntityId closestId = InvalidEntityId;
+			float closestDistanceSquared = INTERACTION_RADIUS * INTERACTION_RADIUS;
+			if (playerPos) {
+				for (auto entity: m_entities) {
+					C_Position* actorPos = entities->GetComponent<C_Position>(entity, Component::Position);
+					if (actorPos) {
+						const sf::Vector2f actorPosition = actorPos->GetPosition();
+						const float dx = actorPosition.x - playerPosition.x;
+						const float dy = actorPosition.y - playerPosition.y;
+						const float distanceSquared = dx * dx + dy * dy;
+						if (distanceSquared <= closestDistanceSquared) {
+							closestDistanceSquared =  distanceSquared;
+							closestId = entity;
+						}
+					}
+				}
+			}
+			return closestId;
+		}
+	}
+}
+
 ItemManager * S_Interaction::GetItemManager() const {
 	SharedContext* ctx = m_systemMgr->GetSharedContext();
 	return ctx ? ctx->m_itemManager : nullptr;
@@ -157,6 +205,12 @@ int S_Interaction::SpawnForTile(Materials::MaterialType i_material, const sf::Ve
 		if (pos) { pos->SetPosition(i_worldPos); pos->SetElevation(i_elevation); }
 		return id;
 	
+}
+
+void S_Interaction::InjectCallback() {
+	m_systemMgr->GetSharedContext()->m_eventManager->AddCallback(StateType(0),"Key_E",
+		&S_Interaction::Interact,this);
+
 }
 
 

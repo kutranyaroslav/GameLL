@@ -33,6 +33,7 @@ m_entityManager(&m_systemManager, &m_textureManager , &m_inventoryManager),
 	m_systemManager.SetSharedContext(&m_context);
 	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
+	m_systemManager.GetSystem<S_Interaction>(System::Interaction)->InjectCallback();
 	m_stateManager.SwitchTo(StateType::MainMenu);
 	m_window.SetSharedContext(&m_context);
 	m_window.SetGameViewSize(sf::Vector2f(480.f, 270.f));
