@@ -9,6 +9,8 @@
 #include "World.h"
 #include "ItemManager.h"
 #include "CraftManager.h"
+#include "InventoryManager.h"
+
 class Game
 {
 public :
@@ -27,7 +29,6 @@ private:
 	SharedContext m_context;
 	//system manager must be define before entity manaager to avoid problems with purgin in game engine
 	SystemManager m_systemManager;
-	EntityManagerNew m_entityManager;
 	FontManager m_fontManager;
 	GUI_Manager m_guiManager;
 	AudioManager m_audioManager;
@@ -35,6 +36,8 @@ private:
 	ShaderManager m_shaderManager;
 	ItemManager m_itemManager;
 	CraftManager m_craftManager;
+	InventoryManager m_inventoryManager;
+	EntityManagerNew m_entityManager;
 	World m_world;
 	sf::Clock m_clock;
 	sf::Time m_elapsed;

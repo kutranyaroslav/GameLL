@@ -8,6 +8,7 @@
 #include "ItemManager.h"
 #include "CraftManager.h"
 #include "Window.h"
+#include "InventoryManager.h"
 
 class World;
 class GUI_Manager;
@@ -65,7 +66,7 @@ protected:
 
 
 enum class StateType {
-	Intro = 1, MainMenu, Game, Paused, GameOver, Credits, Developement
+	Intro = 1, MainMenu, Game, Paused, GameOver, Credits, Developement, FieldTerminal
 };
 class StateManager;
 
@@ -75,11 +76,11 @@ struct SharedContext {
 	m_entityManager(nullptr), m_shaderManager(nullptr),
 		m_systemManager(nullptr),m_fontManager(nullptr),
 	m_guiManager(nullptr),m_soundManager(nullptr),
-	m_audioManager(nullptr),m_itemManager(nullptr),
-	m_craftManager(nullptr),
+	m_audioManager(nullptr),
 		// States call LogException/createFile through this from their catch blocks.
 		m_errorLogManager(ErrorLogManager::GetInstance()),
-	m_world(nullptr)
+	m_world(nullptr), m_itemManager(nullptr), m_craftManager(nullptr),
+		m_inventoryManager(nullptr), m_readNotes()
 	{
 		
 	}
@@ -99,6 +100,8 @@ struct SharedContext {
 	World* m_world;
 	ItemManager* m_itemManager;
 	CraftManager* m_craftManager;
+	InventoryManager* m_inventoryManager;
+	std::vector<std::string> m_readNotes;
 	
 };
 

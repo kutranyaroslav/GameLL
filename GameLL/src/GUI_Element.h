@@ -7,7 +7,7 @@
 
 
 enum class GUI_ElementState { Neutral, Focused, Clicked};
-enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,Tileset,Viewport };
+enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,Tileset,Viewport,Droplist };
 class GUI_Manager;
 
 struct GUI_Style {
@@ -108,7 +108,7 @@ public:
 	const bool& GetActive()const;
 	const std::string& GetText()const;
 	const bool IsControl();
-	bool IsInside(const sf::Vector2f& i_point);
+	virtual bool IsInside(const sf::Vector2f& i_point);
 	sf::Vector2f GetGlobalPosition();
 	sf::RectangleShape& GetSlider();
 	//only for viewport to get access to the world class

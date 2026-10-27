@@ -83,6 +83,17 @@ RecepyId CraftManager::GetRecepyId(const std::string &item1, const std::string &
     return -1;
 }
 
+std::string CraftManager::GetRecepyOutcome(const std::string& i_item1, const std::string& i_item2) const {
+    for (const auto& entry : m_recepies) {
+        const CraftRecepy* recipe = entry.second;
+        if (!recipe) { continue; }
+        const bool sameOrder = recipe->m_item1 == i_item1 && recipe->m_item2 == i_item2;
+        const bool reverseOrder = recipe->m_item1 == i_item2 && recipe->m_item2 == i_item1;
+        if (sameOrder || reverseOrder) { return recipe->m_itemOutcome; }
+    }
+    return "";
+}
+
 RecepyId CraftManager::GetIdByStringId(const std::string &i_stringId) const {
     auto itr = m_stringToId.find(i_stringId);
     if (itr == m_stringToId.end()) { return -1;}

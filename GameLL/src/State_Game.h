@@ -18,19 +18,24 @@ public:
 	void Update(const sf::Time& i_time) override;
 	void MainMenu(EventDetails* i_details);
 	void Pause(EventDetails* i_details);
+	void OpenFieldTerminal(EventDetails* i_details);
 	
 	void Move(EventDetails* i_details);
 	void Stop(EventDetails* i_details);
 private:
 	void UpdateCamera();
+	void UpdateMovementInput();
 	sf::Texture m_texture;
 	sf::Sprite m_sprite;
 	sf::Vector2f m_increment;
 	TextureManager m_textureMgr;
 	Anim_Directional m_anim;
 	SpriteSheet m_spriteSheet;
-	
 	int m_player;
+	bool m_moveLeft = false;
+	bool m_moveRight = false;
+	bool m_moveUp = false;
+	bool m_moveDown = false;
 
 
 

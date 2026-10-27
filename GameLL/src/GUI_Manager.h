@@ -9,6 +9,7 @@
 #include "GUI_Scrollbar.h"
 #include "dev/GUI_Tileset.h"
 #include "GUI_Viewport.h"
+#include "GUI_Droplist.h"
 
 class EventManager;
 
@@ -41,6 +42,7 @@ public:
 	}
 	void HandleClick(EventDetails* i_details);
 	void HandleRelease(EventDetails* i_details);
+	void HandleMouseWheel(EventDetails* i_details);
 	void HandleTextEntered(EventDetails* i_details);
 	void SetCurrentState(const StateType& i_state);
 	void AddEvent(GUI_Event i_event);

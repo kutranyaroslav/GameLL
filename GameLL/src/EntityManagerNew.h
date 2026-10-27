@@ -8,8 +8,11 @@
 #include <unordered_map>
 #include <functional>
 #include "EntityEventEnum.h"
+#include "InventoryManager.h"
 
-using EntityId = unsigned int; 
+
+using EntityId = unsigned int;
+constexpr EntityId InvalidEntityId = static_cast<EntityId>(-1);
 using ComponentContainer = std::vector<C_Base*>;
 using EntityData = std::pair<Bitmask, ComponentContainer>;
 using EntityContainer = std::unordered_map<EntityId, EntityData>;
@@ -19,7 +22,8 @@ class SystemManager;
 class EntityManagerNew
 {
 public:
-	EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr);
+	EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr
+		, InventoryManager* i_inventoryMgr);
 	~EntityManagerNew();
 	int AddEntity(const Bitmask& i_mask);
 	int AddEntity(const std::string& i_file);
@@ -27,6 +31,7 @@ public:
 	bool AddComponent(const EntityId& i_id, const Component& i_component);
 	bool RemoveComponent(const EntityId& i_id, const Component& i_component);
 	bool HasComponent(const EntityId& i_id, const Component& i_component);
+	std::string& GetEntityName(const EntityId& i_id);
 
 	void Purge();
 	template<class T>
@@ -59,6 +64,7 @@ private:
 	ComponentFactory m_cFactory;
 	SystemManager* m_systems;
 	TextureManager* m_textureManager;
+	InventoryManager* m_inventoryManager;
 
 };
 

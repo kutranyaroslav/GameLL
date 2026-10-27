@@ -1,5 +1,5 @@
 Name Player
-Attributes 1023
+Attributes 3071
 |Component|ID|Indidividual attributes
 |Position|ID|x|y|elevation|
 Component 0 0 0 2
@@ -8,11 +8,11 @@ Component 1 Player
 |State|Enum0-5 state|
 Component 2 0
 |Movable|velocityMax|m_speed.x|m_speed.y|Enum dir|
-Component 3 260 3000 3000 0
+Component 3 120 3000 3000 0
 |Controller|
 Component 4
 |Collidable|m_AABB.width|m_AABB.height|m_offset.x|m_offset.y|Origin|
-Component 5 64 64 5 5 1
+Component 5 38 64 5 5 1
 |SoundEmitter|sound|
 Component 6 footstep:1,4
 |SoundListener
@@ -21,3 +21,5 @@ Component 7
 Component 8 240 255 226 170 1.0
 |Particles|rate|lifetime|speed|spreadDegrees|size|r|g|b|
 Component 9 18 1.6 34 70 3 255 170 90
+|Inventory for Now No Parameters|
+Component 11 

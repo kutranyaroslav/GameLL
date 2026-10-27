@@ -1,6 +1,9 @@
 #include "GUI_Interface.h"
 #include "GUI_Manager.h"
+#include "GUI_Droplist.h"
 #include "World.h"
+#include <algorithm>
+#include <cmath>
 #include <sstream>
 GUI_Interface::GUI_Interface(const std::string& i_name, GUI_Manager* i_guiMgr):
 	GUI_Element(i_name,GUI_ElementType::Window, nullptr), m_parent(nullptr),
@@ -81,6 +84,13 @@ void GUI_Interface::ReadIn(std::stringstream& i_stream) {
 }
 void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
 	DefocusTextFields();
+	for (auto& itr : m_elements) {
+		if (auto* droplist = dynamic_cast<GUI_Droplist*>(itr.second)) {
+			if (droplist->IsOpen() && !droplist->IsInside(i_mousePos)) {
+				droplist->Close();
+			}
+		}
+	}
 
 	if (m_titleBar.getGlobalBounds().contains(i_mousePos) && m_movable && m_showTitleBar) {
 		m_beingMoved = true;
@@ -93,11 +103,34 @@ void GUI_Interface::OnClick(const sf::Vector2f& i_mousePos) {
 		event.m_clickCoordinates.x = i_mousePos.x;
 		event.m_clickCoordinates.y = i_mousePos.y;
 		m_guiManager->AddEvent(event);
+		// An open dropdown's popup is drawn over sibling controls, so route its
+		// option click before testing the header or other overlapping elements.
 		for (auto& itr : m_elements) {
-			if (!itr.second->IsInside(i_mousePos)) { continue; }
-			itr.second->OnClick(i_mousePos);
-			event.m_element = itr.second->m_name;
-			m_guiManager->AddEvent(event);
+			if (auto* droplist = dynamic_cast<GUI_Droplist*>(itr.second)) {
+				if (droplist->GetActive() && droplist->IsPopupInside(i_mousePos)) {
+					droplist->OnClick(i_mousePos);
+					event.m_element = droplist->GetName();
+					m_guiManager->AddEvent(event);
+					SetState(GUI_ElementState::Clicked);
+					return;
+				}
+			}
+		}
+		// Scrollbars sit over the content at the interface edges. Give controls
+		// first refusal so a click on a bar cannot also select the covered tile.
+		for (bool controlsFirst : { true, false }) {
+			bool handled = false;
+			for (auto& itr : m_elements) {
+				GUI_Element* element = itr.second;
+				if (element->IsControl() != controlsFirst || !element->GetActive() ||
+					!element->IsInside(i_mousePos)) { continue; }
+				element->OnClick(i_mousePos);
+				event.m_element = element->m_name;
+				m_guiManager->AddEvent(event);
+				handled = true;
+				break;
+			}
+			if (handled) { break; }
 		}
 		SetState(GUI_ElementState::Clicked);
 	} 
@@ -181,7 +214,13 @@ void GUI_Interface::Draw(sf::RenderTarget* i_target) {
 	i_target->draw(m_control);
 	i_target->draw(m_visual.m_text);
 	for (auto& e : m_elements) {
+		if (dynamic_cast<GUI_Droplist*>(e.second)) { continue; }
+		e.second->DrawOverlay(i_target);
+	}
+	for (auto& e : m_elements) {
+		if (dynamic_cast<GUI_Droplist*>(e.second)) {
 			e.second->DrawOverlay(i_target);
+		}
 	}
 	if (!m_showTitleBar) { return; }
 	i_target->draw(m_titleBar);
@@ -284,30 +323,23 @@ void GUI_Interface::RedrawControls() {
 }
 void GUI_Interface::UpdateScrollHorizontal(unsigned int i_percent) {
 	if (i_percent > 100) { return; }
-	m_scrollHorizontal = ((m_contentSize.x - GetSize().x) / 100) * i_percent;
+	const float maxScroll = std::max(0.f, m_contentSize.x - GetSize().x);
+	m_scrollHorizontal = static_cast<int>(std::round(maxScroll * (i_percent / 100.f)));
 	sf::IntRect rect = m_content.getTextureRect();
 	m_content.setTextureRect(sf::IntRect(m_scrollHorizontal, m_scrollVertical, rect.width, rect.height));
 }
 void GUI_Interface::UpdateScrollVertical(unsigned int i_percent) {
 	if (i_percent > 100) { return; }
-	m_scrollVertical = ((m_contentSize.y - GetSize().y) / 100) * i_percent;
+	const float maxScroll = std::max(0.f, m_contentSize.y - GetSize().y);
+	m_scrollVertical = static_cast<int>(std::round(maxScroll * (i_percent / 100.f)));
 	sf::IntRect rect = m_content.getTextureRect(); 
 	m_content.setTextureRect(sf::IntRect(m_scrollHorizontal, m_scrollVertical, rect.width, rect.height));
 }
 
 void GUI_Interface::AdjustContentSize( GUI_Element* i_reference) {
-	if (i_reference) {
-		sf::Vector2f bottomRight = i_reference->GetPosition() + i_reference->GetSize();
-		if (bottomRight.x > m_contentSize.x) {
-			m_contentSize.x = bottomRight.x;
-			m_controlRedraw = true;
-		}
-		if (bottomRight.y > m_contentSize.y) {
-			m_contentSize.y = bottomRight.y;
-			m_controlRedraw = true;
-		}
-		return;
-	}
+	// Recompute from the live children. Tileset elements are replaced when the
+	// selected sheet changes, so only growing this box leaves the old sheet's
+	// scroll range behind and makes the scrollbar thumb lie about the content.
 	sf::Vector2f farthest = GetSize();
 	for (auto& itr : m_elements) {
 		GUI_Element* element = itr.second;
@@ -322,7 +354,24 @@ void GUI_Interface::AdjustContentSize( GUI_Element* i_reference) {
 			m_controlRedraw = true;
 		}
 	}
+	if (i_reference && i_reference->GetActive() && !i_reference->IsControl()) {
+		const sf::Vector2f bottomRight = i_reference->GetPosition() + i_reference->GetSize();
+		farthest.x = std::max(farthest.x, bottomRight.x);
+		farthest.y = std::max(farthest.y, bottomRight.y);
+	}
+	const bool changed = farthest != m_contentSize;
 	SetContentSize(farthest);
+	if (changed) {
+		const int maxX = static_cast<int>(std::max(0.f, m_contentSize.x - GetSize().x));
+		const int maxY = static_cast<int>(std::max(0.f, m_contentSize.y - GetSize().y));
+		m_scrollHorizontal = std::clamp(m_scrollHorizontal, 0, maxX);
+		m_scrollVertical = std::clamp(m_scrollVertical, 0, maxY);
+		const sf::IntRect rect = m_content.getTextureRect();
+		m_content.setTextureRect(sf::IntRect(m_scrollHorizontal, m_scrollVertical,
+			rect.width, rect.height));
+		m_contentRedraw = true;
+		m_controlRedraw = true;
+	}
 }
 
 sf::Vector2f GUI_Interface::GetStyleReference()
@@ -348,6 +397,9 @@ void GUI_Interface::OnResize(const sf::Vector2f& i_scale)
 			itr.second->OnResize(i_scale);
 		}
 	}
+	AdjustContentSize();
+	m_contentRedraw = true;
+	m_controlRedraw = true;
 	SetRedraw(true);
 }
 void GUI_Interface::SetContentSize(const sf::Vector2f& i_vec) { m_contentSize = i_vec; }

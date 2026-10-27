@@ -4,9 +4,10 @@
 Game::Game() :
 	m_window(),
 	m_stateManager(&m_context),
-	m_entityManager(&m_systemManager, &m_textureManager),
 	m_guiManager(m_window.GetEventManager(), &m_context), m_soundManager(&m_audioManager),m_world(&m_context),
-	m_craftManager(&m_itemManager)
+m_entityManager(&m_systemManager, &m_textureManager , &m_inventoryManager),
+	m_craftManager(&m_itemManager) ,m_inventoryManager(&m_itemManager, &m_craftManager)
+
 {
 	manualFrame = 0;
 	m_systemManager.SetEntityManager(&m_entityManager);
@@ -24,6 +25,7 @@ Game::Game() :
 	m_context.m_world = &m_world;
 	m_context.m_shaderManager = &m_shaderManager;
 	m_context.m_itemManager = &m_itemManager;
+	m_context.m_inventoryManager = &m_inventoryManager;
 	m_context.m_craftManager = &m_craftManager;
 	//to load materials for interaction object we must do it here 
 	m_systemManager.GetSystem<S_Interaction>(System::Interaction)->LoadMaterials();
@@ -31,6 +33,7 @@ Game::Game() :
 	m_systemManager.SetSharedContext(&m_context);
 	m_context.m_errorLogManager->GetInstance()->createFile(Utils::GetWorkingDirectory() + "src//dev//devlog.txt");
 	m_systemManager.GetSystem<S_Sound>(System::Sound)->SetUp(&m_audioManager, &m_soundManager);
+	m_systemManager.GetSystem<S_Interaction>(System::Interaction)->InjectCallback();
 	m_stateManager.SwitchTo(StateType::MainMenu);
 	m_window.SetSharedContext(&m_context);
 	m_window.SetGameViewSize(sf::Vector2f(480.f, 270.f));

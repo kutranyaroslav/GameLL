@@ -7,8 +7,9 @@
 #include <random>
 namespace Utils {
 
-#ifdef RUNNING_WINDOWS 
-#define WIN_32_LEAN_AND_MEAN
+#ifdef RUNNING_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+
 #include <windows.h>
 #include <Shlwapi.h>
     inline std::string GetWorkingDirectory() {

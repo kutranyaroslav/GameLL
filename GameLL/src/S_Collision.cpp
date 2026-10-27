@@ -73,7 +73,17 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 					m_world->SwitchTo(t->m_checkoutMap);
 				}
  				if (!t->m_properties->m_solid) { continue; }
-				sf::FloatRect TileAABB(x * TileSize, y * TileSize, TileSize, TileSize);
+				const sf::FloatRect localBounds = t->m_properties->GetCollisionBounds();
+				if (localBounds.left > 0 ) {
+					printf("Hello World");
+				}
+
+				sf::FloatRect TileAABB(
+					x * TileSize + localBounds.left,
+					y * TileSize + localBounds.top,
+					localBounds.width,
+					localBounds.height
+				);
 				sf::FloatRect intersection;
 				EntityAABB.intersects(TileAABB,intersection);
 				float S = intersection.width * intersection.height;
@@ -98,7 +108,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 		float resolve = 0;
 		if (std::abs(xDiff) > std::abs(yDiff)) {
 			if (xDiff > 0) {
-				resolve = (col.m_tileBounds.left + TileSize) - EntityAABB.left;
+				resolve = (col.m_tileBounds.left + col.m_tileBounds.width) - EntityAABB.left;
 			}
 			else {
 				resolve = -((EntityAABB.left + EntityAABB.width) - col.m_tileBounds.left);
@@ -110,7 +120,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 		}
 		else {
 			if (yDiff > 0) {
-				resolve = (col.m_tileBounds.top + TileSize) - EntityAABB.top;
+				resolve = (col.m_tileBounds.top + col.m_tileBounds.height) - EntityAABB.top;
 			}
 			else {
 				resolve = -((EntityAABB.top + EntityAABB.height) - col.m_tileBounds.top);

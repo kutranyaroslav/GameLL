@@ -3,15 +3,17 @@
 #include "StateManager.h" // for SharedContext (m_world, m_textbox)
 #include "World.h"
 #include "Textbox.h"
+#include <algorithm>
 #include <filesystem>
+
+#include "C_Inventory.h"
+
 S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	S_Base(System::Interaction, i_systemMgr)
 {
 	Bitmask req;
 	req.turnOnBit((unsigned int)Component::Position);
-	req.turnOnBit((unsigned int)Component::SpriteSheet);
 	req.turnOnBit((unsigned int)Component::State);
-	req.turnOnBit((unsigned int)Component::Collidable);
 	req.turnOnBit((unsigned int)Component::Interactable);
 	m_requiredComponents.push_back(req);
 	req.Clear();
@@ -28,6 +30,10 @@ S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	m_handlers[InteractionType::Terminal] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleTerminal(t, a, d); };
 	m_handlers[InteractionType::Elevator] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleElevator(t, a, d); };
 	// новый тип интеракции = новая строчка тут + один маленький Handle*, без нового класс
+}
+
+S_Interaction::~S_Interaction() {
+	m_systemMgr->GetSharedContext()->m_eventManager->RemoveCallback(StateType(0),"Key_E");
 }
 
 void S_Interaction::Notify(const Message& i_message) {
@@ -75,6 +81,10 @@ void S_Interaction::HandlePickupItem(EntityId i_target, EntityId i_actor, C_Inte
 
 void S_Interaction::HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
 	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (context && !i_data->GetTextId().empty() &&
+		std::find(context->m_readNotes.begin(), context->m_readNotes.end(), i_data->GetTextId()) == context->m_readNotes.end()) {
+		context->m_readNotes.push_back(i_data->GetTextId());
+	}
 	if (context && context->m_textbox) {
 		// GetTextId() сейчас просто id/ключ — как появится текстовый/локализационный менеджер,
 		// тут будет context->m_textbox->Add(localization->Get(i_data->GetTextId()));
@@ -123,6 +133,104 @@ void S_Interaction::HandleElevator(EntityId i_target, EntityId i_actor, C_Intera
 	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Map_Changed);
 }
 
+void S_Interaction::Interact(EventDetails *i_details) {
+	if (!m_systemMgr){return;}
+	if (!m_systemMgr->GetSharedContext()->m_stateManager){	return;}
+	EntityManagerNew* entities = m_systemMgr->GetSharedContext()->m_entityManager;
+	StateType currentState = m_systemMgr->GetSharedContext()->m_stateManager->GetCurrentState()->GetState();
+	if (currentState == StateType::Game) {
+		EntityId actor = FindTheClosestActor();
+		if (actor == InvalidEntityId){ return;}
+		if (!entities){return;}
+		int player = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap()->GetPlayerId();
+		C_Inventory* inventory = entities->GetComponent<C_Inventory>(player,Component::Inventory);
+		C_Position* actorpos = entities->GetComponent<C_Position>(actor, Component::Position);
+		C_Interactable* interactable = entities->GetComponent<C_Interactable>(actor, Component::Interactable);
+		if (!interactable){return;}
+		if (!inventory) {return;}
+		if (!actorpos){return;}
+		const sf::Vector2f actorPosition = actorpos->GetPosition();
+		const unsigned int elevation = actorpos->getElevation();;
+		const unsigned int tileX = static_cast<unsigned int>(actorPosition.x /Sheet::Tile_Size);
+		const unsigned int tileY = static_cast<unsigned int>(actorPosition.y /Sheet::Tile_Size);
+		Items::ItemId item = inventory->GetIdByStringId(entities->GetEntityName(actor));
+		if (inventory->AddItem(item, interactable->GetQuantity())) {
+			Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
+			TileMap* tiles = map ? map->GetTileMap() : nullptr;
+
+			bool removedLinkedTile = false;
+
+			if (tiles) {
+				const sf::Vector2u mapSize = map->GetMapSize();
+
+				if (mapSize.x > 0 && mapSize.y > 0) {
+					for (const auto& [key, tile] : *tiles) {
+						if (!tile || tile->m_linkedEntity != static_cast<int>(actor)) {
+							continue;
+						}
+
+						// Decode the tile-map key; this matches Map::SaveTiles().
+						const unsigned int x = key % mapSize.x;
+						const unsigned int temp = key / mapSize.x;
+						const unsigned int y = temp % mapSize.y;
+						const unsigned int layer = temp / mapSize.y;
+
+						removedLinkedTile = map->RemoveTile(x, y, layer);
+						if (!map->SaveTiles()) {
+							printf("tiles are not saved");
+						}
+						break; // RemoveTile erases this entry from the map.
+					}
+				}
+			}
+
+			// The actor may not be linked to a map tile.
+			if (!removedLinkedTile) {
+				entities->RemoveEntity(actor);
+			}
+		}
+		
+
+	}else if (currentState == StateType::FieldTerminal) {
+
+	}
+
+}
+
+EntityId& S_Interaction::FindTheClosestActor() {
+	if (m_systemMgr) {
+		SharedContext* context = m_systemMgr->GetSharedContext();
+		EntityManagerNew* entities = context->m_entityManager;
+		if (context && entities && context->m_world) {
+			int player = context->m_world->GetCurrentMap()->GetPlayerId();
+			C_Position* playerPos = entities->GetComponent<C_Position>(player, Component::Position);
+			const sf::Vector2f playerPosition = playerPos->GetPosition();
+			EntityId closestId = InvalidEntityId;
+			float closestDistanceSquared = INTERACTION_RADIUS * INTERACTION_RADIUS;
+			if (playerPos) {
+				for (auto entity: m_entities) {
+					C_Position* actorPos = entities->GetComponent<C_Position>(entity, Component::Position);
+					if (actorPos) {
+						const sf::Vector2f actorPosition = actorPos->GetPosition();
+						const float dx = actorPosition.x - playerPosition.x;
+						const float dy = actorPosition.y - playerPosition.y;
+						const float distanceSquared = dx * dx + dy * dy;
+						if (distanceSquared > INTERACTION_RADIUS * INTERACTION_RADIUS) {
+							continue;
+						}
+
+						if (distanceSquared <= closestDistanceSquared) {
+							closestDistanceSquared =  distanceSquared;
+							closestId = entity;
+						}
+					}
+				}
+			}
+			return closestId;
+		}
+	}
+}
+
 ItemManager * S_Interaction::GetItemManager() const {
 	SharedContext* ctx = m_systemMgr->GetSharedContext();
 	return ctx ? ctx->m_itemManager : nullptr;
@@ -152,6 +260,12 @@ int S_Interaction::SpawnForTile(Materials::MaterialType i_material, const sf::Ve
 		if (pos) { pos->SetPosition(i_worldPos); pos->SetElevation(i_elevation); }
 		return id;
 	
+}
+
+void S_Interaction::InjectCallback() {
+	m_systemMgr->GetSharedContext()->m_eventManager->AddCallback(StateType(0),"Key_E",
+		&S_Interaction::Interact,this);
+
 }
 
 

@@ -17,6 +17,7 @@ public:
 	bool IsOneShot() const { return m_oneShot; }
 	bool IsUsed() const { return m_used; }
 	void SetUsed(bool i_used) { m_used = i_used; }
+	void SetQuantity(int i_quantity) { m_quantity = i_quantity; }
 
 	// AidKit
 	float GetAmount() const { return m_amount; }

@@ -4,6 +4,7 @@
 
 #ifndef GAMELL_CRAFTMANAGER_H
 #define GAMELL_CRAFTMANAGER_H
+#pragma once
 #include "ItemManager.h"
 #include "Utilitites.h"
 #include <unordered_map>
@@ -33,6 +34,7 @@ public:
     bool RemoveRecepy(const std::string& i_name);
 
     RecepyId GetRecepyId(const std::string &item1, const std::string &item2);
+    std::string GetRecepyOutcome(const std::string& i_item1, const std::string& i_item2) const;
 
     RecepyId GetIdByStringId(const std::string& i_stringId) const;
 

@@ -100,48 +100,49 @@ void S_Sound::Notify(const Message& i_message) {
 		EntitySound sound = EntitySound::None;
 		switch (state)
 		{
-		case EntityState::Idle:
-			break;
-		case EntityState::Walking:
-			sound = EntitySound::Footstep;
-			break;
-		case EntityState::Attacking:
-			sound = EntitySound::Attack;
-			break;
-		case EntityState::Hurt:
-			sound = EntitySound::Hurt;
-			break;
-		case EntityState::Dying:
-			sound = EntitySound::Death;
-			break;
-		case EntityState::Changing_Axis:
-			break;
-		default:
-			break;
+			case EntityState::Idle:
+				break;
+			case EntityState::Walking:
+				sound = EntitySound::Footstep;
+				break;
+			case EntityState::Attacking:
+				sound = EntitySound::Attack;
+				break;
+			case EntityState::Hurt:
+				sound = EntitySound::Hurt;
+				break;
+			case EntityState::Dying:
+				sound = EntitySound::Death;
+				break;
+			case EntityState::Changing_Axis:
+				break;
+			default:
+				break;
 		}
 
-	/*	if (sound == EntitySound::Footstep)
-		//the material of the tile under the entity overrides its footstep sound
-		std::string materialSound = "";
-		if (sound == EntitySound::Footstep)
-		{
-			C_Position* pos = entities->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
-			Tile* tile = GetTileUnder(pos);
-			if (tile) {
-				for (auto& itr : tile->m_properties->m_materialTags) {
-					materialSound = GetMaterialSound(itr);
-					if (materialSound != "") { break; }
+		/*	if (sound == EntitySound::Footstep)
+			//the material of the tile under the entity overrides its footstep sound
+			std::string materialSound = "";
+			if (sound == EntitySound::Footstep)
+			{
+				C_Position* pos = entities->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
+				Tile* tile = GetTileUnder(pos);
+				if (tile) {
+					for (auto& itr : tile->m_properties->m_materialTags) {
+						materialSound = GetMaterialSound(itr);
+						if (materialSound != "") { break; }
+					}
 				}
+
+
 			}
-
-
-		}*/
-			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int);
-		}
-			//one emit: the material sound when there is one, the emitter's own otherwise
-			EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int, materialSound);
-			break;
-		}
+				EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int);
+			}
+				//one emit: the material sound when there is one, the emitter's own otherwise
+				EmitSound(i_message.m_receiver, sound, true, isListener, i_message.m_int, materialSound);
+				break;
+			}*/
+	}
 	case EntityMessage::Direction_Changed: {
 		if (!isListener) { return; }
 		Direction dir = (Direction)i_message.m_int;
