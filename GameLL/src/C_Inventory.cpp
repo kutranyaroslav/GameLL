@@ -34,6 +34,11 @@ bool C_Inventory::Craft(Items::ItemId i_first, Items::ItemId i_second) {
     return m_inventoryManager && m_inventoryManager->Craft(i_first, i_second);
 }
 
+bool C_Inventory::Use(std::size_t i_slot) {
+    //the logic with checking for all the important data and parameters
+    return RemoveItem(m_inventoryManager->GetSlot(i_slot)->m_itemId, 1 );
+}
+
 bool C_Inventory::Rearrange() {
     return m_inventoryManager && m_inventoryManager->Rearrange();
 }
