@@ -12,7 +12,7 @@ void S_SheetAnimation::Update(float i_dT) {
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 	for (auto& entity : m_entities) {
 		C_SpriteSheet* sprite = entities->GetComponent<C_SpriteSheet>(entity, Component::SpriteSheet);
-		C_State* state = entities->GetComponent<C_State>(entity, Component::State);
+		if (!sprite || !sprite->GetSpriteSheet()) { continue; }
 		sprite->GetSpriteSheet()->Update(sf::seconds(i_dT));
 		auto door = m_doorAnimationToFinish.find(entity);
 		if (door != m_doorAnimationToFinish.end()) {
@@ -31,29 +31,32 @@ void S_SheetAnimation::Update(float i_dT) {
 
 				m_systemMgr->GetMessageHandler()->Dispatch(msg);
 				m_doorAnimationToFinish.erase(door);
-				}
-		const std::string& animName = sprite->GetSpriteSheet()->GetCurrentAnim()->GetName();
-		if (sprite->GetSpriteSheet()->GetCurrentAnim()->CheckMoved()) {
-			int frame = sprite->GetSpriteSheet()->GetCurrentAnim()->GetCurrentFrame();
+			}
+		}
+		Anim_Base* currentAnimation = sprite->GetSpriteSheet()->GetCurrentAnim();
+		if (!currentAnimation) { continue; }
+		const std::string& animName = currentAnimation->GetName();
+		if (currentAnimation->CheckMoved()) {
+			int frame = currentAnimation->GetCurrentFrame();
 			Message msg((MessageType)EntityMessage::Frame_Change);
 			msg.m_receiver = entity;
 			msg.m_int = frame;
 			m_systemMgr->GetMessageHandler()->Dispatch(msg);
 		}
 		if (animName == "Attack") {
-			if (!sprite->GetSpriteSheet()->GetCurrentAnim()->IsPlaying()) {
+			if (!currentAnimation->IsPlaying()) {
 				Message msg((MessageType)EntityMessage::Switch_State);
 				msg.m_receiver = entity;
 				msg.m_int = (int)EntityState::Idle;
 				m_systemMgr->GetMessageHandler()->Dispatch(msg);
 			}
-			else if (sprite->GetSpriteSheet()->GetCurrentAnim()->IsInAction()) {
+			else if (currentAnimation->IsInAction()) {
 				Message msg((MessageType)EntityMessage::Attack_Action);
 				msg.m_receiver = entity;
 				m_systemMgr->GetMessageHandler()->Dispatch(msg);
 			}
 		}
-		else if (animName == "Death" && sprite->GetSpriteSheet()->GetCurrentAnim()->IsPlaying()) {
+		else if (animName == "Death" && currentAnimation->IsPlaying()) {
 			Message msg((MessageType)EntityMessage::Dead);
 			msg.m_receiver = entity;
 			m_systemMgr->GetMessageHandler()->Dispatch(msg);
@@ -90,21 +93,26 @@ void S_SheetAnimation::Notify(const Message& i_message) {
 		
 	}
 }
-void S_SheetAnimation::ChangeAnimation(const EntityId& i_entity,const std::string& i_anim, bool i_play, bool i_loop) {
-	C_SpriteSheet* sheet = m_systemMgr->GetEntityManager()->GetComponent<C_SpriteSheet>(i_entity, Component::SpriteSheet);
-	sheet->GetSpriteSheet()->SetAnimation(i_anim, i_play, i_loop);
+bool S_SheetAnimation::ChangeAnimation(const EntityId& i_entity,const std::string& i_anim, bool i_play, bool i_loop) {
+	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
+	if (!entities) { return false; }
+	C_SpriteSheet* sheet = entities->GetComponent<C_SpriteSheet>(i_entity, Component::SpriteSheet);
+	if (!sheet || !sheet->GetSpriteSheet()) { return false; }
+	return sheet->GetSpriteSheet()->SetAnimation(i_anim, i_play, i_loop);
 }
 
 void S_SheetAnimation::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) {
 	switch (i_event) {
 		case EntityEvent::Door_Open:
-			ChangeAnimation(i_entity, "Door_Open", true, false);
-			m_doorAnimationToFinish[i_entity] = true;
+			if (ChangeAnimation(i_entity, "Door_Open", true, false)) {
+				m_doorAnimationToFinish[i_entity] = true;
+			}
 			break;
 
 		case EntityEvent::Door_Close:
-			ChangeAnimation(i_entity, "Door_Close", true, false);
-			m_doorAnimationToFinish[i_entity] = false;
+			if (ChangeAnimation(i_entity, "Door_Close", true, false)) {
+				m_doorAnimationToFinish[i_entity] = false;
+			}
 			break;
 
 		default:

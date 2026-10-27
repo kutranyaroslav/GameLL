@@ -2,7 +2,7 @@
 
 C_Interactable::C_Interactable() :
 	C_Base(Component::Interactable), m_type(InteractionType::None),
-	m_oneShot(false), m_used(false), m_amount(0.f),
+	m_oneShot(false), m_used(false), m_isDoorOpened(false), m_amount(0.f),
 	m_requiresKey(false), m_keyId(-1), m_quantity(0), m_targetId(-1)
 {
 
@@ -17,6 +17,7 @@ void C_Interactable::ReadIn(std::stringstream& i_stream) {
 	// дефолты сбрасываются каждый раз - поле, которого нет в строке для этого типа,
 	// никогда не унаследует мусор/значение от другого типа
 	m_amount = 0.f;
+	m_isDoorOpened = false;
 	m_requiresKey = false;
 	m_keyId = -1;
 	m_itemId.clear();
@@ -28,10 +29,13 @@ void C_Interactable::ReadIn(std::stringstream& i_stream) {
 
 	unsigned int boolFlag = 0;
 	switch (m_type) {
-	case InteractionType::Door:
-		i_stream >>m_isDoorOpened >>boolFlag >> m_keyId;
+	case InteractionType::Door: {
+		unsigned int openedFlag = 0;
+		i_stream >> openedFlag >> boolFlag >> m_keyId;
+		m_isDoorOpened = (openedFlag != 0);
 		m_requiresKey = (boolFlag != 0);
 		break;
+	}
 	case InteractionType::AidKit:
 		i_stream >> m_amount >> boolFlag >> m_quantity;
 		m_oneShot = (boolFlag != 0);

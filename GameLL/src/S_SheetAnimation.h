@@ -2,6 +2,7 @@
 #include "S_Base.h"
 #include "C_SpriteSheet.h"
 #include "C_State.h"
+#include <unordered_map>
 class S_SheetAnimation: public S_Base
 {
 public:
@@ -12,7 +13,7 @@ public:
 	void LoadMaterial(const std::string& i_materialName) override;
 	void LoadMaterials() override;
 private:
-	void ChangeAnimation(const EntityId& i_entity, const std::string& i_anim, bool i_play, bool i_loop);
+	bool ChangeAnimation(const EntityId& i_entity, const std::string& i_anim, bool i_play, bool i_loop);
 	std::unordered_map<EntityId, bool> m_doorAnimationToFinish;
 };
 

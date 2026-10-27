@@ -42,46 +42,47 @@ void S_Interaction::HandleEvent(const EntityId &i_entity, const EntityEvent &i_e
 }
 
 void S_Interaction::Notify(const Message& i_message) {
-	if ((EntityMessage)i_message.m_type  == EntityMessage::Interaction_Completed) {
-		C_Interactable* actorIntrcb = m_systemMgr->GetSharedContext()->
-		m_entityManager->GetComponent<C_Interactable>(i_message.m_receiver, Component::Interactable);
-		C_Position* actorPos = m_systemMgr->GetSharedContext()->
-		m_entityManager->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
-		if (!actorIntrcb){return;}
-		if (!actorPos){return;}
-		InteractionType interaction = actorIntrcb->GetType();
-		if (interaction == InteractionType::None){return;}
-		//special for the door
-		if (interaction == InteractionType::Door) {
-			actorIntrcb->SetDoorOpened((bool)i_message.m_int);
-			Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
-			TileMap* tiles = map ? map->GetTileMap() : nullptr;
-			bool removedLinkedTile = false;
-			if (tiles) {
-				const sf::Vector2u mapSize = map->GetMapSize();
-				if (mapSize.x > 0 && mapSize.y > 0) {
-					for (const auto& [key, tile] : *tiles) {
-						if (!tile || tile->m_linkedEntity != i_message.m_receiver) {
-							continue;
-						}
+	if ((EntityMessage)i_message.m_type != EntityMessage::Interaction_Completed) { return; }
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	if (!context || !context->m_entityManager) { return; }
 
-						// Decode the tile-map key; this matches Map::SaveTiles().
-						const unsigned int x = key % mapSize.x;
-						const unsigned int temp = key / mapSize.x;
-						const unsigned int y = temp % mapSize.y;
-						const unsigned int layer = temp / mapSize.y;
-						Tile* t = map->GetTile(x,y,layer);
-						t->m_properties->m_solid = i_message.m_int;
-						break;
-					}
+	C_Interactable* actor = context->m_entityManager->GetComponent<C_Interactable>(
+		i_message.m_receiver, Component::Interactable);
+	if (!actor){return;}
+	if (actor->GetType() == InteractionType::Door) {
+		const bool opened = (i_message.m_int != 0);
+		actor->SetDoorOpened(opened);
 
-				}
+		Map* map = context->m_world ? context->m_world->GetCurrentMap() : nullptr;
+		TileMap* tiles = map ? map->GetTileMap() : nullptr;
+		if (!map || !tiles) { return; }
+
+		const sf::Vector2u mapSize = map->GetMapSize();
+		if (mapSize.x == 0 || mapSize.y == 0) { return; }
+
+		for (const auto& [key, tile] : *tiles) {
+			if (!tile || tile->m_linkedEntity != i_message.m_receiver) { continue; }
+
+			const unsigned int x = key % mapSize.x;
+			const unsigned int temp = key / mapSize.x;
+			const unsigned int y = temp % mapSize.y;
+			const unsigned int layer = temp / mapSize.y;
+			Tile* linkedTile = map->GetTile(x, y, layer);
+			if (linkedTile && linkedTile->m_properties) {
+				// Closed doors block movement; open doors do not.
+				linkedTile->m_properties->m_solid = !opened;
+				map->SaveTiles();
 			}
+			break;
 		}
 	}
 }
 void S_Interaction::HandleOpenDoor(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Door_Open);
+	if (!i_data) { return; }
+	const EntityEvent event = i_data->GetDoorOpened()
+		? EntityEvent::Door_Close
+		: EntityEvent::Door_Open;
+	m_systemMgr->AddEvent(i_actor, static_cast<EventId>(event));
 }
 
 void S_Interaction::HandleHeal(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
@@ -144,9 +145,9 @@ void S_Interaction::Interact(EventDetails *i_details) {
 		if (!interactable){return;}
 		InteractionType interaction = interactable->GetType();
 		if (interaction == InteractionType::None){return;}
-		if (!inventory) {return;}
 		if (!actorpos){return;}
 		if (interaction == InteractionType::AidKit|| interaction == InteractionType::PickupItem) {
+			if (!inventory) { return; }
 			HandlePickupItem(player,actor, interactable);
 			const sf::Vector2f actorPosition = actorpos->GetPosition();
 			const unsigned int elevation = actorpos->getElevation();;

@@ -18,11 +18,10 @@ public:
 	bool IsUsed() const { return m_used; }
 	void SetUsed(bool i_used) { m_used = i_used; }
 	void SetQuantity(int i_quantity) { m_quantity = i_quantity; }
-	void
-	SetDoorOpened(bool& i_opened) { m_isDoorOpened = i_opened; }
+	void SetDoorOpened(bool i_opened) { m_isDoorOpened = i_opened; }
+	bool GetDoorOpened() const { return m_isDoorOpened; }
 
 	// AidKit
-	bool& GetDoorOpened(){ return m_isDoorOpened;}
 	float GetAmount() const { return m_amount; }
 	// Door
 	bool RequiresKey() const { return m_requiresKey; }
