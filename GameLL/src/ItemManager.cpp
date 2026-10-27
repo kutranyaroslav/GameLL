@@ -9,7 +9,7 @@ ItemManager::ItemManager() {
     LoadItems();
 }
 
-// row format: id  "Name With Spaces"  icon  maxStack  category  keyItem(0/1)  useAmount
+// row format: id "Name" icon maxStack category keyItem(0/1) useAmount ["Description"] [slotWidth]
 void ItemManager::LoadItems(const std::string& i_file) {
     std::string path = Utils::GetWorkingDirectory() + "nav//" + i_file;
     std::ifstream in(path);
@@ -31,6 +31,14 @@ void ItemManager::LoadItems(const std::string& i_file) {
         if (def.m_stringID.empty()) { continue; }
         Utils::ReadQuotedString(ss, def.m_name);
         ss >> def.m_icon >> def.m_maxStack >> categoryStr >> keyItemFlag >> def.m_useAmount;
+		ss >> std::ws;
+		if (ss.peek() == '"') {
+			Utils::ReadQuotedString(ss, def.m_description);
+			ss >> std::ws;
+		}
+		if (!ss.eof()) { ss >> def.m_slotWidth; }
+		if (def.m_slotWidth < 1) { def.m_slotWidth = 1; }
+		if (def.m_slotWidth > 2) { def.m_slotWidth = 2; }
 
         def.m_category = Items::ItemCategoryFromString(categoryStr);
         def.m_keyItem = (keyItemFlag != 0);

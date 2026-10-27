@@ -34,6 +34,7 @@ public:
     bool RemoveRecepy(const std::string& i_name);
 
     RecepyId GetRecepyId(const std::string &item1, const std::string &item2);
+    std::string GetRecepyOutcome(const std::string& i_item1, const std::string& i_item2) const;
 
     RecepyId GetIdByStringId(const std::string& i_stringId) const;
 

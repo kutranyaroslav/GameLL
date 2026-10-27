@@ -47,6 +47,8 @@ namespace Items {
 		std::string m_stringID = "";//.entity key 
 		std::string m_name = "";
 		std::string m_icon = ""; // icon which appears
+		std::string m_description = "";
+		unsigned int m_slotWidth = 1;
 		int m_maxStack = 0;
 		ItemCategory m_category;
 		bool m_keyItem = false;

@@ -9,18 +9,33 @@ bool C_Inventory::AddItem(Items::ItemId i_itemId, int i_amount) {
        return m_inventoryManager->AddItem(i_itemId, i_amount);
 
     }
+    return false;
 }
 
 bool C_Inventory::RemoveItem(Items::ItemId i_itemId, int i_amount) {
     if (m_inventoryManager) {
        return m_inventoryManager->RemoveItem(i_itemId, i_amount);
     }
+    return false;
+}
+
+bool C_Inventory::RemoveFromSlot(std::size_t i_slot, int i_amount) {
+    return m_inventoryManager && m_inventoryManager->RemoveFromSlot(i_slot, i_amount);
 }
 
 bool C_Inventory::MoveItem(std::size_t i_from, std::size_t i_to) {
     if (m_inventoryManager) {
          return  m_inventoryManager->MoveItem(i_from, i_to);
     }
+    return false;
+}
+
+bool C_Inventory::Craft(Items::ItemId i_first, Items::ItemId i_second) {
+    return m_inventoryManager && m_inventoryManager->Craft(i_first, i_second);
+}
+
+bool C_Inventory::Rearrange() {
+    return m_inventoryManager && m_inventoryManager->Rearrange();
 }
 
 void C_Inventory::SetUpInventorySize(std::size_t i_size) {

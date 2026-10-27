@@ -12,6 +12,7 @@ link_directories("${SFML_ROOT}/lib")
 file(GLOB_RECURSE GAMELL_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
+list(FILTER GAMELL_SOURCES EXCLUDE REGEX "/\\._[^/]*$")
 
 add_executable(GameLL ${GAMELL_SOURCES}
         src/CraftManager.cpp
