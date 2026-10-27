@@ -14,6 +14,24 @@ void S_SheetAnimation::Update(float i_dT) {
 		C_SpriteSheet* sprite = entities->GetComponent<C_SpriteSheet>(entity, Component::SpriteSheet);
 		C_State* state = entities->GetComponent<C_State>(entity, Component::State);
 		sprite->GetSpriteSheet()->Update(sf::seconds(i_dT));
+		auto door = m_doorAnimationToFinish.find(entity);
+		if (door != m_doorAnimationToFinish.end()) {
+			Anim_Base* animation = sprite->GetSpriteSheet()->GetCurrentAnim();
+
+			const std::string expectedAnimation =
+				door->second ? "Door_Open" : "Door_Close";
+
+			if (animation &&
+				animation->GetName() == expectedAnimation &&
+				!animation->IsPlaying()) {
+
+				Message msg((MessageType)EntityMessage::Interaction_Completed);
+				msg.m_receiver = entity;
+				msg.m_int = door->second ? 1 : 0;
+
+				m_systemMgr->GetMessageHandler()->Dispatch(msg);
+				m_doorAnimationToFinish.erase(door);
+				}
 		const std::string& animName = sprite->GetSpriteSheet()->GetCurrentAnim()->GetName();
 		if (sprite->GetSpriteSheet()->GetCurrentAnim()->CheckMoved()) {
 			int frame = sprite->GetSpriteSheet()->GetCurrentAnim()->GetCurrentFrame();
@@ -78,7 +96,20 @@ void S_SheetAnimation::ChangeAnimation(const EntityId& i_entity,const std::strin
 }
 
 void S_SheetAnimation::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) {
-	return; 
+	switch (i_event) {
+		case EntityEvent::Door_Open:
+			ChangeAnimation(i_entity, "Door_Open", true, false);
+			m_doorAnimationToFinish[i_entity] = true;
+			break;
+
+		case EntityEvent::Door_Close:
+			ChangeAnimation(i_entity, "Door_Close", true, false);
+			m_doorAnimationToFinish[i_entity] = false;
+			break;
+
+		default:
+			break;
+	}
 }
 
 void S_SheetAnimation::LoadMaterial(const std::string& i_materialName)

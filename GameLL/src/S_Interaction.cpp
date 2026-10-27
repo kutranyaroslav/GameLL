@@ -19,6 +19,7 @@ S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	req.Clear();
 
 	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Interaction_Action, this);
+	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Interaction_Completed, this);
 	// here we to register handle for each type of interaction, so that Notify can call the right one
 	m_handlers[InteractionType::Door] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleOpenDoor(t, a, d); };
 	m_handlers[InteractionType::AidKit] = [this](EntityId t, EntityId a, C_Interactable* d) { HandleHeal(t, a, d); };
@@ -36,29 +37,51 @@ S_Interaction::~S_Interaction() {
 	m_systemMgr->GetSharedContext()->m_eventManager->RemoveCallback(StateType(0),"Key_E");
 }
 
-void S_Interaction::Notify(const Message& i_message) {
-	if ((EntityMessage)i_message.m_type != EntityMessage::Interaction_Action) { return; }
-	if (!HasEntity(i_message.m_receiver)) { return; } // цель не интерактивна — нет нужных компонентов
+void S_Interaction::HandleEvent(const EntityId &i_entity, const EntityEvent &i_event) {
 
-	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
-	C_Interactable* data = entities->GetComponent<C_Interactable>(i_message.m_receiver, Component::Interactable);
-	if (!data || (data->IsOneShot() && data->IsUsed())) { return; }
-
-	auto handler = m_handlers.find(data->GetType());
-	if (handler == m_handlers.end()) { return; }
-	handler->second(i_message.m_receiver, i_message.m_sender, data);
-
-	if (data->IsOneShot()) { data->SetUsed(true); }
-
-	Message done((MessageType)EntityMessage::Interaction_Completed);
-	done.m_sender = i_message.m_sender;
-	done.m_receiver = i_message.m_receiver;
-	m_systemMgr->GetMessageHandler()->Dispatch(done);
 }
 
+void S_Interaction::Notify(const Message& i_message) {
+	if ((EntityMessage)i_message.m_type  == EntityMessage::Interaction_Completed) {
+		C_Interactable* actorIntrcb = m_systemMgr->GetSharedContext()->
+		m_entityManager->GetComponent<C_Interactable>(i_message.m_receiver, Component::Interactable);
+		C_Position* actorPos = m_systemMgr->GetSharedContext()->
+		m_entityManager->GetComponent<C_Position>(i_message.m_receiver, Component::Position);
+		if (!actorIntrcb){return;}
+		if (!actorPos){return;}
+		InteractionType interaction = actorIntrcb->GetType();
+		if (interaction == InteractionType::None){return;}
+		//special for the door
+		if (interaction == InteractionType::Door) {
+			actorIntrcb->SetDoorOpened((bool)i_message.m_int);
+			Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
+			TileMap* tiles = map ? map->GetTileMap() : nullptr;
+			bool removedLinkedTile = false;
+			if (tiles) {
+				const sf::Vector2u mapSize = map->GetMapSize();
+				if (mapSize.x > 0 && mapSize.y > 0) {
+					for (const auto& [key, tile] : *tiles) {
+						if (!tile || tile->m_linkedEntity != i_message.m_receiver) {
+							continue;
+						}
+
+						// Decode the tile-map key; this matches Map::SaveTiles().
+						const unsigned int x = key % mapSize.x;
+						const unsigned int temp = key / mapSize.x;
+						const unsigned int y = temp % mapSize.y;
+						const unsigned int layer = temp / mapSize.y;
+						Tile* t = map->GetTile(x,y,layer);
+						t->m_properties->m_solid = i_message.m_int;
+						break;
+					}
+
+				}
+			}
+		}
+	}
+}
 void S_Interaction::HandleOpenDoor(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	// тут конкретная механика двери — переключить solid у C_Collidable, сменить кадр спрайта и т.п.
-	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Door_Open);
+	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Door_Open);
 }
 
 void S_Interaction::HandleHeal(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
@@ -68,28 +91,10 @@ void S_Interaction::HandleHeal(EntityId i_target, EntityId i_actor, C_Interactab
 }
 
 void S_Interaction::HandlePickupItem(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	// нет C_Inventory / InventoryManager пока — когда появится:
-	// inventory->AddItem(i_data->GetItemId(), i_data->GetQuantity());
-	// m_oneShot всегда true для PickupItem (см. C_Interactable::ReadIn), так что Notify()
-	// сам выставит m_used = true после этого вызова и повторно предмет не сработает.
-	// Настоящий despawn (EntityManagerNew::RemoveEntity) сюда нельзя добавлять как есть:
-	// Notify() трогает i_data сразу после возврата отсюда, а RemoveEntity удаляет компоненты -
-	// это UAF. Когда появится настоящий деспавн/пул сущностей, убирать нужно будет отложенно
-	// (следующий кадр), а не прямо из хендлера.
 	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Item_Picked);
 }
 
 void S_Interaction::HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	SharedContext* context = m_systemMgr->GetSharedContext();
-	if (context && !i_data->GetTextId().empty() &&
-		std::find(context->m_readNotes.begin(), context->m_readNotes.end(), i_data->GetTextId()) == context->m_readNotes.end()) {
-		context->m_readNotes.push_back(i_data->GetTextId());
-	}
-	if (context && context->m_textbox) {
-		// GetTextId() сейчас просто id/ключ — как появится текстовый/локализационный менеджер,
-		// тут будет context->m_textbox->Add(localization->Get(i_data->GetTextId()));
-		context->m_textbox->Add(i_data->GetTextId());
-	}
 	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Note_Read);
 }
 
@@ -103,24 +108,14 @@ void S_Interaction::HandleToggleLever(EntityId i_target, EntityId i_actor, C_Int
 }
 
 void S_Interaction::HandleExamine(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	SharedContext* context = m_systemMgr->GetSharedContext();
-	if (context && context->m_textbox) {
-		context->m_textbox->Add(i_data->GetTextId());
-	}
 	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Examined);
 }
 
 void S_Interaction::HandleSavePoint(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	// нет SaveManager пока — как появится:
-	// m_systemMgr->GetSharedContext()->m_saveManager->Save();
 	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Game_Saved);
 }
 
 void S_Interaction::HandleTerminal(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	SharedContext* context = m_systemMgr->GetSharedContext();
-	if (context && context->m_textbox) {
-		context->m_textbox->Add(i_data->GetTextId());
-	}
 	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Terminal_Used);
 }
 
@@ -147,49 +142,55 @@ void S_Interaction::Interact(EventDetails *i_details) {
 		C_Position* actorpos = entities->GetComponent<C_Position>(actor, Component::Position);
 		C_Interactable* interactable = entities->GetComponent<C_Interactable>(actor, Component::Interactable);
 		if (!interactable){return;}
+		InteractionType interaction = interactable->GetType();
+		if (interaction == InteractionType::None){return;}
 		if (!inventory) {return;}
 		if (!actorpos){return;}
-		const sf::Vector2f actorPosition = actorpos->GetPosition();
-		const unsigned int elevation = actorpos->getElevation();;
-		const unsigned int tileX = static_cast<unsigned int>(actorPosition.x /Sheet::Tile_Size);
-		const unsigned int tileY = static_cast<unsigned int>(actorPosition.y /Sheet::Tile_Size);
-		Items::ItemId item = inventory->GetIdByStringId(entities->GetEntityName(actor));
-		if (inventory->AddItem(item, interactable->GetQuantity())) {
-			Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
-			TileMap* tiles = map ? map->GetTileMap() : nullptr;
+		if (interaction == InteractionType::AidKit|| interaction == InteractionType::PickupItem) {
+			HandlePickupItem(player,actor, interactable);
+			const sf::Vector2f actorPosition = actorpos->GetPosition();
+			const unsigned int elevation = actorpos->getElevation();;
+			const unsigned int tileX = static_cast<unsigned int>(actorPosition.x /Sheet::Tile_Size);
+			const unsigned int tileY = static_cast<unsigned int>(actorPosition.y /Sheet::Tile_Size);
+			Items::ItemId item = inventory->GetIdByStringId(entities->GetEntityName(actor));
+			if (inventory->AddItem(item, interactable->GetQuantity())) {
+				Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
+				TileMap* tiles = map ? map->GetTileMap() : nullptr;
 
-			bool removedLinkedTile = false;
+				bool removedLinkedTile = false;
 
-			if (tiles) {
-				const sf::Vector2u mapSize = map->GetMapSize();
+				if (tiles) {
+					const sf::Vector2u mapSize = map->GetMapSize();
 
-				if (mapSize.x > 0 && mapSize.y > 0) {
-					for (const auto& [key, tile] : *tiles) {
-						if (!tile || tile->m_linkedEntity != static_cast<int>(actor)) {
-							continue;
+					if (mapSize.x > 0 && mapSize.y > 0) {
+						for (const auto& [key, tile] : *tiles) {
+							if (!tile || tile->m_linkedEntity != static_cast<int>(actor)) {
+								continue;
+							}
+
+							// Decode the tile-map key; this matches Map::SaveTiles().
+							const unsigned int x = key % mapSize.x;
+							const unsigned int temp = key / mapSize.x;
+							const unsigned int y = temp % mapSize.y;
+							const unsigned int layer = temp / mapSize.y;
+
+							removedLinkedTile = map->RemoveTile(x, y, layer);
+							if (!map->SaveTiles()) {
+								printf("tiles are not saved");
+							}
+							break; // RemoveTile erases this entry from the map.
 						}
-
-						// Decode the tile-map key; this matches Map::SaveTiles().
-						const unsigned int x = key % mapSize.x;
-						const unsigned int temp = key / mapSize.x;
-						const unsigned int y = temp % mapSize.y;
-						const unsigned int layer = temp / mapSize.y;
-
-						removedLinkedTile = map->RemoveTile(x, y, layer);
-						if (!map->SaveTiles()) {
-							printf("tiles are not saved");
-						}
-						break; // RemoveTile erases this entry from the map.
 					}
 				}
-			}
 
-			// The actor may not be linked to a map tile.
-			if (!removedLinkedTile) {
-				entities->RemoveEntity(actor);
+				// The actor may not be linked to a map tile.
+				if (!removedLinkedTile) {
+					entities->RemoveEntity(actor);
+				}
 			}
+		}else if (interaction == InteractionType::Door ) {
+			HandleOpenDoor(player, actor, interactable);
 		}
-		
 
 	}else if (currentState == StateType::FieldTerminal) {
 

@@ -13,5 +13,6 @@ public:
 	void LoadMaterials() override;
 private:
 	void ChangeAnimation(const EntityId& i_entity, const std::string& i_anim, bool i_play, bool i_loop);
+	std::unordered_map<EntityId, bool> m_doorAnimationToFinish;
 };
 

@@ -29,7 +29,7 @@ void C_Interactable::ReadIn(std::stringstream& i_stream) {
 	unsigned int boolFlag = 0;
 	switch (m_type) {
 	case InteractionType::Door:
-		i_stream >> boolFlag >> m_keyId;
+		i_stream >>m_isDoorOpened >>boolFlag >> m_keyId;
 		m_requiresKey = (boolFlag != 0);
 		break;
 	case InteractionType::AidKit:
