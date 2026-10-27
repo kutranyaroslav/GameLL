@@ -83,3 +83,17 @@ std::size_t InventoryManager::GetSlotCount() const {
 const InventorySlot* InventoryManager::GetSlot(std::size_t i_index) const {
     return i_index < m_inventorySlots.size() ? &m_inventorySlots[i_index] : nullptr;
 }
+
+ItemManager * InventoryManager::GetItemManager() const {
+    return m_itemManager;
+}
+
+Items::ItemId InventoryManager::GetIdByStringId(const std::string &i_stringId) const {
+    return m_itemManager? m_itemManager->GetIdByStringId(i_stringId) : Items::INVALID_ITEM_ID;
+}
+
+const std::string &InventoryManager::GetIcon(const Items::ItemId &i_itemId) {
+    if (m_itemManager) {
+       return m_itemManager->GetItemDef(i_itemId)->m_icon;
+    }
+}

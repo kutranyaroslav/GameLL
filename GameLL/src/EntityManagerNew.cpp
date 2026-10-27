@@ -147,6 +147,14 @@ bool EntityManagerNew::HasComponent(const EntityId& i_id, const Component& i_com
 	return itr->second.first.getBit((unsigned int)i_component);
 }
 
+std::string& EntityManagerNew::GetEntityName(const EntityId& i_id) {
+	auto itr = m_entitiesIdsNames.find(i_id);
+	if (itr == m_entitiesIdsNames.end()) {
+		throw std::out_of_range("Unknown entity ID");
+	}
+	return itr->second;
+}
+
 void EntityManagerNew::Purge() {
 	m_systems->PurgeEntities();
 	for (auto& entity : m_entities) {

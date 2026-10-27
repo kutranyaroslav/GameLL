@@ -135,18 +135,23 @@ void S_Movement::StopEntity(const EntityId& i_entity, const Axis& i_axis) {
 		movable->SetVelocity(sf::Vector2f(movable->GetVelocity().x, 0.f));
 	}
 }
-void S_Movement::SetDirection(const EntityId& i_entity, const Direction& i_dir) {
-	C_Movable* movable = m_systemMgr->GetEntityManager()->GetComponent<C_Movable>(i_entity, Component::Movable);
-	C_State* state = m_systemMgr->GetEntityManager()->GetComponent<C_State>(i_entity, Component::State);
-	Direction oldDir = movable->GetDirection();
-	if (oldDir != i_dir) {
-			movable->SetVelocity(sf::Vector2f(0.f, 0.f));
-			state->SetState(EntityState::Changing_Axis);
+void S_Movement::SetDirection(const EntityId& entity, const Direction& direction) {
+	C_Movable* movable =
+		m_systemMgr->GetEntityManager()->GetComponent<C_Movable>(
+			entity, Component::Movable);
+
+	if (!movable) return;
+
+	if (movable->GetDirection() != direction) {
+		movable->SetVelocity(sf::Vector2f(0.f, 0.f));
+		// Don't set Changing_Axis; the state system doesn't handle it.
 	}
-	movable->SetDirection(i_dir);
+
+	movable->SetDirection(direction);
+
 	Message msg((MessageType)EntityMessage::Direction_Changed);
-	msg.m_receiver = i_entity;
-	msg.m_int = (int)i_dir;
+	msg.m_receiver = entity;
+	msg.m_int = static_cast<int>(direction);
 	m_systemMgr->GetMessageHandler()->Dispatch(msg);
 }
 void S_Movement::SetMap(Map* i_gameMap) { m_gameMap = i_gameMap; }

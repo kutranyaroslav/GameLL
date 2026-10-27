@@ -10,4 +10,4 @@ Component 5 64 64 5 5 1
 |LightSource|radius|r|g|b|intensity|
 Component 8 60 255 226 170 1.0
 |Interactable|look Read in method it is too big to put here
-Component 10 2 25 1
+Component 10 2 25 1 1

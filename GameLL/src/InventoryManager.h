@@ -40,7 +40,10 @@ public:
 
     std::size_t GetSlotCount() const;
     const InventorySlot* GetSlot(std::size_t i_index) const;
+    ItemManager* GetItemManager() const;
+    Items::ItemId GetIdByStringId(const std::string& i_stringId) const;
 
+    const std::string &GetIcon(const Items::ItemId &i_itemId);
 private:
     ItemManager* m_itemManager = nullptr;
     CraftManager* m_craftManager = nullptr;

@@ -5,6 +5,9 @@
 #include "Textbox.h"
 #include <algorithm>
 #include <filesystem>
+
+#include "C_Inventory.h"
+
 S_Interaction::S_Interaction(SystemManager* i_systemMgr) :
 	S_Base(System::Interaction, i_systemMgr)
 {
@@ -133,12 +136,60 @@ void S_Interaction::HandleElevator(EntityId i_target, EntityId i_actor, C_Intera
 void S_Interaction::Interact(EventDetails *i_details) {
 	if (!m_systemMgr){return;}
 	if (!m_systemMgr->GetSharedContext()->m_stateManager){	return;}
+	EntityManagerNew* entities = m_systemMgr->GetSharedContext()->m_entityManager;
 	StateType currentState = m_systemMgr->GetSharedContext()->m_stateManager->GetCurrentState()->GetState();
 	if (currentState == StateType::Game) {
 		EntityId actor = FindTheClosestActor();
 		if (actor == InvalidEntityId){ return;}
-		//TO DO Finish the logic of interaction with the closest actor based on it's type
-		if ()
+		if (!entities){return;}
+		int player = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap()->GetPlayerId();
+		C_Inventory* inventory = entities->GetComponent<C_Inventory>(player,Component::Inventory);
+		C_Position* actorpos = entities->GetComponent<C_Position>(actor, Component::Position);
+		C_Interactable* interactable = entities->GetComponent<C_Interactable>(actor, Component::Interactable);
+		if (!interactable){return;}
+		if (!inventory) {return;}
+		if (!actorpos){return;}
+		const sf::Vector2f actorPosition = actorpos->GetPosition();
+		const unsigned int elevation = actorpos->getElevation();;
+		const unsigned int tileX = static_cast<unsigned int>(actorPosition.x /Sheet::Tile_Size);
+		const unsigned int tileY = static_cast<unsigned int>(actorPosition.y /Sheet::Tile_Size);
+		Items::ItemId item = inventory->GetIdByStringId(entities->GetEntityName(actor));
+		if (inventory->AddItem(item, interactable->GetQuantity())) {
+			Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
+			TileMap* tiles = map ? map->GetTileMap() : nullptr;
+
+			bool removedLinkedTile = false;
+
+			if (tiles) {
+				const sf::Vector2u mapSize = map->GetMapSize();
+
+				if (mapSize.x > 0 && mapSize.y > 0) {
+					for (const auto& [key, tile] : *tiles) {
+						if (!tile || tile->m_linkedEntity != static_cast<int>(actor)) {
+							continue;
+						}
+
+						// Decode the tile-map key; this matches Map::SaveTiles().
+						const unsigned int x = key % mapSize.x;
+						const unsigned int temp = key / mapSize.x;
+						const unsigned int y = temp % mapSize.y;
+						const unsigned int layer = temp / mapSize.y;
+
+						removedLinkedTile = map->RemoveTile(x, y, layer);
+						if (!map->SaveTiles()) {
+							printf("tiles are not saved");
+						}
+						break; // RemoveTile erases this entry from the map.
+					}
+				}
+			}
+
+			// The actor may not be linked to a map tile.
+			if (!removedLinkedTile) {
+				entities->RemoveEntity(actor);
+			}
+		}
+		
 
 	}else if (currentState == StateType::FieldTerminal) {
 
@@ -164,6 +215,10 @@ EntityId& S_Interaction::FindTheClosestActor() {
 						const float dx = actorPosition.x - playerPosition.x;
 						const float dy = actorPosition.y - playerPosition.y;
 						const float distanceSquared = dx * dx + dy * dy;
+						if (distanceSquared > INTERACTION_RADIUS * INTERACTION_RADIUS) {
+							continue;
+						}
+
 						if (distanceSquared <= closestDistanceSquared) {
 							closestDistanceSquared =  distanceSquared;
 							closestId = entity;

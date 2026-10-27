@@ -39,3 +39,13 @@ std::size_t C_Inventory::GetSlotCount() const {
 const InventorySlot* C_Inventory::GetSlot(std::size_t i_index) const {
     return m_inventoryManager ? m_inventoryManager->GetSlot(i_index) : nullptr;
 }
+
+Items::ItemId C_Inventory::GetIdByStringId(const std::string &i_stringId) const {
+    return m_inventoryManager ?m_inventoryManager->GetIdByStringId(i_stringId) : Items::INVALID_ITEM_ID;
+}
+
+const std::string & C_Inventory::GetIcon(const Items::ItemId i_itemId) const {
+    if (m_inventoryManager) {
+        return m_inventoryManager->GetIcon(i_itemId);
+    }else {return ""; }
+}

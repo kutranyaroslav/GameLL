@@ -33,7 +33,7 @@ void C_Interactable::ReadIn(std::stringstream& i_stream) {
 		m_requiresKey = (boolFlag != 0);
 		break;
 	case InteractionType::AidKit:
-		i_stream >> m_amount >> boolFlag;
+		i_stream >> m_amount >> boolFlag >> m_quantity;
 		m_oneShot = (boolFlag != 0);
 		break;
 	case InteractionType::PickupItem:

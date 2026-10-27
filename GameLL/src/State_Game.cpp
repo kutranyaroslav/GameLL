@@ -85,19 +85,29 @@ void State_Game::Draw() {
 
 void State_Game::Activate() {
 	World* world = m_stateManager->GetSharedContext()->m_world;
-	// если пришли из редактора (или из предыдущей игровой сессии) — продолжаем с той карты,
-	// что там осталась активной; если это самый первый запуск без редактора вообще — дефолт MAP1
-	std::string targetMap = world->GetCurrentMap() ? world->GetCurrentMap()->GetMapName() : "MAP1";
-	if (!world->HasMap(targetMap)) {
-		world->AddMap(targetMap);
-	}
-	world->AddConfiguredTilesets(targetMap);
-	world->LoadMap(targetMap);
-	if (!world->GetCurrentMap()) { m_player = -1; return; }
 
-	m_player = world->GetCurrentMap()->GetPlayerId();
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Movement>(System::Movement)->SetWorld(world);
-	m_stateManager->GetSharedContext()->m_systemManager->GetSystem<S_Collision>(System::Collision)->SetWorld(world);
+	if (!world->GetCurrentMap()) {
+		const std::string targetMap = "MAP1";
+
+		if (!world->HasMap(targetMap)) {
+			world->AddMap(targetMap);
+		}
+
+		world->AddConfiguredTilesets(targetMap);
+		world->LoadMap(targetMap);
+	}
+
+	Map* map = world->GetCurrentMap();
+	if (!map) {
+		m_player = -1;
+		return;
+	}
+
+	m_player = map->GetPlayerId();
+
+	auto* systems = m_stateManager->GetSharedContext()->m_systemManager;
+	systems->GetSystem<S_Movement>(System::Movement)->SetWorld(world);
+	systems->GetSystem<S_Collision>(System::Collision)->SetWorld(world);
 }
 void State_Game::Deactivate() {
 	m_moveLeft = m_moveRight = m_moveUp = m_moveDown = false;

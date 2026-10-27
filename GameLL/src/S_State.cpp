@@ -79,18 +79,23 @@ void S_State::LoadMaterials()
 {
 }
 
-void S_State::ChangeState(const EntityId& i_entity, const EntityState& i_state, const bool& i_force) {
+void S_State::ChangeState(
+	const EntityId& i_entity,
+	const EntityState& i_state,
+	const bool& i_force)
+{
 	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
-	for (auto& entity : m_entities) {
-		C_State* state = entities->GetComponent<C_State>(entity, Component::State);
-		if (!i_force && state->GetState() == EntityState::Dying) {
-			return;
-		}
-		Message msgDelayed((MessageType)EntityMessage::State_Changed);
-		msgDelayed.m_oldState = (int)state->GetState();
-		state->SetState(i_state);
-		msgDelayed.m_receiver = i_entity;
-		msgDelayed.m_int = (int)i_state;
-		m_systemMgr->GetMessageHandler()->QueueMessage(msgDelayed);
-	}
+	C_State* state =
+		entities->GetComponent<C_State>(i_entity, Component::State);
+
+	if (!state) return;
+	if (!i_force && state->GetState() == EntityState::Dying) return;
+
+	Message msg((MessageType)EntityMessage::State_Changed);
+	msg.m_oldState = static_cast<int>(state->GetState());
+	msg.m_receiver = i_entity;
+	msg.m_int = static_cast<int>(i_state);
+
+	state->SetState(i_state);
+	m_systemMgr->GetMessageHandler()->QueueMessage(msg);
 }

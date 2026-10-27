@@ -31,6 +31,7 @@ public:
 	bool AddComponent(const EntityId& i_id, const Component& i_component);
 	bool RemoveComponent(const EntityId& i_id, const Component& i_component);
 	bool HasComponent(const EntityId& i_id, const Component& i_component);
+	std::string& GetEntityName(const EntityId& i_id);
 
 	void Purge();
 	template<class T>
