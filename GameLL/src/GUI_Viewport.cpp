@@ -142,6 +142,7 @@ void GUI_Viewport::DrawOverlay(sf::RenderTarget* i_target)
 	for (int i = 0; i < Sheet::Num_Layers; i++) {
 		if (m_world) {
 			m_world->Draw(*i_target, m_view,i);
+			m_context->m_systemManager->Draw(m_context->m_wind,i);
 		}
 	}
 	i_target->setView(oldView);

@@ -65,6 +65,7 @@ void State_Game::Update(const sf::Time& i_time) {
 	UpdateMovementInput();
 	context->m_systemManager->Update(i_time.asSeconds());
 	EntityManagerNew* entities = m_stateManager->GetSharedContext()->m_entityManager;
+	printf("hellow");
 }
 
 void State_Game::Draw() {

@@ -19,7 +19,9 @@ add_executable(GameLL ${GAMELL_SOURCES}
         src/CraftManager.h
         src/C_Inventory.cpp
         src/C_Inventory.h
-        src/C_Inventory.h)
+        src/C_Inventory.h
+        src/C_Type.cpp
+        src/C_Type.h)
 
 target_include_directories(GameLL PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"

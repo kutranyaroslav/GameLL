@@ -12,6 +12,7 @@
 #include "C_Particles.h"
 #include  "C_Interactable.h"
 #include "C_Inventory.h"
+#include "C_Type.h"
 EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i_textureMgr
 	,InventoryManager* i_inventoryMgr):
 	m_systems(i_systemMgr), m_textureManager(i_textureMgr),m_inventoryManager(i_inventoryMgr), m_idCounter(0)
@@ -28,6 +29,7 @@ EntityManagerNew::EntityManagerNew(SystemManager* i_systemMgr, TextureManager* i
 	AddComponentType<C_Particles>(Component::Particles);
 	AddComponentType<C_Interactable>(Component::Interactable);
 	AddComponentType<C_Inventory>(Component::Inventory);
+	AddComponentType<C_Type>(Component::Type);
 }
 
 EntityManagerNew::~EntityManagerNew() { 

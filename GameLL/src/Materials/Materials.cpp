@@ -14,6 +14,8 @@ namespace Materials
             return MaterialType::Metall;
 		else if (i_material == "AidKit")
 			return MaterialType::AidKit;
+		else if (i_material == "DoorBunker")
+		    return MaterialType::DoorBunker;
 
         return MaterialType::None;
     }
@@ -27,6 +29,8 @@ namespace Materials
             return "Metall";
 		else if (i_material == MaterialType::AidKit)
 			return "AidKit";
+        else if (i_material == MaterialType::DoorBunker)
+            return "DoorBunker";
 
         return "";
     }

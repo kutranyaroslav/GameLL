@@ -143,16 +143,17 @@ void S_Movement::SetDirection(const EntityId& entity, const Direction& direction
 	if (!movable) return;
 
 	if (movable->GetDirection() != direction) {
-		movable->SetVelocity(sf::Vector2f(0.f, 0.f));
-		// Don't set Changing_Axis; the state system doesn't handle it.
+		// Facing changes must not cancel movement velocity. In particular, the
+		// horizontal direction is processed before the vertical direction for a
+		// diagonal move, and clearing velocity here makes the vertical handler
+		// mistake that move for a vertical-only move.
+		movable->SetDirection(direction);
+
+		Message msg((MessageType)EntityMessage::Direction_Changed);
+		msg.m_receiver = entity;
+		msg.m_int = static_cast<int>(direction);
+		m_systemMgr->GetMessageHandler()->Dispatch(msg);
 	}
-
-	movable->SetDirection(direction);
-
-	Message msg((MessageType)EntityMessage::Direction_Changed);
-	msg.m_receiver = entity;
-	msg.m_int = static_cast<int>(direction);
-	m_systemMgr->GetMessageHandler()->Dispatch(msg);
 }
 void S_Movement::SetMap(Map* i_gameMap) { m_gameMap = i_gameMap; }
 

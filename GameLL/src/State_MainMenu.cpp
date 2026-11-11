@@ -44,7 +44,7 @@ void State_MainMenu::Activate() {
 		play->SetText("Play");
 	}
 	
-	m_stateManager->GetSharedContext()->m_soundManager->PlayMusic("MainMenuTheme", 10.f, true);
+	m_stateManager->GetSharedContext()->m_soundManager->PlayMusic("MainMenuTheme", 0.f, true);
 }
 
 void State_MainMenu::Deactivate(){}

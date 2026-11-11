@@ -95,6 +95,15 @@ void State_Developement::onCreate()
 				&State_Developement::React, this);
 			m_dynamicCallbacks.push_back("TilesetDropdown");
 		}
+		if (tilesetPanel && tilesetPanel->AddElement(GUI_ElementType::Label, "SelectedTileCoordinates")) {
+			GUI_Element* element = tilesetPanel->GetElement("SelectedTileCoordinates");
+			gui->LoadStyle("ListBottomLabel.style", element);
+			element->ApplyStyle();
+			element->SetSize(sf::Vector2f(300.f, 32.f) * element->GetScale());
+			element->SetTextSize(14);
+			element->SetText("Tile coordinates: X -, Y -");
+			element->ApplyStyle();
+		}
 		PopulateTilesetDropdown();
 		SetUpLayoutTilesetBottom();
 
@@ -234,7 +243,17 @@ void State_Developement::React(EventDetails* i_details)
 		GUI_Interface* viewportPanel = gui->GetInterface(StateType::Developement, "Viewport");
 		auto* tileset = panel ? dynamic_cast<GUI_Tileset*>(panel->GetElement(m_tilesetPreviewName)) : nullptr;
 		auto* viewport = viewportPanel ? dynamic_cast<GUI_Viewport*>(viewportPanel->GetElement("ViewportMap")) : nullptr;
-		if (tileset && viewport) { viewport->SetClickedTileInfo(tileset->GetSelectedTileInfo()); }
+		if (tileset) {
+			TileInfo* selected = tileset->GetSelectedTileInfo();
+			GUI_Element* coordinates = panel->GetElement("SelectedTileCoordinates");
+			if (coordinates) {
+				coordinates->SetText(selected
+					? "Tile coordinates: X " + std::to_string(selected->m_id) +
+						", Y " + std::to_string(selected->m_row)
+					: "Tile coordinates: X -, Y -");
+			}
+			if (viewport) { viewport->SetClickedTileInfo(selected); }
+		}
 		return;
 	}
 
@@ -320,9 +339,20 @@ void State_Developement::SelectTileset(const std::string& i_tilesetName)
 		tilesetPreview->SetHitboxEditMode(m_hitboxEditMode);
 	}
 	GUI_Element* dropdown = panel->GetElement("TilesetDropdown");
-	const float previewY = dropdown
-		? dropdown->GetPosition().y + dropdown->GetSize().y + panel->GetPadding().y
-		: panel->GetPadding().y;
+	GUI_Element* coordinates = panel->GetElement("SelectedTileCoordinates");
+	const float paddingY = panel->GetPadding().y;
+	if (coordinates) {
+		const float labelY = dropdown
+			? dropdown->GetPosition().y + dropdown->GetSize().y + paddingY
+			: paddingY;
+		coordinates->SetPosition(sf::Vector2f(panel->GetPadding().x, labelY));
+		coordinates->SetRedraw(true);
+	}
+	const float previewY = coordinates
+		? coordinates->GetPosition().y + coordinates->GetSize().y + paddingY
+		: (dropdown
+			? dropdown->GetPosition().y + dropdown->GetSize().y + paddingY
+			: paddingY);
 	element->SetPosition(sf::Vector2f(panel->GetPadding().x, previewY));
 	element->ApplyStyle();
 	element->SetWorld(world);
@@ -330,6 +360,9 @@ void State_Developement::SelectTileset(const std::string& i_tilesetName)
 
 	m_currentTileset = i_tilesetName;
 	m_tilesetPreviewName = element->GetName();
+	if (GUI_Element* coordinates = panel->GetElement("SelectedTileCoordinates")) {
+		coordinates->SetText("Tile coordinates: X -, Y -");
+	}
 	EventManager* events = context->m_eventManager;
 	events->AddDynamicBinding(m_tilesetPreviewName, EventType::GUI_Click,
 		panel->GetName(), m_tilesetPreviewName);

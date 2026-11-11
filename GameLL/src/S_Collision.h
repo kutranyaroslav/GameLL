@@ -4,7 +4,7 @@
 #include "World.h"
 #include <vector>
 struct CollisionElement {
-	CollisionElement(float i_area, TileInfo* i_info, const sf::FloatRect& i_bounds) :
+	CollisionElement(float i_area, const sf::FloatRect& i_bounds,TileInfo* i_info = nullptr) :
 	m_area(i_area),m_tile(i_info), m_tileBounds(i_bounds) {}
 	float m_area;
 	TileInfo* m_tile;

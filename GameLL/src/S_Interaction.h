@@ -3,7 +3,7 @@
 #include "C_Interactable.h"
 #include "ItemManager.h"
 #include <functional>
-#define INTERACTION_RADIUS 64.f
+#define INTERACTION_RADIUS 100.f
 
 
 //message m_receiver = target entity, m_sender = actor entity

@@ -251,6 +251,9 @@ int S_Interaction::SpawnForTile(Materials::MaterialType i_material, const sf::Ve
 {
 		auto itr = m_materialToTemplate.find(Materials::MaterialToString(i_material));
 		if (itr == m_materialToTemplate.end()) { return -1; }
+		
+
+
 
 		EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 		int id = entities->AddEntity(itr->second); // спавнит по .entity шаблону (например "AidKit")

@@ -1,4 +1,5 @@
 #include "S_Collision.h"
+#include "C_Type.h "
 S_Collision::S_Collision(SystemManager* i_systemMgr) :S_Base(System::Collision, i_systemMgr), m_world(nullptr) {
 	Bitmask req; 
 	req.turnOnBit((unsigned int)Component::Collidable);
@@ -87,7 +88,7 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 				sf::FloatRect intersection;
 				EntityAABB.intersects(TileAABB,intersection);
 				float S = intersection.width * intersection.height;
-				c.emplace_back(S, t->m_properties, TileAABB);
+				c.emplace_back(S, TileAABB,  t->m_properties);
 				break;
 			}
 		}
@@ -140,11 +141,86 @@ void S_Collision::EntityCollisions() {
 		for (auto itr2 = std::next(itr); itr2 != m_entities.end(); ++itr2) {
 			C_Collidable* collidable1 = entities->GetComponent<C_Collidable>(*itr, Component::Collidable);
 			C_Collidable* collidable2 = entities->GetComponent<C_Collidable>(*itr2, Component::Collidable);
+			C_Type* type1 = entities->GetComponent<C_Type>(*itr, Component::Type);
+			C_Type* type2 = entities->GetComponent<C_Type>(*itr2, Component::Type);
+			if (!type1 || !type2 ){continue; }
 			if (collidable1->GetCollidable().intersects(collidable2->GetCollidable())) {
-				//collision of entities
+				if (type1->GetType()==EntityType::Player) {
+					C_Position* i_pos = entities->GetComponent<C_Position>(*itr, Component::Position);
+					sf::FloatRect PlayerAABB =  collidable1->GetCollidable();
+					sf::FloatRect EntityAABB = collidable2->GetCollidable();
+					sf::FloatRect intersection;
+					PlayerAABB.intersects(EntityAABB, intersection);
+					float xDiff = ((PlayerAABB.left + (PlayerAABB.width / 2)) - (EntityAABB.left + (EntityAABB.width / 2)));
+					float yDiff = ((PlayerAABB.top + (PlayerAABB.height / 2)) - (EntityAABB.top + (EntityAABB.height / 2)));
+					float resolve = 0;
+					if (std::abs(xDiff) > std::abs(yDiff)) {
+							if (xDiff > 0) {
+								resolve = (EntityAABB.left + EntityAABB.width) - PlayerAABB.left;
+							}
+							else {
+								resolve = -((PlayerAABB.left + PlayerAABB.width) - EntityAABB.left);
+							}
+							i_pos->MoveBy(resolve, 0);
+							collidable1->SetPosition(i_pos->GetPosition());
+							m_systemMgr->AddEvent(*itr, (EventId)EntityEvent::Colliding_X);
+							collidable1->CollideOnX();
+						}
+						else {
+							if (yDiff > 0) {
+								resolve = (EntityAABB.top + EntityAABB.height) - PlayerAABB.top;
+							}
+							else {
+								resolve = -((PlayerAABB.top + PlayerAABB.height) - EntityAABB.top);
+
+							}
+							i_pos->MoveBy(0, resolve);
+							collidable1->SetPosition(i_pos->GetPosition());
+							m_systemMgr->AddEvent(*itr, (EventId)EntityEvent::Colliding_Y);
+							collidable1->CollideOnY();
+						}
+					}
+				else if (type2->GetType()==EntityType::Player) {
+					C_Position* i_pos = entities->GetComponent<C_Position>(*itr2, Component::Position);
+					sf::FloatRect PlayerAABB =  collidable2->GetCollidable();
+					sf::FloatRect EntityAABB = collidable1->GetCollidable();
+					sf::FloatRect intersection;
+					PlayerAABB.intersects(EntityAABB, intersection);
+					float xDiff = ((PlayerAABB.left + (PlayerAABB.width / 2)) - (EntityAABB.left + (EntityAABB.width / 2)));
+					float yDiff = ((PlayerAABB.top + (PlayerAABB.height / 2)) - (EntityAABB.top + (EntityAABB.height / 2)));
+					float resolve = 0;
+					if (std::abs(xDiff) > std::abs(yDiff)) {
+						if (xDiff > 0) {
+							resolve = (EntityAABB.left + EntityAABB.width) - PlayerAABB.left;
+						}
+						else {
+							resolve = -((PlayerAABB.left + PlayerAABB.width) - EntityAABB.left);
+						}
+						i_pos->MoveBy(resolve, 0);
+						collidable2->SetPosition(i_pos->GetPosition());
+						m_systemMgr->AddEvent(*itr2, (EventId)EntityEvent::Colliding_X);
+						collidable2->CollideOnX();
+					}
+					else {
+						if (yDiff > 0) {
+							resolve = (EntityAABB.top + EntityAABB.height) - PlayerAABB.top;
+						}
+						else {
+							resolve = -((PlayerAABB.top + PlayerAABB.height) - EntityAABB.top);
+
+						}
+						i_pos->MoveBy(0, resolve);
+						collidable2->SetPosition(i_pos->GetPosition());
+						m_systemMgr->AddEvent(*itr2, (EventId)EntityEvent::Colliding_Y);
+						collidable2->CollideOnY();
+					}
+				}
+
+
 			}
 		}
 	}
+
 }
 void S_Collision::Notify(const Message& i_message) {
 	return;
