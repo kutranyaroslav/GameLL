@@ -7,6 +7,7 @@ S_Collision::S_Collision(SystemManager* i_systemMgr) :S_Base(System::Collision, 
 	m_requiredComponents.push_back(req);
 	req.Clear();
 	m_gameMap = nullptr;
+	m_systemMgr->GetMessageHandler()->Subscribe(EntityMessage::Interaction_Completed,this);
 }
 
 void S_Collision::SetWorld(World* i_world)
@@ -223,6 +224,23 @@ void S_Collision::EntityCollisions() {
 
 }
 void S_Collision::Notify(const Message& i_message) {
+	EntityMessage m = (EntityMessage)i_message.m_type;
+	switch (m) {
+		case EntityMessage::Interaction_Completed:
+			auto entity = m_entities.at(i_message.m_receiver);
+			EntityManagerNew* entities = m_systemMgr->GetEntityManager();
+			if (!entities){return;}
+			C_Type* type = entities->GetComponent<C_Type>(entity, Component::Type);
+			if (type->GetType() == EntityType::Door) {
+				C_Collidable* collidable = entities->GetComponent<C_Collidable>(entity, Component::Collidable);
+				if (!collidable){return;}
+				if (i_message.m_int) {
+					collidable->SetCollidable(sf::FloatRect(0,0,0,0));
+				}else {
+					collidable->SetCollidable(collidable->GetInitialCollidable());
+				}
+			}
+	}
 	return;
 }
 void S_Collision::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event) {

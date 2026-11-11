@@ -24,7 +24,7 @@ void S_SheetAnimation::Update(float i_dT) {
 			if (animation &&
 				animation->GetName() == expectedAnimation &&
 				!animation->IsPlaying()) {
-
+				//door opened or closed
 				Message msg((MessageType)EntityMessage::Interaction_Completed);
 				msg.m_receiver = entity;
 				msg.m_int = door->second ? 1 : 0;

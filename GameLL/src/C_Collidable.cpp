@@ -7,6 +7,7 @@ void C_Collidable::ReadIn(std::stringstream& i_stream){
 	unsigned int origin = 0; 
 	i_stream >> m_AABB.width >> m_AABB.height >> m_offset.x >> m_offset.y >> origin;
 	m_origin = (Origin)origin;
+	m_AABBinitial = m_AABB;
 }
 
 void C_Collidable::CollideOnX() { m_collidingOnX = true; }
@@ -37,3 +38,11 @@ void C_Collidable::SetPosition(const sf::Vector2f& i_vec) {
 	}
 }
 sf::FloatRect& C_Collidable::GetCollidable() { return m_AABB; }
+
+sf::FloatRect & C_Collidable::GetInitialCollidable() {
+	return m_AABBinitial;
+}
+
+void C_Collidable::SetCollidable(const sf::FloatRect &i_AABB) {
+	m_AABB = i_AABB;
+}

@@ -14,8 +14,11 @@ public:
 	void SetSize(const sf::Vector2f& i_vec);
 	void SetPosition(const sf::Vector2f& i_vec);
 	sf::FloatRect& GetCollidable();
+	sf::FloatRect& GetInitialCollidable();
+	void SetCollidable(const sf::FloatRect& i_AABB);
 private:
 	sf::FloatRect m_AABB;
+	sf::FloatRect m_AABBinitial;
 	sf::Vector2f m_offset;
 	Origin m_origin;
 	bool m_collidingOnX;
