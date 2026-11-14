@@ -23,32 +23,55 @@ void C_SoundEmitter::SetSoundId(const SoundId& i_sound) { m_soundId = i_sound; }
 SoundParameters* C_SoundEmitter::GetSoundParamters() { return &m_params[0]; }
 
 void C_SoundEmitter::ReadIn(std::stringstream& i_stream) {
-	std::string main_delimiter = ":";
-	std::string frame_delimiter = ",";
-	for (int i = 0; i < Max_EntitySounds; ++i) {
-		std::string chunk;
-		i_stream >> chunk;
-		if (chunk == "") { break; }
-		std::string sound;
-		sound = chunk.substr(0, chunk.find(main_delimiter));
-		std::string frames = chunk.substr(chunk.find(main_delimiter)+ main_delimiter.length());
-		m_params[i].m_sound = sound;
-		size_t pos = 0;
-		unsigned int FrameNum = 0;
-		while (FrameNum < SoundParameters::Max_SoundFrames) {
-			pos = frames.find(frame_delimiter);
+	for (auto& parameters : m_params) {
+		parameters = SoundParameters{};
+	}
+
+	std::string chunk;
+
+	for (int i = 0; i < Max_EntitySounds && (i_stream >> chunk); ++i) {
+		const size_t separator = chunk.find(':');
+		if (separator == std::string::npos) {
+			continue;
+		}
+
+		const std::string sound = chunk.substr(0, separator);
+		const std::string frames = chunk.substr(separator + 1);
+
+		// Keep existing positional loading for other sounds.
+		int soundIndex = i;
+
+		// Map door sounds to the entries used by GetSound().
+		if (sound == "DoorBunker1_Open") {
+			soundIndex = static_cast<int>(EntitySound::DoorBunker1_Open);
+		}
+		else if (sound == "DoorBunker1_Close") {
+			soundIndex = static_cast<int>(EntitySound::DoorBunker1_Close);
+		}
+
+		if (soundIndex < 0 || soundIndex >= Max_EntitySounds) {
+			continue;
+		}
+
+		SoundParameters& parameters = m_params[soundIndex];
+		parameters = SoundParameters{};
+		parameters.m_sound = sound;
+
+		std::stringstream frameStream(frames);
+		std::string frameText;
+		int frameIndex = 0;
+
+		while (frameIndex < SoundParameters::Max_SoundFrames &&
+			   std::getline(frameStream, frameText, ',')) {
+			std::stringstream valueStream(frameText);
 			int frame = -1;
-			if (pos != std::string::npos) {
-				frame = std::stoi(frames.substr(0, pos));
-				frames.erase(0, pos + frame_delimiter.length());
-			}
-			else {
-				frame = std::stoi(frames);
-				m_params[i].m_frames[FrameNum] = frame;
+
+			if (!(valueStream >> frame)) {
 				break;
 			}
-			m_params[i].m_frames[FrameNum] = frame;
-			++FrameNum;
- }
+
+			parameters.m_frames[frameIndex] = frame;
+			++frameIndex;
+			   }
 	}
 }

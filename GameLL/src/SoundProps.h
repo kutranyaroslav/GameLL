@@ -35,8 +35,7 @@ using Sounds = std::unordered_map<StateType, SoundContainer>;
 using RecycledSound = std::vector<std::pair<std::pair<SoundId, std::string>, sf::Sound*>>;
 using MusicContainer = std::unordered_map<StateType, std::pair<SoundInfo, sf::Music*>>;
 
-enum class EntitySound { None = -1, Footstep,Attack,Hurt,Death };
-
+enum class EntitySound { None = -1, Footstep,Attack,Hurt,Death, DoorBunker1_Open, DoorBunker1_Close};
 struct SoundParameters {
 	static const int Max_SoundFrames = 5;
 	SoundParameters() {

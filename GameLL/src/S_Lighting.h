@@ -30,6 +30,6 @@ private:
 	// asset, and at this radius the facets are not visible.	
 	static const unsigned int LIGHT_SEGMENTS = 24;			
 
-	sf::Color m_ambient = sf::Color(24, 24, 26);
+	sf::Color m_ambient = sf::Color(46, 52, 54);
 	sf::VertexArray m_fan;
 };

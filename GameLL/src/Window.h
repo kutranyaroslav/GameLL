@@ -79,7 +79,7 @@ private:
 	sf::Shader* m_compositeShader = nullptr;
 	bool m_compositeReady = false;
 	sf::Clock m_fxClock;
-	float m_vignetteStrength = 0.6f;
+	float m_vignetteStrength = 0.9f;
 	float m_grainStrength = 0.10f;
 
 	float m_aberrationStrength = 0.009f;

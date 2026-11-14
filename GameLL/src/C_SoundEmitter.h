@@ -4,7 +4,7 @@
 class C_SoundEmitter: public C_Base
 {
 public:
-	static const int Max_EntitySounds = 4;
+	static const int Max_EntitySounds = 6;
 	C_SoundEmitter();
 	const std::string& GetSound(const EntitySound& i_sound);
 	bool IsSoundFrame(const EntitySound& i_sound, int i_frame);

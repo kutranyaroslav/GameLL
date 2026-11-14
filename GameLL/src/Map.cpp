@@ -2,6 +2,7 @@
 #include "S_Collision.h"
 #include "S_Movement.h"
 #include "S_Interaction.h"
+#include "C_SpriteSheet.h"
 #include <cctype>
 #include <exception>
 #include <iomanip>
@@ -233,9 +234,13 @@ void Map::Draw(sf::RenderTarget& i_target, const sf::View& i_view,unsigned int i
 			if (x < 0 || y < 0) { continue; }
 			Tile* tile = GetTile(x, y,i_layer);
 			if (!tile) { continue; }
-			if (tile->m_properties->m_id > 40) {
-				std::cout << "here";
+			if (tile->m_linkedEntity != -1) {
+				C_SpriteSheet* sprite = m_context->m_entityManager->GetComponent<C_SpriteSheet>
+				(tile->m_linkedEntity, Component::SpriteSheet);
+				if (sprite && sprite->GetSpriteSheet()){continue;}
 			}
+
+
 			sf::Sprite& sprite = tile->m_properties->m_sprite;
 			sprite.setPosition(x * Sheet::Tile_Size, y * Sheet::Tile_Size);
 			i_target.draw(sprite);
@@ -541,7 +546,12 @@ Tile* Map::PlaceTile(unsigned int i_x, unsigned int i_y, unsigned int i_layer, T
 			->SpawnForTile(tag,
 				sf::Vector2f((i_x + 0.5f) * Sheet::Tile_Size, (i_y + 0.5f) * Sheet::Tile_Size),
 				i_layer);
-		if (linked != -1) { tile->m_linkedEntity = linked; break; }
+		if (linked != -1) {
+			//means entity is spawned
+			tile->m_linkedEntity = linked; break;
+
+
+		}
 	}
 
 	m_tilemap.emplace(ConvertCordinates(i_x, i_y, i_layer), tile);

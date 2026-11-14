@@ -94,7 +94,7 @@ void State_Game::Activate() {
 			world->AddMap(targetMap);
 		}
 
-		world->AddConfiguredTilesets(targetMap);
+		world->AddConfiguredTilesets(targetMap, true);
 		world->LoadMap(targetMap);
 	}
 

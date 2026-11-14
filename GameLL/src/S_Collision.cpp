@@ -74,6 +74,17 @@ void S_Collision::MapCollisions(const EntityId& i_entity, C_Position* i_pos, C_C
 					if (!m_world) { continue; }
 					m_world->SwitchTo(t->m_checkoutMap);
 				}
+				if (t->m_linkedEntity != -1) {
+				EntityManagerNew* entities = m_systemMgr->GetEntityManager();
+
+    				if (entities->HasComponent(
+						t->m_linkedEntity, Component::Collidable) &&
+						entities->HasComponent(t->m_linkedEntity,Component::SpriteSheet)) {
+        			// The linked entity owns collision for this placement.
+        			continue;
+					}
+				}
+
  				if (!t->m_properties->m_solid) { continue; }
 				const sf::FloatRect localBounds = t->m_properties->GetCollisionBounds();
 				if (localBounds.left > 0 ) {

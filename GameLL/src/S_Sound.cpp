@@ -85,6 +85,46 @@ void S_Sound::Update(float i_dT) {
 
 void S_Sound::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event)
 {
+	switch (i_event) {
+		case EntityEvent::Door_Open:{
+			EntityManagerNew* entities = m_systemMgr->GetEntityManager();
+		    bool isListener = entities->HasComponent(i_entity, Component::SoundListener);
+			EntitySound sound = EntitySound::DoorBunker1_Open;
+			StopSound(i_entity, EntitySound::DoorBunker1_Close);
+			EmitSound(i_entity,sound, true, isListener);
+			break;
+
+		}
+		case EntityEvent::Door_Close: {
+			EntityManagerNew* entities = m_systemMgr->GetEntityManager();
+
+			auto* emitter = entities->GetComponent<C_SoundEmitter>(
+				i_entity, Component::SoundEmitter);
+
+			if (!emitter) {
+				std::cout << "[Door_Close] Missing emitter\n";
+				break;
+			}
+
+			const std::string soundName =
+				emitter->GetSound(EntitySound::DoorBunker1_Close);
+			// Stop the previous sound and clear its tracked ID.
+			StopSound(i_entity, EntitySound::DoorBunker1_Open);
+			const bool isListener =
+				entities->HasComponent(i_entity, Component::SoundListener);
+			EmitSound(
+				i_entity,
+				EntitySound::DoorBunker1_Close,
+				true,
+				isListener
+			);
+
+
+			break;
+		}
+		default:
+			break;
+	}
 }
 
 void S_Sound::Notify(const Message& i_message) {
@@ -244,7 +284,10 @@ void S_Sound::EmitSound(const EntityId& i_entity, const EntitySound& i_sound, bo
 	sf::Vector3f pos = (i_relative ? sf::Vector3f(0, 0, 0) : MakeSoundPosition(c_position->GetPosition(), c_position->getElevation()));
 	if (i_useId) {
 		if (i_overrideSound == "") {
-			c_sound->SetSoundId(m_soundManager->Play(c_sound->GetSound(i_sound), pos));
+			c_sound->SetSoundId(m_soundManager->Play(c_sound->GetSound(i_sound)
+				,pos,false,i_relative
+				)
+			);
 		}
 		else
 		{
