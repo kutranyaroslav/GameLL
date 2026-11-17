@@ -96,6 +96,8 @@ void S_Interaction::HandlePickupItem(EntityId i_target, EntityId i_actor, C_Inte
 }
 
 void S_Interaction::HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
+	if (!i_data) { return; }
+	m_systemMgr->GetSharedContext()->m_stateManager->ReadNote(i_data->GetTextId());
 	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Note_Read);
 }
 
@@ -109,7 +111,14 @@ void S_Interaction::HandleToggleLever(EntityId i_target, EntityId i_actor, C_Int
 }
 
 void S_Interaction::HandleExamine(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
-	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Examined);
+	if (!i_data) { return; }
+    auto* context = m_systemMgr->GetSharedContext();
+    // Examine can point at an item definition, or at a text document.
+    const auto* item = context->m_itemManager
+        ? context->m_itemManager->GetItemDef(i_data->GetTextId()) : nullptr;
+    if (item) { context->m_stateManager->ExamineItem(item->m_id); }
+    else { context->m_stateManager->ReadNote(i_data->GetTextId()); }
+    m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Examined);
 }
 
 void S_Interaction::HandleSavePoint(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
@@ -191,7 +200,11 @@ void S_Interaction::Interact(EventDetails *i_details) {
 			}
 		}else if (interaction == InteractionType::Door ) {
 			HandleOpenDoor(player, actor, interactable);
-		}
+        } else if (interaction == InteractionType::ReadNote) {
+            HandleReadNote(actor, player, interactable);
+        } else if (interaction == InteractionType::Examine) {
+            HandleExamine(actor, player, interactable);
+        }
 
 	}else if (currentState == StateType::FieldTerminal) {
 
@@ -199,38 +212,28 @@ void S_Interaction::Interact(EventDetails *i_details) {
 
 }
 
-EntityId& S_Interaction::FindTheClosestActor() {
-	if (m_systemMgr) {
-		SharedContext* context = m_systemMgr->GetSharedContext();
-		EntityManagerNew* entities = context->m_entityManager;
-		if (context && entities && context->m_world) {
-			int player = context->m_world->GetCurrentMap()->GetPlayerId();
-			C_Position* playerPos = entities->GetComponent<C_Position>(player, Component::Position);
-			const sf::Vector2f playerPosition = playerPos->GetPosition();
-			EntityId closestId = InvalidEntityId;
-			float closestDistanceSquared = INTERACTION_RADIUS * INTERACTION_RADIUS;
-			if (playerPos) {
-				for (auto entity: m_entities) {
-					C_Position* actorPos = entities->GetComponent<C_Position>(entity, Component::Position);
-					if (actorPos) {
-						const sf::Vector2f actorPosition = actorPos->GetPosition();
-						const float dx = actorPosition.x - playerPosition.x;
-						const float dy = actorPosition.y - playerPosition.y;
-						const float distanceSquared = dx * dx + dy * dy;
-						if (distanceSquared > INTERACTION_RADIUS * INTERACTION_RADIUS) {
-							continue;
-						}
-
-						if (distanceSquared <= closestDistanceSquared) {
-							closestDistanceSquared =  distanceSquared;
-							closestId = entity;
-						}
-					}
-				}
-			}
-			return closestId;
-		}
-	}
+EntityId S_Interaction::FindTheClosestActor() {
+    auto* context = m_systemMgr ? m_systemMgr->GetSharedContext() : nullptr;
+    if (!context || !context->m_entityManager || !context->m_world || !context->m_world->GetCurrentMap()) {
+        return InvalidEntityId;
+    }
+    auto* entities = context->m_entityManager;
+    const EntityId player = context->m_world->GetCurrentMap()->GetPlayerId();
+    auto* playerPos = entities->GetComponent<C_Position>(player, Component::Position);
+    if (!playerPos) { return InvalidEntityId; }
+    EntityId closest = InvalidEntityId;
+    float distance = INTERACTION_RADIUS * INTERACTION_RADIUS;
+    for (EntityId entity : m_entities) {
+        if (entity == player) { continue; }
+        auto* pos = entities->GetComponent<C_Position>(entity, Component::Position);
+        auto* interactable = entities->GetComponent<C_Interactable>(entity, Component::Interactable);
+        if (!pos || !interactable || interactable->GetType() == InteractionType::None ||
+            pos->getElevation() != playerPos->getElevation()) { continue; }
+        const auto difference = pos->GetPosition() - playerPos->GetPosition();
+        const float squared = difference.x * difference.x + difference.y * difference.y;
+        if (squared <= distance) { distance = squared; closest = entity; }
+    }
+    return closest;
 }
 
 ItemManager * S_Interaction::GetItemManager() const {

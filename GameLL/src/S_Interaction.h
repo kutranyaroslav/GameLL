@@ -35,6 +35,6 @@ private:
 	void HandleElevator(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
 
 	void Interact(EventDetails* i_details);
-	EntityId& FindTheClosestActor();
+	EntityId FindTheClosestActor();
 	ItemManager* GetItemManager() const;
 };

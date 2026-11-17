@@ -5,6 +5,7 @@
 #include "State_Game.h"
 #include "State_Paused.h"
 #include "State_FieldTerminal.h"
+#include "State_Examine.h"
 #include "dev/State_Developement.h"
 #include "GUI_Manager.h"
 #include "Map.h"
@@ -18,18 +19,25 @@ StateManager::StateManager(SharedContext* i_shared):
 	RegisterState<State_Game>(StateType::Game);
 	RegisterState<State_Paused>(StateType::Paused);
 	RegisterState<State_FieldTerminal>(StateType::FieldTerminal);
+	RegisterState<State_Examine>(StateType::Examine);
 	//TO DO LATER IN GAME MODE THIS STATE MUST BE ERASED MANUALLY
 	RegisterState<State_Developement>(StateType::Developement);
 	/*RegisterState<State_GameOver>(StateType::GameOver);
 	RegisterState<State_Credits>(StateType::Credits);*/
 }
 
-StateManager::~StateManager() {
+StateManager::~StateManager() { ClearStates(); }
+
+void StateManager::ClearStates() {
 	for (auto& itr : m_states) {
 		itr.second->onDestroy();
 		//potential bag maybe later one to itr assign nullptr
 		delete itr.second;
 	}
+	m_states.clear();
+	m_toRemove.clear();
+	m_currentState = nullptr;
+	m_examineRequest = ExamineRequest::None;
 }
 
 // The lowest state that still has to be drawn: the last one that paints its
@@ -126,7 +134,38 @@ BaseState* StateManager::GetState(StateType i_type)
 	return nullptr;
 }
 
+void StateManager::ExamineItem(Items::ItemId item) {
+    if (item == Items::INVALID_ITEM_ID || !m_currentState || m_currentState->GetState() == StateType::Examine) { return; }
+    m_examineItem = item;
+    m_examineReturnState = m_currentState->GetState();
+    m_examineRequest = ExamineRequest::Item;
+}
+void StateManager::ReadNote(const std::string& textId) {
+    if (!m_currentState || m_currentState->GetState() == StateType::Examine) { return; }
+    m_examineTextId = textId;
+    m_examineReturnState = m_currentState->GetState();
+    m_examineRequest = ExamineRequest::Note;
+}
+void StateManager::CloseExamine(StateType returnState) {
+    m_examineReturnState = returnState == StateType::Examine ? StateType::Game : returnState;
+    m_examineRequest = ExamineRequest::Close;
+}
 void StateManager::ProcessRequests() {
+    // Creating GUI bindings during EventManager::Update would invalidate its
+    // iterators. Open/close the viewer only after input and system updates finish.
+    const auto request = m_examineRequest;
+    m_examineRequest = ExamineRequest::None;
+    if (request == ExamineRequest::Close) {
+        SwitchTo(m_examineReturnState);
+        RemoveState(StateType::Examine);
+    } else if (request != ExamineRequest::None) {
+        SwitchTo(StateType::Examine);
+        auto* examine = dynamic_cast<State_Examine*>(GetState(StateType::Examine));
+        if (examine) {
+            if (request == ExamineRequest::Item) { examine->ShowItem(m_examineItem, m_examineReturnState); }
+            else { examine->ShowNote(m_examineTextId, m_examineReturnState); }
+        }
+    }
 	while (m_toRemove.begin() != m_toRemove.end()) {
 		RemoveState(*m_toRemove.begin());
 		m_toRemove.erase(m_toRemove.begin());

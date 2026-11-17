@@ -89,8 +89,8 @@ void S_Sound::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event)
 		case EntityEvent::Door_Open:{
 			EntityManagerNew* entities = m_systemMgr->GetEntityManager();
 		    bool isListener = entities->HasComponent(i_entity, Component::SoundListener);
-			EntitySound sound = EntitySound::DoorBunker1_Open;
-			StopSound(i_entity, EntitySound::DoorBunker1_Close);
+			EntitySound sound = EntitySound::Door_Open;
+			StopSound(i_entity, EntitySound::Door_Close);
 			EmitSound(i_entity,sound, true, isListener);
 			break;
 
@@ -107,14 +107,14 @@ void S_Sound::HandleEvent(const EntityId& i_entity, const EntityEvent& i_event)
 			}
 
 			const std::string soundName =
-				emitter->GetSound(EntitySound::DoorBunker1_Close);
+				emitter->GetSound(EntitySound::Door_Close);
 			// Stop the previous sound and clear its tracked ID.
-			StopSound(i_entity, EntitySound::DoorBunker1_Open);
+			StopSound(i_entity, EntitySound::Door_Open);
 			const bool isListener =
 				entities->HasComponent(i_entity, Component::SoundListener);
 			EmitSound(
 				i_entity,
-				EntitySound::DoorBunker1_Close,
+				EntitySound::Door_Close,
 				true,
 				isListener
 			);

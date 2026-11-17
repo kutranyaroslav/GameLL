@@ -66,7 +66,7 @@ protected:
 
 
 enum class StateType {
-	Intro = 1, MainMenu, Game, Paused, GameOver, Credits, Developement, FieldTerminal
+	Intro = 1, MainMenu, Game, Paused, GameOver, Credits, Developement, FieldTerminal,Examine
 };
 class StateManager;
 
@@ -119,6 +119,10 @@ public:
 	void DrawOverlay();
 	StateContainer::iterator FirstVisibleState();
 	void ProcessRequests();
+	void ExamineItem(Items::ItemId item);
+	void ReadNote(const std::string& textId);
+	void CloseExamine(StateType returnState);
+	void ClearStates();
 	bool HasState(const StateType& i_type);
 	void SwitchTo(const StateType& i_type);
 	void Remove(const StateType& i_type);
@@ -136,7 +140,12 @@ private:
 			return new T(this);
 			};
 	}
-	BaseState* m_currentState;
+	enum class ExamineRequest { None, Item, Note, Close };
+	ExamineRequest m_examineRequest = ExamineRequest::None;
+	Items::ItemId m_examineItem = Items::INVALID_ITEM_ID;
+	std::string m_examineTextId;
+	StateType m_examineReturnState = StateType::Game;
+	BaseState* m_currentState = nullptr;
 	SharedContext* m_shared;
 	StateContainer m_states;
 	TypeContainer m_toRemove;

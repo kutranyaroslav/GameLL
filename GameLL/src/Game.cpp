@@ -40,6 +40,8 @@ m_entityManager(&m_systemManager, &m_textureManager , &m_inventoryManager),
 
 }
 Game::~Game(){
+	// State GUI/font/event resources must be released while their managers live.
+	m_stateManager.ClearStates();
 	m_fontManager.ReleaseResource("Main");
 	m_context.m_errorLogManager->GetInstance()->Close();
 }

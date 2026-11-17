@@ -1,4 +1,5 @@
 #include "GUI_Manager.h"
+#include "GUI_ItemPreview.h"
 #include <exception>
 #include <string>
 
@@ -59,6 +60,8 @@ m_eventMgr(i_eventMgr), m_context(i_context), m_currentState(StateType(0))
 	m_elemTypes.emplace("Tileset", GUI_ElementType::Tileset);
 	m_elemTypes.emplace("Viewport", GUI_ElementType::Viewport);
 	m_elemTypes.emplace("Droplist", GUI_ElementType::Droplist);
+	RegisterElement<GUI_ItemPreview>(GUI_ElementType::ItemPreview);
+	m_elemTypes.emplace("ItemPreview", GUI_ElementType::ItemPreview);
 
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left", &GUI_Manager::HandleClick, this);
 	m_eventMgr->AddCallback(StateType(0), "Mouse_Left_Release", &GUI_Manager::HandleRelease, this);

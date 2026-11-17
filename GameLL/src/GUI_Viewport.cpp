@@ -13,6 +13,9 @@ GUI_Viewport::~GUI_Viewport()
 	// The element can be destroyed before SetContext() was ever called.
 	if (m_context && m_context->m_eventManager) {
 		m_context->m_eventManager->RemoveCallback(StateType::Developement, "Key_S");
+		m_context->m_eventManager->RemoveCallback(StateType::Developement, "Editor_EraseTile");
+
+		m_context->m_eventManager->RemoveBinding("Editor_EraseTile");
 	}
 }
 
@@ -168,6 +171,25 @@ void GUI_Viewport::CallbackSetup()
 			m_context->m_eventManager->AddCallback(StateType::Developement, "Key_S", &GUI_Viewport::React, this);
 		}
 	}
+
+	EventManager* events = m_context->m_eventManager;
+
+	auto* binding = new Binding("Editor_EraseTile");
+	binding->BindEvent(
+		EventType::KeyDown,
+		EventInfo(sf::Keyboard::D)
+	);
+
+	if (!events->AddBinding(binding)) {
+		delete binding;
+	}
+
+	events->AddCallback(
+		StateType::Developement,
+		"Editor_EraseTile",
+		&GUI_Viewport::EraseHoveredTile,
+		this
+	);
 	// Called once the window and geometry are set, so the viewport rect is right
 	// from the first frame instead of only after the first DrawOverlay.
 	UpdateViewportRect();
@@ -294,3 +316,34 @@ void GUI_Viewport::React(EventDetails* i_details)
 
 }
 
+
+void GUI_Viewport::EraseHoveredTile(EventDetails*) {
+	if (!m_world) {
+		return;
+	}
+
+	Map* map = m_world->GetCurrentMap();
+	if (!map) {
+		return;
+	}
+
+	// OnLeave() already resets these coordinates to -1.
+	if (m_hoverTilePos.x < 0 || m_hoverTilePos.y < 0 ||
+		m_layerIndex < 0 || m_layerIndex >= Sheet::Num_Layers) {
+		return;
+		}
+
+	const unsigned int x =
+		static_cast<unsigned int>(m_hoverTilePos.x);
+	const unsigned int y =
+		static_cast<unsigned int>(m_hoverTilePos.y);
+	const unsigned int layer =
+		static_cast<unsigned int>(m_layerIndex);
+
+	// GetTile checks bounds before RemoveTile calculates its key.
+	if (!map->GetTile(x, y, layer)) {
+		return;
+	}
+
+	map->RemoveTile(x, y, layer);
+}

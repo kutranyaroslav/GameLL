@@ -35,43 +35,38 @@ void C_SoundEmitter::ReadIn(std::stringstream& i_stream) {
 			continue;
 		}
 
-		const std::string sound = chunk.substr(0, separator);
+		const std::string binding = chunk.substr(0, separator);
 		const std::string frames = chunk.substr(separator + 1);
 
-		// Keep existing positional loading for other sounds.
 		int soundIndex = i;
+		std::string sound = binding;
 
-		// Map door sounds to the entries used by GetSound().
-		if (sound == "DoorBunker1_Open") {
-			soundIndex = static_cast<int>(EntitySound::DoorBunker1_Open);
-		}
-		else if (sound == "DoorBunker1_Close") {
-			soundIndex = static_cast<int>(EntitySound::DoorBunker1_Close);
+		const size_t equals = binding.find('=');
+
+		if (equals != std::string::npos) {
+			const std::string action = binding.substr(0, equals);
+			sound = binding.substr(equals + 1);
+
+			if (action == "Door_Open") {
+				soundIndex = static_cast<int>(EntitySound::Door_Open);
+			}
+			else if (action == "Door_Close") {
+				soundIndex = static_cast<int>(EntitySound::Door_Close);
+			}
+			else {
+				continue; // Unknown action.
+			}
 		}
 
-		if (soundIndex < 0 || soundIndex >= Max_EntitySounds) {
+		if (soundIndex < 0 || soundIndex >= Max_EntitySounds ||
+			sound.empty()) {
 			continue;
-		}
+			}
 
 		SoundParameters& parameters = m_params[soundIndex];
 		parameters = SoundParameters{};
 		parameters.m_sound = sound;
 
-		std::stringstream frameStream(frames);
-		std::string frameText;
-		int frameIndex = 0;
-
-		while (frameIndex < SoundParameters::Max_SoundFrames &&
-			   std::getline(frameStream, frameText, ',')) {
-			std::stringstream valueStream(frameText);
-			int frame = -1;
-
-			if (!(valueStream >> frame)) {
-				break;
-			}
-
-			parameters.m_frames[frameIndex] = frame;
-			++frameIndex;
-			   }
+		// Keep your existing frame-parsing loop below this.
 	}
 }

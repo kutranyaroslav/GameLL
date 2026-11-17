@@ -7,7 +7,7 @@
 
 
 enum class GUI_ElementState { Neutral, Focused, Clicked};
-enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,Tileset,Viewport,Droplist };
+enum class GUI_ElementType { None, Window, Label, Button, Scrollbar, Textfield,Tileset,Viewport,Droplist,ItemPreview };
 class GUI_Manager;
 
 struct GUI_Style {
@@ -91,8 +91,9 @@ public:
 	void SetSize(const sf::Vector2f& i_size);
 	void SetTextSize(const unsigned int& i_size);
 	void SetWorkArea(float i_area);
-	void SetActive(const bool& const i_acitve);
+	void SetActive(const bool& i_acitve);
 	void SetText(const std::string& i_string);
+	void SetUnicodeText(const sf::String& text);
 	void SetBackgroundImage(const std::string& i_texture);
 	//getters
 	float GetScale();
@@ -106,7 +107,7 @@ public:
 	sf::Vector2i GetBgImageSize();
 	GUI_ElementType& GetType();
 	const bool& GetActive()const;
-	const std::string& GetText()const;
+	std::string GetText()const;
 	const bool IsControl();
 	virtual bool IsInside(const sf::Vector2f& i_point);
 	sf::Vector2f GetGlobalPosition();

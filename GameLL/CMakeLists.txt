@@ -21,7 +21,9 @@ add_executable(GameLL ${GAMELL_SOURCES}
         src/C_Inventory.h
         src/C_Inventory.h
         src/C_Type.cpp
-        src/C_Type.h)
+        src/C_Type.h
+        src/State_Examine.cpp
+        src/State_Examine.h)
 
 target_include_directories(GameLL PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"

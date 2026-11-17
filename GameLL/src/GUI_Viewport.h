@@ -34,6 +34,7 @@ public:
     // World units per on-screen pixel inside this element.
     sf::Vector2f GetWorldPerPixel();
     void React(EventDetails* i_details);
+	void EraseHoveredTile(EventDetails* i_details);
 private:
 	//Change the map based on the clicked tile position and the current brush
     void ChangeMap();

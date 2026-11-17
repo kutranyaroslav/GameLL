@@ -100,7 +100,7 @@ sf::Vector2i GUI_Element::GetBgImageSize()
 {
 	return m_visual.m_backgroundImage.getTextureRect().getSize();
 }
-void GUI_Element::SetActive(const bool& const i_active)
+void GUI_Element::SetActive(const bool& i_active)
 {
 	if (i_active != m_active) {
 		m_active = i_active;
@@ -112,12 +112,16 @@ void GUI_Element::SetText(const std::string& i_string) {
 	m_visual.m_text.setString(i_string);
 	SetRedraw(true);
 }
+void GUI_Element::SetUnicodeText(const sf::String& text) {
+	m_visual.m_text.setString(text);
+	SetRedraw(true);
+}
 void GUI_Element::SetBackgroundImage(const std::string& i_texture)
 {	
 	m_styles[m_state].m_backgroundImage = i_texture;
 }
 bool GUI_Element::GerRedraw() { return m_needsRedraw; }
-const std::string& GUI_Element::GetText()const { return m_visual.m_text.getString(); }
+std::string GUI_Element::GetText()const { return m_visual.m_text.getString().toAnsiString(); }
 const bool GUI_Element::IsControl() { return m_isControl; }
 bool GUI_Element::IsInside(const sf::Vector2f& i_point) {
 	sf::Vector2f position = GetGlobalPosition();
