@@ -19,12 +19,14 @@ public:
 	void SetUsed(bool i_used) { m_used = i_used; }
 	void SetQuantity(int i_quantity) { m_quantity = i_quantity; }
 	void SetDoorOpened(bool i_opened) { m_isDoorOpened = i_opened; }
+	void SetDoorOpenedWithKey(const bool& i_openedWithKey) { m_openedWithKey = i_openedWithKey; }
 	bool GetDoorOpened() const { return m_isDoorOpened; }
 
 	// AidKit
 	float GetAmount() const { return m_amount; }
 	// Door
 	bool RequiresKey() const { return m_requiresKey; }
+	bool DoorOpenedWithKey() const { return m_openedWithKey;}
 	int GetKeyId() const { return m_keyId; }
 	// PickupItem
 	const std::string& GetItemId() const { return m_itemId; }
@@ -43,6 +45,7 @@ private:
 	bool m_oneShot;
 	bool m_used;
 	bool m_isDoorOpened;
+	bool m_openedWithKey = false;
 
 	float m_amount;
 	bool m_requiresKey;

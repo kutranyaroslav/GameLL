@@ -3,7 +3,15 @@
 #include "TextureManager.h"
 #include "Anim_Base.h"
 #include "Directions.h"
+#include <vector>
+
 using Animations = std::unordered_map<std::string, Anim_Base*>;
+
+struct SpritePart {
+	sf::IntRect rectangle;
+	int layerOffset = 0;
+};
+
 
 class SpriteSheet
 {
@@ -16,6 +24,8 @@ public:
 	void CropSprite(const sf::IntRect& i_rect);
 	void Update(const sf::Time& i_dT);
 	void Draw(sf::RenderTarget* i_wind);
+	void DrawOnLayer(sf::RenderTarget& i_wind,
+		unsigned int i_entityLayer, unsigned int i_drawingLayer,bool useParts = true);
 	void SetSpriteSize(const sf::Vector2i& i_size);
 	void SetSpritePos(const sf::Vector2f& i_pos);
 	void SetSpriteDir(const Direction& i_dir);
@@ -33,7 +43,6 @@ private:
 	Animations m_animations;
 	Anim_Base* m_animationCurrent;
 	TextureManager* m_textureManager;
-	//test 
-	Textbox* m_textbox;
+	std::vector<SpritePart> m_parts;
 };
 

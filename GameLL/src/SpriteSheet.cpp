@@ -72,6 +72,30 @@ bool SpriteSheet::LoadSheet(const std::string& i_file) {
 				if (m_animationCurrent) { continue;}
 				m_animationCurrent = anim;
 				m_animationCurrent->Play();
+			}else if (type == "RenderPart") {
+				SpritePart part;
+				if (!(keystream >> part.rectangle.left >>
+					part.rectangle.top >> part.rectangle.width >>
+					part.rectangle.height >> part.layerOffset)){
+						std::cerr << "Invalid RenderPart in " << i_file << '\n';
+						continue;
+					}
+				const sf::IntRect& rect = part.rectangle;
+
+				// Size must appear before RenderPart in the sheet file.
+				if (rect.left < 0 || rect.top < 0 ||
+					rect.width <= 0 || rect.height <= 0 ||
+					rect.width > m_spriteSize.x ||
+					rect.height > m_spriteSize.y ||
+					rect.left > m_spriteSize.x - rect.width ||
+					rect.top > m_spriteSize.y - rect.height) {
+					std::cerr << "RenderPart outside frame in "
+							  << i_file << '\n';
+					continue;
+					}
+
+				m_parts.push_back(part);
+
 			}
 		}
 		sheet.close();
@@ -81,6 +105,7 @@ bool SpriteSheet::LoadSheet(const std::string& i_file) {
 	return false;
 }
 void SpriteSheet::ReleaseSheet() {
+	m_parts.clear();
 	m_textureManager->ReleaseResource(m_texture);
 	m_animationCurrent = nullptr;
 	while (m_animations.begin() != m_animations.end()) {
@@ -136,6 +161,39 @@ void SpriteSheet::Update(const sf::Time& i_dT) {
 void SpriteSheet::Draw(sf::RenderTarget* i_wind) {
 	i_wind->draw(m_sprite);
 }
+
+void SpriteSheet::DrawOnLayer(sf::RenderTarget& i_wind,
+		unsigned int i_entityLayer, unsigned int i_drawingLayer,bool useParts) {
+
+	if (!useParts || m_parts.empty()) {
+		if (i_entityLayer == i_drawingLayer) {
+			i_wind.draw(m_sprite);
+		}
+		return;
+	}
+	const sf::IntRect frame = m_sprite.getTextureRect();
+	for (const SpritePart& part : m_parts) {
+		const long long partLayer = static_cast<long long>(i_entityLayer) + part.layerOffset;
+		if (partLayer != static_cast<long long>(i_drawingLayer)) {
+			continue;
+		}
+		const sf::IntRect& region = part.rectangle;
+		sf::Sprite piece = m_sprite;
+		piece.setTextureRect(sf::IntRect(
+			frame.left + region.left,
+			frame.top + region.top,
+			region.width,
+			region.height
+			));
+		piece.setOrigin(m_sprite.getOrigin().x - region.left,
+			m_sprite.getOrigin().y - region.top);
+		i_wind.draw(piece);
+
+	}
+}
+
+
+
 Anim_Base* SpriteSheet::GetCurrentAnim() {
 	return m_animationCurrent;
 }

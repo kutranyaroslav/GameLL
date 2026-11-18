@@ -19,8 +19,10 @@ public:
     bool RemoveItem(Items::ItemId i_itemId, int i_amount);
     bool RemoveFromSlot(std::size_t i_slot, int i_amount);
     bool MoveItem(std::size_t i_from, std::size_t i_to);
+    bool HasItem(const Items::ItemId& i_itemId);
     bool Craft(Items::ItemId i_first, Items::ItemId i_second);
     bool Use(std::size_t i_slot);
+    bool Use(const Items::ItemId& i_itemId );
     bool Rearrange();
     void SetUpInventorySize(std::size_t i_size);
 

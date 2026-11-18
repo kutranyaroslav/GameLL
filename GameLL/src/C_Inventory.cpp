@@ -30,13 +30,29 @@ bool C_Inventory::MoveItem(std::size_t i_from, std::size_t i_to) {
     return false;
 }
 
+bool C_Inventory::HasItem(const Items::ItemId &i_itemId) {
+    return m_inventoryManager && m_inventoryManager->HasItem(i_itemId);
+}
+
 bool C_Inventory::Craft(Items::ItemId i_first, Items::ItemId i_second) {
     return m_inventoryManager && m_inventoryManager->Craft(i_first, i_second);
 }
 
 bool C_Inventory::Use(std::size_t i_slot) {
-    //the logic with checking for all the important data and parameters
-    return RemoveItem(m_inventoryManager->GetSlot(i_slot)->m_itemId, 1 );
+    return RemoveFromSlot(i_slot, 1);
+}
+
+bool C_Inventory::Use(const Items::ItemId& i_itemId) {
+    if (!m_inventoryManager ||
+        i_itemId == Items::INVALID_ITEM_ID)
+    {
+        return false;
+    }
+
+    const std::size_t slot =
+        m_inventoryManager->GetItemsSlot(i_itemId);
+
+    return Use(slot);
 }
 
 bool C_Inventory::Rearrange() {

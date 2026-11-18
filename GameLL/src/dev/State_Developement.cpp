@@ -204,6 +204,7 @@ void State_Developement::Update(const sf::Time& i_time)
 
 		}
 	}
+	m_stateManager->GetSharedContext()->m_systemManager->Update(i_time.asSeconds());
 }
 void State_Developement::React(EventDetails* i_details)
 {

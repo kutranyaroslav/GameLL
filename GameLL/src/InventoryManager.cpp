@@ -110,6 +110,13 @@ bool InventoryManager::MoveItem(std::size_t i_from, std::size_t i_to) {
     return PlaceItem(i_to, moving.m_itemId, moving.m_amount);
 }
 
+bool InventoryManager::HasItem(const Items::ItemId &i_item) {
+    for (auto& slot: m_inventorySlots) {
+        if (slot.m_itemId == i_item){return true; }
+    }
+    return false;
+}
+
 bool InventoryManager::Craft(Items::ItemId i_first, Items::ItemId i_second) {
     if (!m_itemManager || !m_craftManager) { return false; }
     const Items::ItemDef* first = m_itemManager->GetItemDef(i_first);
@@ -197,6 +204,26 @@ void InventoryManager::ClearItemAt(std::size_t i_index) {
 
 void InventoryManager::SetUpInventorySize(std::size_t i_size) {
     m_inventorySlots.resize(i_size);
+}
+
+std::size_t InventoryManager::GetItemsSlot(const Items::ItemId& i_itemId)
+{
+    if (i_itemId == Items::INVALID_ITEM_ID) {
+        return m_inventorySlots.size();
+    }
+
+    for (std::size_t i = 0; i < m_inventorySlots.size(); ++i) {
+        const InventorySlot& slot = m_inventorySlots[i];
+
+        if (!slot.m_isContinuation &&
+            slot.m_amount > 0 &&
+            slot.m_itemId == i_itemId)
+        {
+            return i;
+        }
+    }
+
+    return m_inventorySlots.size(); // Not found: outside valid indices.
 }
 
 std::size_t InventoryManager::GetSlotCount() const {

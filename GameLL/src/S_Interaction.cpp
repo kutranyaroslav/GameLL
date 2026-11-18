@@ -82,6 +82,9 @@ void S_Interaction::HandleOpenDoor(EntityId i_target, EntityId i_actor, C_Intera
 	const EntityEvent event = i_data->GetDoorOpened()
 		? EntityEvent::Door_Close
 		: EntityEvent::Door_Open;
+	if (event == EntityEvent::Door_Open) {
+		i_data->SetDoorOpenedWithKey(true);
+	}
 	m_systemMgr->AddEvent(i_actor, static_cast<EventId>(event));
 }
 
@@ -198,9 +201,35 @@ void S_Interaction::Interact(EventDetails *i_details) {
 					entities->RemoveEntity(actor);
 				}
 			}
-		}else if (interaction == InteractionType::Door ) {
+		}else if (interaction == InteractionType::Door) {
+			// Only check and consume the key before the first unlock.
+			if (interactable->RequiresKey() &&
+				!interactable->DoorOpenedWithKey())
+			{
+				if (!inventory) {
+					return;
+				}
+
+				const int configuredKey = interactable->GetKeyId();
+				if (configuredKey <= 0) {
+					return;
+				}
+
+				const Items::ItemId key =
+					static_cast<Items::ItemId>(configuredKey);
+
+				if (!inventory->Use(key)) {
+					return; // No key consumed: door stays locked.
+				}
+
+				interactable->SetDoorOpenedWithKey(true);
+			}
+
+			// Reached for a newly unlocked door, an already unlocked door,
+			// or a door that never required a key.
 			HandleOpenDoor(player, actor, interactable);
-        } else if (interaction == InteractionType::ReadNote) {
+			return;
+		} else if (interaction == InteractionType::ReadNote) {
             HandleReadNote(actor, player, interactable);
         } else if (interaction == InteractionType::Examine) {
             HandleExamine(actor, player, interactable);
@@ -227,8 +256,7 @@ EntityId S_Interaction::FindTheClosestActor() {
         if (entity == player) { continue; }
         auto* pos = entities->GetComponent<C_Position>(entity, Component::Position);
         auto* interactable = entities->GetComponent<C_Interactable>(entity, Component::Interactable);
-        if (!pos || !interactable || interactable->GetType() == InteractionType::None ||
-            pos->getElevation() != playerPos->getElevation()) { continue; }
+        if (!pos || !interactable || interactable->GetType() == InteractionType::None ) { continue; }
         const auto difference = pos->GetPosition() - playerPos->GetPosition();
         const float squared = difference.x * difference.x + difference.y * difference.y;
         if (squared <= distance) { distance = squared; closest = entity; }

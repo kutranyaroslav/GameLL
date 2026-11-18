@@ -1,6 +1,9 @@
 #include "GUI_Viewport.h"
 #include "GUI_Interface.h"
 #include <cmath>
+#include "S_Renderer.h"
+#include "GUI_Manager.h"
+
 GUI_Viewport::GUI_Viewport(const std::string& i_name, GUI_Interface* i_owner):
 	GUI_Element(i_name, GUI_ElementType::Viewport, i_owner), m_hoverTilePos(-1 ,-1 ),
 	m_clickedTileInfo(nullptr), m_cameraSpeed(300.f)
@@ -142,9 +145,18 @@ void GUI_Viewport::DrawOverlay(sf::RenderTarget* i_target)
 	UpdateViewportRect();
 	sf::View oldView = i_target->getView();
 	i_target->setView(m_view);
-	for (int i = 0; i < Sheet::Num_Layers; i++) {
+	auto* systems = m_owner->GetGuiManager()
+	->GetSharedContext()->m_systemManager;
+
+	auto* renderer = systems->GetSystem<S_Renderer>(System::Renderer);
+
+	for (unsigned int layer = 0; layer < Sheet::Num_Layers; ++layer) {
 		if (m_world) {
-			m_world->Draw(*i_target, m_view,i);
+			m_world->Draw(*i_target, m_view, layer);
+		}
+
+		if (renderer) {
+			renderer->Render(*i_target, m_view, layer);
 		}
 	}
 	i_target->setView(oldView);

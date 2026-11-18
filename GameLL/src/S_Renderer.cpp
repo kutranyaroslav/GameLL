@@ -1,4 +1,5 @@
 #include "S_Renderer.h"
+#include "C_Interactable.h"
 S_Renderer::S_Renderer(SystemManager* i_systemMgr) :
 	S_Base(System::Renderer, i_systemMgr) {
 	Bitmask req; 
@@ -43,29 +44,80 @@ void S_Renderer::Notify(const Message& i_message) {
 		}
 	}
 }
-void S_Renderer::Render(Window* i_wind, unsigned int i_layer) {
-	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
-	for (auto& entity : m_entities) {
-		
-		C_Position* position = entities->GetComponent<C_Position>(entity, Component::Position);
-		if (position->getElevation() < i_layer) { continue;}
-		if (position->getElevation() > i_layer) { break; }
-		C_Drawable* drawable = nullptr;
-		if (!entities->HasComponent(entity, Component::SpriteSheet)) {
-			continue;
-		}
-		drawable = entities->GetComponent<C_Drawable>(entity, Component::SpriteSheet);
-		sf::FloatRect drawableBounds;
-		drawableBounds.left = position->GetPosition().x - (drawable->GetSize().x / 2);
-		drawableBounds.top = position->GetPosition().y - (drawable->GetSize().y/2);
-		drawableBounds.width = drawable->GetSize().x;
-		drawableBounds.height = drawable->GetSize().y;
-		if (!i_wind->GetSceneViewSpace().intersects(drawableBounds)) {
-			continue;
-		}
-		drawable->Draw(i_wind->GetSceneTexture());
+// Existing gameplay calls continue working.
+void S_Renderer::Render(Window* window, unsigned int layer) {
+	if (!window) {
+		return;
 	}
+
+	sf::RenderTexture* scene = window->GetSceneTexture();
+	Render(*scene, scene->getView(), layer);
 }
+
+void S_Renderer::Render(
+	sf::RenderTarget& target,
+	const sf::View& view,
+	unsigned int layer
+) {
+	EntityManagerNew* entities = m_systemMgr->GetEntityManager();
+	if (!entities) {
+		return;
+	}
+
+	const sf::Vector2f center = view.getCenter();
+	const sf::Vector2f size = view.getSize();
+
+	const sf::FloatRect visible(
+		center.x - size.x * 0.5f,
+		center.y - size.y * 0.5f,
+		size.x,
+		size.y
+	);
+
+	const sf::View previousView = target.getView();
+	target.setView(view);
+
+	for (EntityId entity : m_entities) {
+		auto* position = entities->GetComponent<C_Position>(
+			entity, Component::Position);
+
+		auto* component = entities->GetComponent<C_SpriteSheet>(
+			entity, Component::SpriteSheet);
+
+		if (!position || !component) {
+			continue;
+		}
+
+		SpriteSheet* sheet = component->GetSpriteSheet();
+		if (!sheet) {
+			continue;
+		}
+
+		// Actual bounds include the sprite's origin, scale and rotation.
+		if (!visible.intersects(sheet->GetSprite()->getGlobalBounds())) {
+			continue;
+		}
+
+		bool useParts = true;
+
+		auto* interaction = entities->GetComponent<C_Interactable>(
+			entity, Component::Interactable);
+
+		if (interaction &&
+			interaction->GetType() == InteractionType::Door) {
+			useParts = !interaction->GetDoorOpened();
+			}
+		sheet->DrawOnLayer(
+			target,
+			position->getElevation(),
+			layer,
+			useParts
+		);
+	}
+
+	target.setView(previousView);
+}
+
 void S_Renderer::LoadMaterial(const std::string& i_materialName)
 {
 }

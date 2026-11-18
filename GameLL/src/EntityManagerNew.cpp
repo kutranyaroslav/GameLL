@@ -48,6 +48,9 @@ int EntityManagerNew::AddEntity(const Bitmask& i_mask) {
 	return entity;
 }
 int EntityManagerNew::AddEntity(const std::string& i_file) {
+	if (i_file == "Spanner") {
+		printf("Hello");
+	}
 	int entityId = -1;
 	std::ifstream file;
 	file.open(Utils::GetWorkingDirectory() + "Assets/Entities/" + i_file + ".entity");

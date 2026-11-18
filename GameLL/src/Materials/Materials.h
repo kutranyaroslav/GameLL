@@ -13,6 +13,7 @@ namespace Materials {
 		Stone,
 		Metall,
 		AidKit,
+		Spanner,
 		DoorBunker,
 	};
 	MaterialType StringToMaterialType(const std::string& i_material);
