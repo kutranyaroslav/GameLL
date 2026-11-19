@@ -142,7 +142,11 @@ void State_Examine::ShowNote(const std::string& textId, StateType returnState) {
     if (!title.empty() && title.back() == '\r') { title.pop_back(); }
     const std::string body((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     if (file.bad()) { ShowText("DOCUMENT", "This document is unavailable.", returnState); return; }
-    ShowText(title.empty() ? "UNTITLED DOCUMENT" : title, body, returnState);
+    if (body.find_first_not_of(" \t\r\n") == std::string::npos) {
+        ShowText("Note", title, returnState);
+    } else {
+        ShowText(title.empty() ? "Untitled document" : title, body, returnState);
+    }
     auto& notes = m_stateManager->GetSharedContext()->m_readNotes;
     if (std::find(notes.begin(), notes.end(), textId) == notes.end()) { notes.push_back(textId); }
 }
@@ -219,25 +223,51 @@ void State_Examine::Layout() {
             element->UpdateStyle(state, style);
         }
     }
-    const float textX = m_noteMode ? 100.f : 740.f;
-    const float textWidth = m_noteMode ? 1000.f : 420.f;
-    unsigned titleSize = 30;
-    if (m_font) {
-        sf::Text measure(ExamineText::Utf8(m_title), *m_font, 30);
-        while (titleSize > 14 && measure.getLocalBounds().width > textWidth) { measure.setCharacterSize(--titleSize); }
+    if (m_noteMode) {
+        constexpr float left = 60.f, width = 1080.f;
+        constexpr unsigned titleSize = 42, bodySize = 36;
+        sf::String heading = ExamineText::Utf8(m_title);
+        sf::String body = ExamineText::Utf8(m_text);
+        const auto pixels = [scale](unsigned size) {
+            return std::max(1u, static_cast<unsigned>(std::lround(size * scale)));
+        };
+        if (m_font) {
+            sf::Text measure(heading, *m_font, pixels(titleSize));
+            if (heading.find("\n") != sf::String::InvalidPos ||
+                ExamineText::Extent(measure).x > width * scale ||
+                ExamineText::Extent(measure).y > 60.f * scale) {
+                // Keep the complete heading readable in the paginated text.
+                body = heading + "\n\n" + body;
+                heading = "Note";
+            }
+            m_pages = ExamineText::DocumentPages(body, *m_font, pixels(bodySize),
+                width * scale, 410.f * scale);
+        } else { m_pages = {body}; }
+        label("Title", heading, left, 100, width, 60, titleSize, Text);
+        panel->GetElement("Category")->SetActive(false);
+        label("Body", "", left, 170, width, 410, bodySize, Text);
+        label("Page", "", left, 590, width, 32, 20, Muted);
+    } else {
+        const float textX = 740.f;
+        const float textWidth = 420.f;
+        unsigned titleSize = 30;
+        if (m_font) {
+            sf::Text measure(ExamineText::Utf8(m_title), *m_font, 30);
+            while (titleSize > 14 && measure.getLocalBounds().width > textWidth) { measure.setCharacterSize(--titleSize); }
+        }
+        label("Title", ExamineText::Utf8(m_title), textX, 120, textWidth, 68, titleSize, Text);
+        label("Category", m_category, textX, 193, textWidth, 26, 14, Red);
+        panel->GetElement("Category")->SetActive(!m_noteMode);
+        const float bodyY = 250.f;
+        const float bodyHeight = 300.f;
+        label("Body", "", textX, bodyY, textWidth, bodyHeight, 21, Text);
+        const unsigned bodySize = std::max(1u, static_cast<unsigned>(std::lround(21.f * scale)));
+        if (m_font) {
+            const unsigned lines = std::max(1u, static_cast<unsigned>((bodyHeight * scale - bodySize) / m_font->getLineSpacing(bodySize)));
+            m_pages = ExamineText::Paginate(ExamineText::Utf8(m_text), *m_font, bodySize, textWidth * scale, lines);
+        } else { m_pages = {ExamineText::Utf8(m_text)}; }
+        label("Page", "", 740, 586, 420, 28, 14, Muted);
     }
-    label("Title", ExamineText::Utf8(m_title), textX, 120, textWidth, 68, titleSize, Text);
-    label("Category", m_category, textX, 193, textWidth, 26, 14, Red);
-    panel->GetElement("Category")->SetActive(!m_noteMode);
-    const float bodyY = m_noteMode ? 208.f : 250.f;
-    const float bodyHeight = m_noteMode ? 350.f : 300.f;
-    label("Body", "", textX, bodyY, textWidth, bodyHeight, 21, Text);
-    const unsigned bodySize = std::max(1u, static_cast<unsigned>(std::lround(21.f * scale)));
-    if (m_font) {
-        const unsigned lines = std::max(1u, static_cast<unsigned>((bodyHeight * scale - bodySize) / m_font->getLineSpacing(bodySize)));
-        m_pages = ExamineText::Paginate(ExamineText::Utf8(m_text), *m_font, bodySize, textWidth * scale, lines);
-    } else { m_pages = {ExamineText::Utf8(m_text)}; }
-    label("Page", "", 740, 586, 420, 28, 14, Muted);
     label("Back", "ESC  RETURN", 40, 655, 170, 40, 15, Text, true);
     label("Previous", "<  PREVIOUS", 830, 655, 160, 40, 15, Muted, true);
     label("Next", "NEXT  >", 1000, 655, 160, 40, 15, Text, true);

@@ -11,6 +11,7 @@ namespace Items {
 		Ammo,
 		Weapon,
 		KeyItem,
+		Note,
 	};
 
 	inline std::string  ItemCategoryToString(const ItemCategory& i_category) {
@@ -25,6 +26,8 @@ namespace Items {
 		}
 		else if (i_category == ItemCategory::KeyItem) {
 			return "KeyItem";
+		}else if (i_category == ItemCategory::Note) {
+			return "Note";
 		}
 	}
 	inline ItemCategory ItemCategoryFromString(const std::string& i_category) {
@@ -39,6 +42,8 @@ namespace Items {
 		}
 		else if (i_category == "KeyItem") {
 			return ItemCategory::KeyItem;
+		}else if (i_category == "Note") {
+			return ItemCategory::Note;
 		}
 	}
 	struct ItemDef {
@@ -48,6 +53,7 @@ namespace Items {
 		std::string m_name = "";
 		std::string m_icon = ""; // icon which appears
 		std::string m_description = "";
+		std::string m_textId = "";
 		unsigned int m_slotWidth = 1;
 		int m_maxStack = 0;
 		ItemCategory m_category;

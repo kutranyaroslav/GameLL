@@ -100,8 +100,17 @@ void S_Interaction::HandlePickupItem(EntityId i_target, EntityId i_actor, C_Inte
 
 void S_Interaction::HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
 	if (!i_data) { return; }
-	m_systemMgr->GetSharedContext()->m_stateManager->ReadNote(i_data->GetTextId());
-	m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Note_Read);
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	EntityManagerNew* entities = context->m_entityManager;
+	const std::string& entityName = entities->GetEntityName(i_actor);
+	const Items::ItemDef* item =
+		context->m_itemManager->GetItemDef(entityName);
+
+	if (!item || item->m_textId.empty()) {
+		return;
+	}
+
+	context->m_stateManager->ReadNote(item->m_textId);
 }
 
 void S_Interaction::HandleToggleLever(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
@@ -115,13 +124,16 @@ void S_Interaction::HandleToggleLever(EntityId i_target, EntityId i_actor, C_Int
 
 void S_Interaction::HandleExamine(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
 	if (!i_data) { return; }
-    auto* context = m_systemMgr->GetSharedContext();
+	SharedContext* context = m_systemMgr->GetSharedContext();
+	EntityManagerNew* entities = context->m_entityManager;
+	const std::string& entityName = entities->GetEntityName(i_actor);
+
     // Examine can point at an item definition, or at a text document.
     const auto* item = context->m_itemManager
-        ? context->m_itemManager->GetItemDef(i_data->GetTextId()) : nullptr;
+        ? context->m_itemManager->GetItemDef(entityName) : nullptr;
     if (item) { context->m_stateManager->ExamineItem(item->m_id); }
-    else { context->m_stateManager->ReadNote(i_data->GetTextId()); }
-    m_systemMgr->AddEvent(i_target, (EventId)EntityEvent::Examined);
+    else { context->m_stateManager->ReadNote(item->m_textId); }
+    m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Examined);
 }
 
 void S_Interaction::HandleSavePoint(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
@@ -230,9 +242,9 @@ void S_Interaction::Interact(EventDetails *i_details) {
 			HandleOpenDoor(player, actor, interactable);
 			return;
 		} else if (interaction == InteractionType::ReadNote) {
-            HandleReadNote(actor, player, interactable);
+            HandleReadNote(player, actor, interactable);
         } else if (interaction == InteractionType::Examine) {
-            HandleExamine(actor, player, interactable);
+            HandleExamine(player, actor, interactable);
         }
 
 	}else if (currentState == StateType::FieldTerminal) {

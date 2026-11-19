@@ -22,7 +22,6 @@ void C_Interactable::ReadIn(std::stringstream& i_stream) {
 	m_keyId = -1;
 	m_itemId.clear();
 	m_quantity = 0;
-	m_textId.clear();
 	m_targetId = -1;
 	m_targetMap.clear();
 	m_oneShot = false;
@@ -47,7 +46,6 @@ void C_Interactable::ReadIn(std::stringstream& i_stream) {
 	case InteractionType::ReadNote:
 	case InteractionType::Examine:
 	case InteractionType::Terminal:
-		i_stream >> m_textId;
 		break;
 	case InteractionType::ToggleLever:
 		i_stream >> m_targetId;

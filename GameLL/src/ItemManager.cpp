@@ -39,8 +39,10 @@ void ItemManager::LoadItems(const std::string& i_file) {
 		if (!ss.eof()) { ss >> def.m_slotWidth; }
 		if (def.m_slotWidth < 1) { def.m_slotWidth = 1; }
 		if (def.m_slotWidth > 2) { def.m_slotWidth = 2; }
-
         def.m_category = Items::ItemCategoryFromString(categoryStr);
+        if (def.m_category == Items::ItemCategory::Note) {
+            ss >> def.m_textId;
+        }
         def.m_keyItem = (keyItemFlag != 0);
         def.m_id = static_cast<Items::ItemId>(m_items.size() + 1); // ids start at 1, 0 == INVALID_ITEM
 

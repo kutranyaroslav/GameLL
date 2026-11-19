@@ -32,7 +32,6 @@ public:
 	const std::string& GetItemId() const { return m_itemId; }
 	int GetQuantity() const { return m_quantity; }
 	// ReadNote / Examine / Terminal
-	const std::string& GetTextId() const { return m_textId; }
 	// ToggleLever
 	int GetTargetId() const { return m_targetId; }
 	// Elevator
@@ -52,7 +51,6 @@ private:
 	int m_keyId;
 	std::string m_itemId;
 	int m_quantity;
-	std::string m_textId;
 	int m_targetId;
 	std::string m_targetMap;
 };

@@ -18,6 +18,8 @@ namespace Materials
             return MaterialType::Spanner;
 		else if (i_material == "DoorBunker")
 		    return MaterialType::DoorBunker;
+		else if (i_material == "Note")
+		    return MaterialType::Note;
 
         return MaterialType::None;
     }
@@ -35,6 +37,8 @@ namespace Materials
             return "DoorBunker";
         else if ( i_material == MaterialType::Spanner)
             return "Spanner";
+        else if (i_material == MaterialType::Note)
+            return "Note";
 
         return "";
     }
