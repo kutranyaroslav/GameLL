@@ -16,6 +16,8 @@ namespace Materials
 			return MaterialType::AidKit;
         else if (i_material == "Spanner")
             return MaterialType::Spanner;
+        else if (i_material == "Screwdriver")
+            return MaterialType::Screwdriver;
 		else if (i_material == "DoorBunker")
 		    return MaterialType::DoorBunker;
 		else if (i_material == "Note")
@@ -37,6 +39,8 @@ namespace Materials
             return "DoorBunker";
         else if ( i_material == MaterialType::Spanner)
             return "Spanner";
+        else if (i_material == MaterialType::Screwdriver)
+            return "Screwdriver";
         else if (i_material == MaterialType::Note)
             return "Note";
 

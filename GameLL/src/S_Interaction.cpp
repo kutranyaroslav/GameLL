@@ -96,6 +96,23 @@ void S_Interaction::HandleHeal(EntityId i_target, EntityId i_actor, C_Interactab
 
 void S_Interaction::HandlePickupItem(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
 	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Item_Picked);
+	EntityManagerNew* entities = m_systemMgr->GetSharedContext()->m_entityManager;
+	C_Inventory* inventory = entities->GetComponent<C_Inventory>(i_target,Component::Inventory);
+	C_Position* actorpos = entities->GetComponent<C_Position>(i_actor, Component::Position);
+	C_Interactable* interactable = entities->GetComponent<C_Interactable>(i_actor, Component::Interactable);
+
+	const sf::Vector2f actorPosition = actorpos->GetPosition();
+	const unsigned int elevation = actorpos->getElevation();;
+	const unsigned int tileX = static_cast<unsigned int>(actorPosition.x /Sheet::Tile_Size);
+	const unsigned int tileY = static_cast<unsigned int>(actorPosition.y /Sheet::Tile_Size);
+	Items::ItemId item = inventory->GetIdByStringId(entities->GetEntityName(i_actor));
+	if (inventory->AddItem(item, interactable->GetQuantity())) {
+		if (i_data->GetType() == InteractionType::PickupItem || i_data->GetType () ==
+			InteractionType::AidKit) {
+			RemoveTileAfterPickUp(i_actor);
+		}
+
+	}
 }
 
 void S_Interaction::HandleReadNote(EntityId i_target, EntityId i_actor, C_Interactable* i_data) {
@@ -153,6 +170,43 @@ void S_Interaction::HandleElevator(EntityId i_target, EntityId i_actor, C_Intera
 	m_systemMgr->AddEvent(i_actor, (EventId)EntityEvent::Map_Changed);
 }
 
+void S_Interaction::RemoveTileAfterPickUp(const EntityId& i_actor) {
+	EntityManagerNew* entities = m_systemMgr->GetSharedContext()->m_entityManager;;
+	Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
+	TileMap* tiles = map ? map->GetTileMap() : nullptr;
+
+	bool removedLinkedTile = false;
+
+	if (tiles) {
+		const sf::Vector2u mapSize = map->GetMapSize();
+
+		if (mapSize.x > 0 && mapSize.y > 0) {
+			for (const auto& [key, tile] : *tiles) {
+				if (!tile || tile->m_linkedEntity != static_cast<int>(i_actor)) {
+					continue;
+				}
+
+				// Decode the tile-map key; this matches Map::SaveTiles().
+				const unsigned int x = key % mapSize.x;
+				const unsigned int temp = key / mapSize.x;
+				const unsigned int y = temp % mapSize.y;
+				const unsigned int layer = temp / mapSize.y;
+
+				removedLinkedTile = map->RemoveTile(x, y, layer);
+				if (!map->SaveTiles()) {
+					printf("tiles are not saved");
+				}
+				break; // RemoveTile erases this entry from the map.
+			}
+		}
+	}
+
+	// The actor may not be linked to a map tile.
+	if (!removedLinkedTile) {
+		entities->RemoveEntity(i_actor);
+	}
+}
+
 void S_Interaction::Interact(EventDetails *i_details) {
 	if (!m_systemMgr){return;}
 	if (!m_systemMgr->GetSharedContext()->m_stateManager){	return;}
@@ -173,46 +227,6 @@ void S_Interaction::Interact(EventDetails *i_details) {
 		if (interaction == InteractionType::AidKit|| interaction == InteractionType::PickupItem) {
 			if (!inventory) { return; }
 			HandlePickupItem(player,actor, interactable);
-			const sf::Vector2f actorPosition = actorpos->GetPosition();
-			const unsigned int elevation = actorpos->getElevation();;
-			const unsigned int tileX = static_cast<unsigned int>(actorPosition.x /Sheet::Tile_Size);
-			const unsigned int tileY = static_cast<unsigned int>(actorPosition.y /Sheet::Tile_Size);
-			Items::ItemId item = inventory->GetIdByStringId(entities->GetEntityName(actor));
-			if (inventory->AddItem(item, interactable->GetQuantity())) {
-				Map* map = m_systemMgr->GetSharedContext()->m_world->GetCurrentMap();
-				TileMap* tiles = map ? map->GetTileMap() : nullptr;
-
-				bool removedLinkedTile = false;
-
-				if (tiles) {
-					const sf::Vector2u mapSize = map->GetMapSize();
-
-					if (mapSize.x > 0 && mapSize.y > 0) {
-						for (const auto& [key, tile] : *tiles) {
-							if (!tile || tile->m_linkedEntity != static_cast<int>(actor)) {
-								continue;
-							}
-
-							// Decode the tile-map key; this matches Map::SaveTiles().
-							const unsigned int x = key % mapSize.x;
-							const unsigned int temp = key / mapSize.x;
-							const unsigned int y = temp % mapSize.y;
-							const unsigned int layer = temp / mapSize.y;
-
-							removedLinkedTile = map->RemoveTile(x, y, layer);
-							if (!map->SaveTiles()) {
-								printf("tiles are not saved");
-							}
-							break; // RemoveTile erases this entry from the map.
-						}
-					}
-				}
-
-				// The actor may not be linked to a map tile.
-				if (!removedLinkedTile) {
-					entities->RemoveEntity(actor);
-				}
-			}
 		}else if (interaction == InteractionType::Door) {
 			// Only check and consume the key before the first unlock.
 			if (interactable->RequiresKey() &&
@@ -244,7 +258,9 @@ void S_Interaction::Interact(EventDetails *i_details) {
 		} else if (interaction == InteractionType::ReadNote) {
             HandleReadNote(player, actor, interactable);
         } else if (interaction == InteractionType::Examine) {
+        	HandlePickupItem(player, actor, interactable);
             HandleExamine(player, actor, interactable);
+        	RemoveTileAfterPickUp(actor);
         }
 
 	}else if (currentState == StateType::FieldTerminal) {

@@ -16,6 +16,7 @@ namespace Materials {
 		Spanner,
 		Note,
 		DoorBunker,
+		Screwdriver,
 	};
 	MaterialType StringToMaterialType(const std::string& i_material);
 

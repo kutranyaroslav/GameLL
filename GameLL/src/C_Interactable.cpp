@@ -45,6 +45,7 @@ void C_Interactable::ReadIn(std::stringstream& i_stream) {
 		break;
 	case InteractionType::ReadNote:
 	case InteractionType::Examine:
+			i_stream>>m_itemId >> m_quantity;
 	case InteractionType::Terminal:
 		break;
 	case InteractionType::ToggleLever:

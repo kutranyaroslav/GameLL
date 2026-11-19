@@ -33,6 +33,7 @@ private:
 	void HandleSavePoint(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
 	void HandleTerminal(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
 	void HandleElevator(EntityId i_target, EntityId i_actor, C_Interactable* i_data);
+	void RemoveTileAfterPickUp(const EntityId& i_actor);
 
 	void Interact(EventDetails* i_details);
 	EntityId FindTheClosestActor();
